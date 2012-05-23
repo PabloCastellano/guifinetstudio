@@ -1,1 +1,25 @@
-TO DO
+The main development branch is hosted at Gitorious:
+https://gitorious.org/guifi-altres/guifinetstudio
+
+== Dependences ==
+In order to run Guifi.net Studio, you need to install the following packages:
+* Python
+* Gtk Champlain (and GObject Introspection)
+* Git (necessary only if you want to deal with the repository)
+
+Under Ubuntu 12.04 you can simply run:
+sudo apt-get install python2.7 gir1.2-gtkchamplain-0.12 git
+
+== Bugs ==
+Please, report bugs to http://trac.guifi.net/
+There's a specific component named "Guifi.net Studio"
+
+== Patches ==
+You can clone the repository and submit patches through the Gitorious interface:
+
+1) Register into Gitorious
+2) Go to https://gitorious.org/guifi-altres/guifinetstudio and "Clone repository"
+3) Go to your own new Guifi.net Studio repository in Gitorious
+4) Clone it -> make your changes -> commit & push
+4) Press "Request merge" in the right column and fill in the fields
+
