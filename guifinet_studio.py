@@ -96,21 +96,17 @@ class GuifinetStudio:
 			p.set_draw_background(False)
 			layer.add_marker(p)
 	
-		coords = getCoords(self.cnml)
 		self.nodes_layer = Champlain.MarkerLayer()
 		self.nodes_layer.set_selection_mode(Champlain.SelectionMode.SINGLE)
-		for c in coords:
-			add_node_point(self.nodes_layer, c[0], c[1])
-			print c[0], c[1]
-		self.view.add_layer(self.nodes_layer)
-
 		self.nodes2_layer = Champlain.MarkerLayer()
 		self.nodes2_layer.set_selection_mode(Champlain.SelectionMode.SINGLE)
-		
+
 		coords = getCoords_with_name(self.cnml)
 		for c in coords:
+			add_node_point(self.nodes_layer, c[0], c[1])
 			add_node_label(self.nodes2_layer, c[0], c[1], c[2])
 			print c[0], c[1], c[2]
+		self.view.add_layer(self.nodes_layer)
 		self.view.add_layer(self.nodes2_layer)
 
 
@@ -136,13 +132,7 @@ class GuifinetStudio:
 			(w, b, t, p) = self.countNodes(nodes)
 			
 			col1 = "%s (%d)" %(z.getAttribute("title"), len(nodes))
-			print col1
-			print w
-			print b
-			print t
-			print p
 			p = self.treestore.append(parent[-1], (col1, str(w), str(b), str(t), str(p), None))
-			#p = self.treestore.append(parent[-1], ('asadasda', 'w', 'b', 't', 'p', None))
 			
 			# Add zone
 			if n_subzones > 0:
