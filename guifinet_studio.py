@@ -17,26 +17,52 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import gtk
+from gi.repository import GtkClutter, Clutter
+GtkClutter.init([]) # Must be initialized before importing those:
+from gi.repository import Gtk, GtkChamplain, Champlain
+
+#import gtk
 import xml.dom.minidom as MD
 import sys
 
 
 class GuifinetStudio:
-	def __init__(self, cnmlFile="detail"):
-		self.ui = gtk.Builder()
+	def __init__(self, cnmlFile="tests/detail.3"):
+		self.currentView = 1
+		
+		self.ui = Gtk.Builder()
 		self.ui.add_from_file("guifinet_studio.ui")
 		self.ui.connect_signals(self)
 
 		self.window = self.ui.get_object("window1")
+		self.nodesList = self.ui.get_object("scrolledwindow1")
+		self.vbox1 = self.ui.get_object("vbox1")
 		self.treestore = self.ui.get_object("treestore1")
 		self.treeview = self.ui.get_object("treeview1")
 		self.statusbar = self.ui.get_object("statusbar1")
 		self.actiongroup1 = self.ui.get_object("actiongroup1")
 
+		#self.vbox1.add(self.nodesList)
+		#self.nodesList.reparent(self.vbox1)
+		#self.vbox1.reorder_child(self.nodesList, 2)
+		
+		self.embed = GtkChamplain.Embed()
+		self.embed.set_size_request(640, 480)
+		
+		self.view = self.embed.get_view()
+		self.view.set_reactive(True)
+		self.view.set_kinetic_mode(True)
+		self.view.set_zoom_level(13)
+		self.view.center_on(36.72341, -4.42428)
+        
+		self.vbox1.add(self.embed)
+		self.vbox1.reorder_child(self.embed, 2)
+		#self.embed.show()
+		self.window.show_all()
+		
 		self.t6 = self.ui.get_object("treeviewcolumn6")
 		
-		self.uimanager = gtk.UIManager()
+		self.uimanager = Gtk.UIManager()
 		self.uimanager.add_ui_from_file("guifinet_studio_menu.ui")
 		self.uimanager.insert_action_group(self.actiongroup1)
 		self.menu = self.uimanager.get_widget("/KeyPopup")
@@ -44,38 +70,80 @@ class GuifinetStudio:
 		self.nodedialog = self.ui.get_object("nodeDialog")
 		
 		self.opendialog = self.ui.get_object("filechooserdialog1")
-		self.opendialog.set_action(gtk.FILE_CHOOSER_ACTION_OPEN)
+		self.opendialog.set_action(Gtk.FileChooserAction.OPEN)
 		
 		self.about_ui = self.ui.get_object("aboutdialog1")
 		with open("COPYING") as f:
 			self.about_ui.set_license(f.read())
 
 		self.completaArbol(cnmlFile)
+		self.completaMapa()
 		
+	def completaMapa(self):
+		from getCoords import getCoords, getCoords_with_name
+		
+		def add_node_point(layer, lat, lon):
+			p = Champlain.Point.new()
+			p.set_location(lat, lon)
+			layer.add_marker(p)
+		
+		def add_node_label(layer, lat, lon, nombre):
+			p = Champlain.Label.new()
+			p.set_text(nombre)
+			color = Clutter.Color.new(0,0,0,255)
+			p.set_text_color(color)
+			p.set_location(lat, lon)
+			p.set_draw_background(False)
+			layer.add_marker(p)
+	
+		coords = getCoords(self.cnml)
+		self.nodes_layer = Champlain.MarkerLayer()
+		self.nodes_layer.set_selection_mode(Champlain.SelectionMode.SINGLE)
+		for c in coords:
+			add_node_point(self.nodes_layer, c[0], c[1])
+			print c[0], c[1]
+		self.view.add_layer(self.nodes_layer)
+
+		self.nodes2_layer = Champlain.MarkerLayer()
+		self.nodes2_layer.set_selection_mode(Champlain.SelectionMode.SINGLE)
+		
+		coords = getCoords_with_name(self.cnml)
+		for c in coords:
+			add_node_label(self.nodes2_layer, c[0], c[1], c[2])
+			print c[0], c[1], c[2]
+		self.view.add_layer(self.nodes2_layer)
+
 
 	def completaArbol(self, cnmlFile):
 		try:
-			tree = MD.parse(cnmlFile)
+			self.cnmlTree = MD.parse(cnmlFile)
 		except IOError:
 			self.cnml = None
 			self.statusbar.push(0, "CNML file \"%s\" couldn't be loaded" %cnmlFile)
 			return
 
-		zones = tree.getElementsByTagName("zone")
+		zones = self.cnmlTree.getElementsByTagName("zone")
 		parent = [None]
 
 		n_nodes = 0
-
+		
 		# Bug: no se muestran nodos de la primera zona
 		# Lo suyo sería una función que te devolviera los nodos del primer nivel solamente
 		for z in zones:
+			
 			n_subzones = len(z.getElementsByTagName("zone"))
 			nodes = z.getElementsByTagName("node")
 			(w, b, t, p) = self.countNodes(nodes)
-
+			
 			col1 = "%s (%d)" %(z.getAttribute("title"), len(nodes))
-			p = self.treestore.append(parent[-1], (col1, w, b, t, p, None))
-
+			print col1
+			print w
+			print b
+			print t
+			print p
+			p = self.treestore.append(parent[-1], (col1, str(w), str(b), str(t), str(p), None))
+			#p = self.treestore.append(parent[-1], ('asadasda', 'w', 'b', 't', 'p', None))
+			
 			# Add zone
 			if n_subzones > 0:
 				parent.append(p)
@@ -88,6 +156,7 @@ class GuifinetStudio:
 		self.treeview.expand_all()
 		self.statusbar.push(0, "Cargadas %d zonas con %d nodos en total." %(len(zones), n_nodes))
 		self.cnml = cnmlFile
+
 
 	def countNodes(self, nodes):
 		n_planned = 0
@@ -117,7 +186,7 @@ class GuifinetStudio:
 		self.nodedialog.set_title("Information about node XXX")
 
 	def on_action2_activate(self, action, data=None):
-		gtk.show_uri(None, "http://guifi.net/node/", gtk.get_current_event_time())
+		Gtk.show_uri(None, "http://guifi.net/node/", Gtk.get_current_event_time())
 
 	def on_button1_clicked(self, widget, data=None):
 		self.nodedialog.hide()
@@ -153,8 +222,23 @@ class GuifinetStudio:
 	def on_imagemenuitem10_activate(self, widget, data=None):
 		self.about_ui.show()
 
+	def on_changeViewButton_toggled(self, widget, data=None):
+		print 'on_changeViewButton_toggled:', self.currentView
+		
+		if self.currentView == 1:
+			self.currentView = 2
+			self.vbox1.remove(self.embed)
+			self.nodesList.reparent(self.vbox1)
+			self.vbox1.reorder_child(self.nodesList, 2)
+		else:
+			self.currentView = 1
+			self.vbox1.remove(self.nodesList)
+			self.vbox1.add(self.embed)
+			self.vbox1.reorder_child(self.embed, 2)
+			
+		
 	def gtk_main_quit(self, widget, data=None):
-		gtk.main_quit()
+		Gtk.main_quit()
 
 
 if __name__ == "__main__":
@@ -165,4 +249,4 @@ if __name__ == "__main__":
 		ui = GuifinetStudio()
 
 	ui.window.show()
-	gtk.main()
+	Gtk.main()
