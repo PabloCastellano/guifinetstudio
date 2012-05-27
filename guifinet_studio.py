@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# cnml_explorer.py - Explore your free network offline! - 21-August-2011
-# Copyright (C) 2011 Pablo Castellano <pablo@anche.no>
+# guifinet_studio.py - Explore your free network offline!
+# Copyright (C) 2011-2012 Pablo Castellano <pablo@anche.no>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,10 +22,10 @@ import xml.dom.minidom as MD
 import sys
 
 
-class CNMLExplorer:
+class GuifinetStudio:
 	def __init__(self, cnmlFile="detail"):
 		self.ui = gtk.Builder()
-		self.ui.add_from_file("cnml_explorer.ui")
+		self.ui.add_from_file("guifinet_studio.ui")
 		self.ui.connect_signals(self)
 
 		self.window = self.ui.get_object("window1")
@@ -37,7 +37,7 @@ class CNMLExplorer:
 		self.t6 = self.ui.get_object("treeviewcolumn6")
 		
 		self.uimanager = gtk.UIManager()
-		self.uimanager.add_ui_from_file("cnml_explorer_menu.ui")
+		self.uimanager.add_ui_from_file("guifinet_studio_menu.ui")
 		self.uimanager.insert_action_group(self.actiongroup1)
 		self.menu = self.uimanager.get_widget("/KeyPopup")
 		
@@ -160,9 +160,9 @@ class CNMLExplorer:
 if __name__ == "__main__":
 
 	if len(sys.argv) > 1:
-		ui = CNMLExplorer(sys.argv[1])
+		ui = GuifinetStudio(sys.argv[1])
 	else:
-		ui = CNMLExplorer()
+		ui = GuifinetStudio()
 
 	ui.window.show()
 	gtk.main()
