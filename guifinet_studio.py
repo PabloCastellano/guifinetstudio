@@ -42,6 +42,7 @@ class GuifinetStudio:
 		self.statusbar = self.ui.get_object("statusbar1")
 		self.actiongroup1 = self.ui.get_object("actiongroup1")
 
+		self.embedBox = self.ui.get_object("embedBox")
 		#self.vbox1.add(self.nodesList)
 		#self.nodesList.reparent(self.vbox1)
 		#self.vbox1.reorder_child(self.nodesList, 2)
@@ -55,9 +56,11 @@ class GuifinetStudio:
 		self.view.set_zoom_level(13)
 		self.view.center_on(36.72341, -4.42428)
         
-		self.vbox1.add(self.embed)
-		self.vbox1.reorder_child(self.embed, 2)
-		#self.embed.show()
+		self.embedBox.pack_start(self.embed, True, True, 0)
+		self.embedBox.reorder_child(self.embed, 0)
+		self.embedBox.reparent(self.vbox1)
+		self.vbox1.reorder_child(self.embedBox, 2)
+		
 		self.window.show_all()
 		
 		self.t6 = self.ui.get_object("treeviewcolumn6")
@@ -96,18 +99,18 @@ class GuifinetStudio:
 			p.set_draw_background(False)
 			layer.add_marker(p)
 	
-		self.nodes_layer = Champlain.MarkerLayer()
-		self.nodes_layer.set_selection_mode(Champlain.SelectionMode.SINGLE)
-		self.nodes2_layer = Champlain.MarkerLayer()
-		self.nodes2_layer.set_selection_mode(Champlain.SelectionMode.SINGLE)
+		self.points_layer = Champlain.MarkerLayer()
+		self.points_layer.set_selection_mode(Champlain.SelectionMode.SINGLE)
+		self.labels_layer = Champlain.MarkerLayer()
+		self.labels_layer.set_selection_mode(Champlain.SelectionMode.SINGLE)
 
 		coords = getCoords_with_name(self.cnml)
 		for c in coords:
-			add_node_point(self.nodes_layer, c[0], c[1])
-			add_node_label(self.nodes2_layer, c[0], c[1], c[2])
-			print c[0], c[1], c[2]
-		self.view.add_layer(self.nodes_layer)
-		self.view.add_layer(self.nodes2_layer)
+			add_node_point(self.points_layer, c[0], c[1])
+			add_node_label(self.labels_layer, c[0], c[1], c[2])
+#			print c[0], c[1], c[2]
+		self.view.add_layer(self.points_layer)
+		self.view.add_layer(self.labels_layer)
 
 
 	def completaArbol(self, cnmlFile):
@@ -171,6 +174,23 @@ class GuifinetStudio:
 		# Working, Building, Testing, Planned.
 		return (n_working, n_building, n_testing, n_planned)
 
+	def on_showPointsButton_toggled(self, widget, data=None):
+		print 'Show points:', widget.get_active()
+		if widget.get_active():
+			self.points_layer.show_all_markers()
+		else:
+			self.points_layer.hide_all_markers()
+	
+	def on_showLabelsButton_toggled(self, widget, data=None):
+		print 'Show labels:', widget.get_active()
+		if widget.get_active():
+			self.labels_layer.show_all_markers()
+		else:
+			self.labels_layer.hide_all_markers()
+	
+	def on_showLinksButton_toggled(self, widget, data=None):
+		print 'Show links:', widget.get_active()
+	
 	def on_action1_activate(self, action, data=None):
 		self.nodedialog.show()
 		self.nodedialog.set_title("Information about node XXX")
