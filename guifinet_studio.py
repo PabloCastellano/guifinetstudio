@@ -34,7 +34,9 @@ class GuifinetStudio:
 		self.ui.add_from_file("guifinet_studio.ui")
 		self.ui.connect_signals(self)
 
-		self.window = self.ui.get_object("window1")
+		self.mainWindow = self.ui.get_object("mainWindow")
+		self.listNodesWindow = self.ui.get_object("listNodesWindow")
+		
 		self.nodesList = self.ui.get_object("scrolledwindow1")
 		self.vbox1 = self.ui.get_object("vbox1")
 		self.treestore = self.ui.get_object("treestore1")
@@ -61,7 +63,7 @@ class GuifinetStudio:
 		self.embedBox.reparent(self.vbox1)
 		self.vbox1.reorder_child(self.embedBox, 2)
 		
-		self.window.show_all()
+		self.mainWindow.show_all()
 		
 		self.t6 = self.ui.get_object("treeviewcolumn6")
 		
@@ -232,19 +234,19 @@ class GuifinetStudio:
 	def on_imagemenuitem10_activate(self, widget, data=None):
 		self.about_ui.show()
 
+	# This is really shabby, there must be better ways without
+	# needing to reparent everytime :?
 	def on_changeViewButton_toggled(self, widget, data=None):
 		print 'on_changeViewButton_toggled:', self.currentView
 		
 		if self.currentView == 1:
 			self.currentView = 2
-			self.vbox1.remove(self.embed)
+			self.vbox1.remove(self.embedBox)
 			self.nodesList.reparent(self.vbox1)
-			self.vbox1.reorder_child(self.nodesList, 2)
 		else:
 			self.currentView = 1
-			self.vbox1.remove(self.nodesList)
-			self.vbox1.add(self.embed)
-			self.vbox1.reorder_child(self.embed, 2)
+			self.nodesList.reparent(self.listNodesWindow)
+			self.vbox1.pack_start(self.embedBox, True, True, 0)
 			
 		
 	def gtk_main_quit(self, widget, data=None):
@@ -258,5 +260,5 @@ if __name__ == "__main__":
 	else:
 		ui = GuifinetStudio()
 
-	ui.window.show()
+	ui.mainWindow.show()
 	Gtk.main()
