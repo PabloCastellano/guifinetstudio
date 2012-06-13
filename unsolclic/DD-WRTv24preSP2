@@ -1,0 +1,111 @@
+# Generat per a:
+# {{ firmware_name }}
+#
+# unsolclic version: v3.7
+# obre una sessió telnet/ssh en el teu trasto i executa aquest script.
+# Nota: Fes servir l''Status/Wireless survey per verificar que
+# tens l''antena ben endollada i configurada. La dreta es probablement
+# la que tens a la dreta si el mires des del davant (on hi han els
+# leds). Si et cal, canvia el connector des de la configuració via
+# anant a Wireless->Advanced Settings.
+# Security notes:
+# Once this script is executes, the router password for root/admin users is \"guifi\"
+# You must change this password if you want to keep it secret. If you like to still
+# be managed externally, you must install a trusted ssh key. Upon request, your setup
+# might be asked for being inspected to check the Wireless Commons compliance.
+# No firewall rules are allowed in the public network area.
+# By being in client mode, the router has the firewall enabled to distinguish between
+# private and public areas, and only SNMP, ssh and https 8080 ports are enabled
+# for external administration. Everything else is closed, therefore you might
+# have to open ports to share resources.
+#
+# {{ device_name }}
+# Paràmetres globals de la xarxa
+nvram set router_name=\"{{ device_name }}\"
+nvram set wan_hostname=\"{{ device_name }}\"
+nvram set wan_proto=\"static\"
+nvram set wan_ipaddr=\"{{ ipv4_ip }}\"
+nvram set wan_netmask=\"{{ ipv4_netmask }}\"
+nvram set fullswitch=\"1\"
+nvram set wan_dns=\"{{ zone_primary_dns }} {{ zone_secondary_dns }} {{ zone_ternary_dns }}\"
+nvram set lan_domain=\"guifi.net\"
+nvram set wan_domain=\"guifi.net\"
+nvram set http_passwd=\"guifi\"
+nvram set time_zone=\"+01 2 2\"
+nvram set sv_localdns=\"{{ zone_primary_dns }}\"
+nvram set wl_net_mode=\"b-only\"
+nvram set wl0_net_mode=\"b-only\"
+nvram set wl_afterburner=\"on\"
+nvram set wl_frameburst=\"on\"
+nvram set txpwr=\"{{ txpwr }}\"
+nvram set txant=\"0\"
+nvram set wl0_antdiv=\"0\"
+nvram set wl_antdiv=\"0\"
+nvram set block_wan=\"0\"
+#
+# Gestió
+nvram set telnetd_enable=\"1\"
+nvram set sshd_enable=\"1\"
+nvram set sshd_passwd_auth=\"1\"
+nvram set remote_management=\"1\"
+nvram set remote_mgt_https=\"1\"
+nvram set snmpd_enable=\"1\"
+nvram set snmpd_sysname=\"guifi.net\"
+nvram set snmpd_syscontact=\"guifi_at_guifi.net\"
+nvram set boot_wait=\"on\"
+# This is just a fake key. You must install a trusted key if you like to have you router managed externally
+nvram set sshd_authorized_keys=\"
+ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAIEAwWNX4942fQExw4Hph2M/sxOAWVE9PB1I4JnNyhoWuF9v\
+id0XcU34kwWqBBlI+LjDErCQyaR4ysFgDX61V4kUuCKwBOMp+UGxhL648VTv5Qji/YwvIzt7nguUOZ5A\
+GPISqsC0717hc0Aja1mvHkQqg9aXKznmszmyKZGhcm2+SU8= root@bandoler.guifi.net\
+\"
+nvram set http_enable=\"1\"
+nvram set https_enable=\"1\"
+#
+# NTP Network time protocol
+nvram set ntp_enable=\"1\"
+nvram set ntp_server=\"{{ zone_primary_ntp }}\"
+#
+# Mode Client
+nvram set wl_mode=\"sta\"
+nvram set wl0_mode=\"sta\"
+nvram set wl_ssid=\"guifi.net-{{ linkedto_ssid }}\"
+nvram set wan_gateway=\"{{ ipv4_ipgateway }}\"
+nvram set wl_macmode=\"disabled\"
+nvram set wl0_macmode=\"disabled\"
+nvram set wl_macmode1=\"disabled\"
+nvram set wl0_macmode1=\"disabled\"
+#
+# Enrutament Gateway
+nvram set wk_mode=\"gateway\"
+nvram set dr_setting=\"0\"
+nvram set route_default=\"1\"
+nvram set dr_lan_rx=\"0\"
+nvram set dr_lan_tx=\"0\"
+nvram set dr_wan_rx=\"0\"
+nvram set dr_wan_tx=\"0\"
+nvram set dr_wan_tx=\"0\"
+# Tallafocs activat
+nvram set filter=\"on\"
+nvram set rc_firewall=\"
+/usr/sbin/iptables -I INPUT -p udp --dport 161 -j ACCEPT; /usr/sbin/iptables -I \
+INPUT -p tcp --dport 22 -j ACCEPT\
+\"
+#
+#
+nvram set rc_startup=\"#!/bin/ash
+#
+# unsolclic: v3.7
+# radio:  {{ dev.id }}-{{ dev.nick }}
+#
+#
+/bin/sleep 3
+bird-c/tmp/bird/bird.conf
+/usr/sbin/wl shortslot_override 0
+ifconfig eth1 -promisc -allmulti
+ifconfig br0 -promisc -allmulti
+ifconfig eth0 promisc\"
+#
+# Fi del script i re-iniciar
+nvram commit
+reboot

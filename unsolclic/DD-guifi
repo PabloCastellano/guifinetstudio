@@ -1,0 +1,583 @@
+    {% spaceless %}# Generat per a:
+    # {{ firmware_name }}
+    #
+    # unsolclic version: v3.7
+{% autoescape false %}
+    # {{ t(\"open a telnet/ssh session on your device and run the script below.\") }}
+    # {{ t(\"Note: Use Status/Wireless survey to verify that you have the\")   }}
+    # {{ t(\"antenna plugged in the right connector. The right antena is probably\") }}
+    # {{ t(\"the one which is at the right, looking the WRT54G from the front\") }}
+    # {{ t(\"(where it have the leds). If needed, change the antenna connector\") }}
+    # {{ t(\"at Wireless->Advanced Settings.\") }}
+    # {{ t(\"Security notes:\") }}
+    # {{ t(''Once this script is executes, the router password for root/admin users is \"guifi\"'') }}
+    # {{ t(\"You must change this password if you want to keep it secret. If you like to still\") }}
+    # {{ t(\"be managed externally, you must install a trusted ssh key. Upon request, your setup\") }}
+    # {{ t(\"might be asked for being inspected to check the Wireless Commons compliance.\") }}
+    # {{ t(\"No firewall rules are allowed in the public network area.\") }}
+    # {{ t(\"By being in client mode, the router has the firewall enabled to distinguish between\") }}
+    # {{ t(\"private and public areas, and only SNMP, ssh and https 8080 ports are enabled\") }}
+    # {{ t(\"for external administration. Everything else is closed, therefore you might\") }}
+    # {{ t(\"have to open ports to share resources.\") }}
+{% endautoescape %}
+    #
+    # {{ dev.nick }}
+    # {{ t(''Global network parameters'') }}
+    nvram set router_name=\"{{ dev.nick }}\"
+    nvram set wan_hostname=\"{{ dev.nick }}\"
+    {# busquem interficie WLan/Lan #}
+    {% set interfaceWlanLan = null %}
+    {#% for radio_id, radio in dev.radios %#}
+        {% for interface_id, interface in dev.interfaces %}
+            {% for ipv4_id,ipv4 in interface.ipv4 %}
+                {% if interface.interface_type == ''wLan/Lan'' %}
+                    {% set interfaceWlanLan = interface %}
+                    nvram set lan_ipaddr=\"{{ ipv4.ipv4 }}\"
+                    nvram set lan_gateway=\"0.0.0.0\"
+                    nvram set lan_netmask=\"{{ ipv4.netmask }}\"
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+    {#% endfor %#}
+    {# busquem interficie Lan #}
+    {% set interfaceLan = null %}
+    {#% for radio_id, radio in dev.radios %#}
+        {% for interface_id, interface in dev.interfaces %}
+            {% for ipv4_id,ipv4 in interface.ipv4 %}
+                {% if interface.interface_type == ''Lan'' %}
+                    {% set interfaceLan = interface %}
+                    nvram set lan_ipaddr=\"{{ ipv4.ipv4 }}\"
+                    nvram set lan_gateway=\"{{ ipv4.netstart }}\"
+                    nvram set lan_netmask=\"{{ ipv4.netmask }}\"
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+    {#% endfor %#}
+    {# busquem interficie Wan #}
+    {% set interfaceWan = null %}
+    {% for interface_id, interface in dev.interfaces %}
+        {% for ipv4_id,ipv4 in interface.ipv4 %}
+                {% if link.interface.interface_type == ''Wan'' %}
+                    {% set interfaceWan = interface %}
+                    {% if ipv4.ipv4 %}
+                        nvram set lan_ipaddr=\"{{ ipv4.ipv4 }}\"
+                        nvram set lan_gateway=\"{{ ipv4.netstart }}\"
+                        nvram set lan_netmask=\"{{ ipv4.netmask }}\"
+                        nvram set fullswitch=\"1\"
+                        nvram set wan_dns=\"{{ zone_primary_dns }} {{ zone_secondary_dns }} {{ zone_ternary_dns }}\"
+                    {% else  %}
+                        nvram set wan_proto=\"dhcp\"
+                    {% endif %}
+                {% endif %}
+        {% endfor %}
+    {% endfor %}
+    {% if not interfaceWan %}
+        nvram set wan_proto=\"disabled\"
+    {% endif %}
+    nvram set lan_domain=\"guifi.net\"
+    nvram set wan_domain=\"guifi.net\"
+    nvram set http_passwd=\"guifi\"
+    nvram set time_zone=\"+01 2 2\"
+    nvram set sv_localdns=\"{{ zone_primary_dns }}\"
+    nvram set wl_net_mode=\"b-only\"
+    nvram set wl0_net_mode=\"b-only\"
+    nvram set wl_afterburner=\"on\"
+    nvram set wl_frameburst=\"on\"
+    nvram set txpwr=\"{{ txpwr }}\"
+    {% if dev.radios[0][''antenna_mode''] == '''' %}
+        {% set antena_mode = ''Main'' %}
+    {% endif %}
+    {% if antena_mode !=''Main'' %}
+        {% set antena_mode = ''1'' %}
+    {% else %}
+        {% set antena_mode = ''0'' %}
+    {% endif %}
+    nvram set txant=\"{{ antena_mode }}\"
+    nvram set wl0_antdiv=\"0\"
+    nvram set wl_antdiv=\"0\"
+    nvram set block_wan=\"0\"
+    {% if dev.variable.firmware == ''Talisman'' %}
+        nvram set ident_pass=\"0\"
+        nvram set multicast_pass=\"0\"
+        nvram set wl_closed=\"0\"
+        nvram set block_loopback=\"0\"
+    {% endif %}
+    #
+    # {{ t(''Management'') }}
+    nvram set telnetd_enable=\"1\"
+    nvram set sshd_enable=\"1\"
+    nvram set sshd_passwd_auth=\"1\"
+    nvram set remote_management=\"1\"
+    nvram set remote_mgt_https=\"1\"
+    nvram set snmpd_enable=\"1\"
+    nvram set snmpd_sysname=\"guifi.net\"
+    nvram set snmpd_syscontact=\"guifi_at_guifi.net\"
+    nvram set boot_wait=\"on\"
+    # {{ t(''This is just a fake key. You must install a trusted key if you like to have you router managed externally'') }}
+    nvram set sshd_authorized_keys=\"
+    ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAIEAwWNX4942fQExw4Hph2M/sxOAWVE9PB1I4JnNyhoWuF9v\
+    id0XcU34kwWqBBlI+LjDErCQyaR4ysFgDX61V4kUuCKwBOMp+UGxhL648VTv5Qji/YwvIzt7nguUOZ5A\
+    GPISqsC0717hc0Aja1mvHkQqg9aXKznmszmyKZGhcm2+SU8= root@bandoler.guifi.net\
+    \"
+    nvram set http_enable=\"1\"
+    nvram set https_enable=\"1\"
+    #
+    # NTP Network time protocol
+    {% if zone_primary_ntp == '''' %}
+    nvram set ntp_enable=\"0\"
+    {% else  %}
+    nvram set ntp_enable=\"1\"
+    nvram set ntp_server=\"{{ zone_primary_ntp }}\"
+    {% endif %}
+    #
+    {% if dev.radios[0].mode ==''ap'' or dev.radios[0].mode ==''AP''  %}
+        # {{ t(''AP mode'') }}
+        nvram set wl_mode=\"ap\"
+        nvram set wl0_mode=\"ap\"
+        nvram set wl_channel=\"{{ dev.radios[0][''channel''] }}\"
+        nvram set wl_ssid=\"guifi.net-{{ guifi_to_7bits(dev.radios[0][''ssid'']) }}\"
+        nvram set wl_macmode=\"disable\"
+        nvram set wl0_macmode=\"disable\"
+        nvram set wl_macmode1=\"disable\"
+        nvram set wl0_macmode1=\"disable\"
+        {{ _self.guifi_unsolclic_ospf(dev, zone, ospfzone,interfaceWlanLan) }}
+        {{ _self.guifi_unsolclic_dhcp(dev, interfaceWlanLan) }}
+        {{ _self.guifi_unsolclic_wds_vars(dev) }}
+    {% elseif dev.radios[0].mode ==''client'' %}
+        # Mode Client
+        {% for interface_id, interface in dev.radios[0].interfaces %}
+            {% for ipv4_id,ipv4 in interface.ipv4 %}
+                {% if ipv4.links %}
+                    {% for link_id, link in ipv4.links %}
+                        {% if link.link_type == ''ap/client'' %}
+                            {% set ap_macs = ap_macs ~'' ''~ link.interface.mac %}
+                            {% set gateway = link.interface.ipv4.ipv4 %}
+                            {# if (($dev->variable[''firmware''] == ''DD-WRTv23'') or ($dev->variable[''firmware''] == ''DD-guifi'')) #}
+                            nvram set wl_mode=\"sta\"
+                            nvram set ''wl0_mode=\"sta\"
+                            nvram set wl_ssid=\"guifi.net-\"{{ dev.radios[0].ssid }})\"
+                            {# end if de comrpovacio de firmware dd-wrtv23 #}
+                            nvram set wan_gateway=\"{{ gateway }}\"
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+                {% if dev[''variable''][''firmware''] == ''Alchemy'' %}
+                    {% if ap_macs == '''' %}
+                        # {{ t(''WARNING: AP MAC not set'') }}
+                        {% set filter = ''FF:FF:FF:FF:FF:FF'' %}
+                    {% endif %}
+                    nvram set wl_macmode=\"allow\"
+                    nvram set wl0_macmode=\"allow\"
+                    nvram set wl_macmode1=\"other\"
+                    nvram set wl0_macmode1=\"other\"
+                    nvram set wl_maclist=\"{{ filter }}\"
+                    nvram set wl0_maclist=\"{{ filter }}\"
+                    nvram set wl_mac_list=\"{{ filter }}\"
+                    nvram set wl0_mac_list=\"{{ filter }}\"
+                {% else %}
+                    nvram set wl_macmode=\"disabled\"
+                    nvram set wl0_macmode=\"disabled\"
+                    nvram set wl_macmode1=\"disabled\"
+                    nvram set wl0_macmode1=\"disabled\"
+                {% endif %}
+                {# busquem interficie Lan #}
+                {% for interface in dev.radios.interfaces %}
+                    {% if interface.interface_type ==''Lan'' %}
+                        {# _self.guifi_unsolclic_ospf(dev,zone, ospfzone,interfaceWlanLan) #}
+                        {# aqui estem en el pas de php a twig de dd-wrt. #}
+                    {% else %}
+                        {# guifi_unsolclic_gateway($dev); #}
+                        #
+                        # {{ t(''Gateway routing'') }}
+                        nvram set wk_mode=\"gateway\"
+                        nvram set dr_setting=\"0\"
+                        nvram set route_default=\"1\"
+                        nvram set dr_lan_rx=\"0\"
+                        nvram set dr_lan_tx=\"0\"
+                        nvram set dr_wan_rx=\"0\"
+                        nvram set dr_wan_tx=\"0\"
+                        nvram set dr_wan_tx=\"0\"
+                        # {{ t(''Firewall enabled'') }}
+                        nvram set filter=\"on\"
+                        nvram set rc_firewall=\"
+                        /usr/sbin/iptables -I INPUT -p udp --dport 161 -j ACCEPT; /usr/sbin/iptables -I \
+                        INPUT -p tcp --dport 22 -j ACCEPT\
+                        \"
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+        {% endfor %}{# comentari final del case de client #}
+    {% endif %}
+    #
+    {{ _self.guifi_unsolclic_vlan_vars(dev, rc_startup) }}
+    {{ _self.guifi_unsolclic_startup(dev, version, rc_startup) }}
+    #
+    # {{ t(''end of script and reboot'') }}
+    nvram commit
+    reboot
+    {% macro guifi_unsolclic_ospf(dev,zone, ospfzone,interfaceWlanLan) %}
+                        # {{ ipv4Addr  }}
+                        # {{ t(''Firewall disabled'') }}
+                        nvram set filter=\"off\"
+                        # {{ dev.variable.firmware ~ t('' OSPF routing'') }}
+                        nvram set dr_setting=\"3\"
+                        nvram set dr_lan_rx=\"1 2\"
+                        nvram set dr_lan_tx=\"1 2\"
+                        nvram set dr_wan_rx=\"1 2\"
+                        nvram set dr_wan_tx=\"1 2\"
+                        nvram set wk_mode=\"ospf\"
+                        {% if dev.variable.firmware == ''DD-WRTv23'' or dev.variable.firmware == ''DD-guifi''  %}
+                            nvram set routing_lan=\"on\"
+                            nvram set routing_wan=\"on\"
+                            nvram set routing_ospf=\"on\"
+                        {% endif %}
+                        {% if dev.variable.firmware == ''Alchemy'' %}
+                            nvram set route_default=\"1\"
+                            nvram set expert_mode=\"1\"
+                        {% endif %}
+                        nvram set ospfd_conf=\"
+                            !
+                            password guifi
+                            enable password guifi
+                            !
+                        {% set alchemyIfs = guifi_get_alchemy_ifs(dev) %}
+                        {% for aIf, exists in alchemyIfs %}
+                            interface {{ aIf }}
+                        {% endfor %}
+                        !
+                        router ospf
+                        ospf router-id {{ interfaceWlanLan.ipv4[0].ipv4 }}
+                        {% for radio_id, radio in dev.radios %}
+                          {% for interface_id, interface in radio.interfaces %}
+                                {% if interface.interface_type == ''wLan'' or  interface.interface_type == ''wLan/Lan'' %}
+                                    {% for ipv4_id,ipv4 in interface.ipv4 %}
+                                      network {{ ipv4.netid }}/{{ ipv4.maskbits  }} area 0
+                                    {% endfor %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endfor %}
+                        {% for radio_id, radio in dev.radios %}
+                          {% for interface_id, interface in radio.interfaces %}
+                                {% if interface.interface_type == ''wds/p2p'' %}
+                                    {% if interface.ipv4[0] %}
+                                        {% for ipv4_id,ipv4 in interface.ipv4 %}
+                                            {% for link_id, link in ipv4.links %}
+                                                {% if link.link_type == ''wds'' and link.routing ==''OSPF''  %}
+                                                    {% if link.flag in '' Working Testing Building ''  %}
+                                                      network {{ ipv4.netid }}/{{ ipv4.maskbits }} area 0
+                                                    {% endif %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endfor %}
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endfor %}
+                        {% for interface_id, interface in dev.interfaces %}
+                            {% for ipv4_id,ipv4 in interface.ipv4 %}
+                                {% if ipv4.ipv4_type ==''1'' and interface.interface_type != ''wLan/Lan'' %}
+                                    network {{ ipv4.netid }}/{{ ipv4.maskbits }} area 0''
+                                {% endif %}
+                                {% if ipv4.links %}
+                                    {% for link_id, link in ipv4.links %}
+                                        {% if ipv4.ipv4_type == ''2'' and link.routing ==''OSPF''  %}
+                                            {% if link.flag in '' Working Testing Building ''  %}
+                                              network {{ ipv4.netid }}/{{ ipv4.maskbits }} area 0
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endfor %}
+                         default-information originate
+                        !
+                        line vty
+                        !\"{% endmacro %}
+    {% macro guifi_unsolclic_dhcp(dev, interfaceWlanLan) %}
+        #
+        # DHCP
+        {% set count = 0 %}
+        {% set DHCP_statics = null %}
+        {% set max = null %}
+        {% set main_ip = guifi_main_ip(dev.id) %}
+        {% set max = explode(''.'', main_ip[''ipv4'']) %}
+        {% set max = max[3] %}
+        {# BEGIN Cable Links #}
+        {% if dev.interfaces %}
+            {% for interface_id, interface in dev.interfaces %}
+                {% if interface.ipv4 %}
+                    {% for ipv4_id,ipv4 in interface.ipv4 %}
+                        {% if ipv4.links %}
+                            {% for link_id, link in ipv4.links %}
+                                {% if link.interface.ipv4.ipv4 != ''''  %}
+                                    {% if link.interface.ipv4.netid %}
+                                        {# if link.interface.mac == '''' #}
+                                            {# set link.interface.mac = ''FF:FF:FF:FF:FF:FF'' #}
+                                        {# endif #}
+                                        {% set curr = explode(\".\", link.interface.ipv4.ipv4) %}
+                                        {% if curr[3] > max %}
+                                            {% set max = curr[3] %}
+                                        {% endif %}
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}{# END Cable Links #}
+        {# BEGIN AP/Client Links #}{% if dev.radios %}
+            {% for radio_id, radio in dev.radios %}
+                {% if dev.interfaces %}
+                    {% for interface_id, interface in radio.interfaces %}
+                        {% if interface.ipv4 %}
+                            {% for ipv4_id,ipv4 in interface.ipv4 %}
+                                {% if ipv4.links %}
+                                    {% for link_id, link in ipv4.links %}
+                                        {% if link.link_type == ''ap/client'' and link.interface.ipv4.ipv4 != ''''  %}
+                                            {% set count = count +1  %}
+                                            {% set curr = explode(\".\", link.interface.ipv4.ipv4) %}
+                                        {% if curr[3] > max %}
+                                            {% set max = curr[3] %}
+                                        {% endif %}
+    nvram set static_leases=\"{{ link.interface.mac }}={{ link.interface.ipv4.host_name }}={{ link.interface.ipv4.ipv4 }}\"
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+        nvram set static_leasenum=\"{{ count }}\"
+        {# END Cable Links #}
+        {% set dhcp_start = max + 5  %}
+        nvram set dhcp_start=\"{{ dhcp_start }}\"{% endmacro %}
+    {% macro guifi_unsolclic_wds_vars(dev) %}
+      #
+      # {{ t(''WDS Links for'') }} {{ dev.nick }}
+        {% if dev.variable.firmware == ''DD-guifi'' or dev.variable.firmware == ''DD-WRTv23'' %}
+            {% set ifcount = 2  %}
+        {% else %}
+            {% set ifcount = 1  %}
+        {% endif %}
+        {% if dev.radios %}
+            {% set count = 1 %}
+            {% set wds_str = '''' %}
+            {% set rc_startup = '''' %}
+            {% for radio_id, radio in dev.radios %}
+                {% if dev.interfaces %}
+                    {% for interface_id, interface in radio.interfaces %}
+                        {% if interface.interface_type == ''wds/p2p'' %}
+                            {% if interface.ipv4 %}
+                                {% for ipv4_id,ipv4 in interface.ipv4 %}
+                                    {% if ipv4.links %}
+                                        {% for link_id, link in ipv4.links %}
+                                            {% if link.link_type == ''wds''%}
+                                                {% set hostname = link.interface.ipv4.host_name  %}
+                                                # {{  link.interface.device_id }}-{{ hostname }}
+                                                nvram set wl_wds{{ count }}_desc=\"{{ hostname }}\"
+                                                {% if link.flag in '' Working Testing Building ''  %}
+                                                    {% set ifcount = ifcount + 1  %}
+                                                    nvram set wl_wds{{ count }}_enable=\"1\"
+                                                    {% if dev.variable.firmware == ''DD-guifi'' or dev.variable.firmware == ''DD-WRTv23'' %}
+                                                        nvram set wl_wds{{ count }}_if=\"wds0.4915{{ ifcount }}\"
+                                                    {% else %}
+                                                        nvram set wl_wds{{ count }}_if=\"wds0.{{ ifcount }}\"
+                                                    {% endif %}
+                                                    {% set wds_str = wds_str ~'' ''~ link.interface.mac %}
+                                                    {% if dev.variable.firmware == ''Talisman'' %}
+                                                         {% set rc_startup = rc_startup ~''ifconfig wds0.''~ ifcount ~'' up\n<br />'' %}
+                                                    {% endif %}
+                                                {% else %}
+                                                    nvram wl_wds{{ count }}_enable=\"0\"
+                                                {% endif %}
+                                                nvram set wl_wds{{ count }}_ipaddr=\"{{ ipv4.ipv4 }}\"
+                                                nvram set wl_wds{{ count }}_hwaddr=\"{{ link.interface.mac }}\"
+                                                nvram set wl_wds{{ count }}_netmask=\"{{ link.interface.ipv4.netmask }}\"
+                                                {% set count = count + 1 %}
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+        #
+        # {{ t(''Free WDS slots'') }}
+        {% for key in count..10 %}
+            nvram set wl_wds{{ key }}_desc=\"{{ t(''free'') }}\"
+            nvram set wl_wds{{ key }}_enable=\"0\"
+            nvram set wl_wds{{ key }}_ipaddr=\"172.0.0.0\"
+            nvram set wl_wds{{ key }}_hwaddr=\"00:13:00:00:00:00\"
+            nvram set wl_wds{{ key }}_netmask=\"255.255.255.252\"
+        {% endfor %}
+        nvram set wl0_wds=\"{{ wds_str}}\"
+        nvram set wl0_lazywds=\"0\"
+        nvram set wl_lazywds=\"0\"{% endmacro %}
+    {% macro guifi_get_alchemy_ifs(dev) %}
+
+        {% if dev.radios %}
+            {% for radio_id, radio in dev.radios %}
+
+                {% if radio.interfaces %}
+                    {% for interface_id, interface in radio.interfaces %}
+
+                        {% if interface.ipv4 %}
+                            {% for ipv4_id,ipv4 in interface.ipv4 %}
+
+                                {% if ipv4.links %}
+                                    {% for link_id, link in ipv4.links %}
+
+                                        {% if link.type == ''wds'' %}
+                                           {% set wds_links = wds_links ~''|''~ link %}
+                                        {% else %}
+                                            {# friki, molt friki REVISAR!!! ret[alchemyIfs[interface.interface_type]] = true #}
+                                            {% set ret = true %}
+                                        {% endif %}
+
+                                    {% endfor %}
+                                {% endif %}
+
+                            {% endfor %}
+                        {% endif %}
+
+                    {% endfor %}
+                {% endif %}
+
+            {% endfor %}
+        {% endif %}
+        {% if wds_links %}
+            {% for link_id, link in ipv4.links %}
+            {% endfor %}
+        {% endif %}
+    {% endmacro %}
+    {% macro guifi_unsolclic_if(dev, interface) %}
+    {% endmacro %}
+    {% macro guifi_unsolclic_vlan_vars(dev, rc_startup) %}
+        {% set vlans = false %}
+        {% set br0 = 0 %}
+        {% set eth1 = 0 %}
+        {% set rc = '''' %}
+        {% set bips = '''' %}
+        {% if dev.interfaces %}
+            {% for interface_id, interface in dev.interfaces %}
+                {% if interface.ipv4 %}
+                    {% for ipv4_id,ipv4 in interface.ipv4 %}
+                        {% if ipv4.links %}
+                            {% for link_id, link in ipv4.links %}
+                                {% if not interface.ipv4 in bips  %}
+                                    {% set bips = bips ~'' ''~ interface.ipv4 %}
+                                    {% if interface.interface_type ==''vlan'' or interface.interface_type ==''vwlan''  %}
+                                        {% set br0 = br0 +1 %}
+                                        {% set rc = ''# br0:''~ br0  ~'': ''~  ipv4.link.interface.ipv4.host_name ~''\n''%}
+                                        {% if link.flag not in '' Working Testing Building '' %}
+                                            {% set rc = rc ~''# '' %}
+                                        {% endif %}
+                                        {% set rc = ''ifconfig br0:''~ br0  ~'' ''~ ipv4.ipv4 ~'' netmask ''~ ipv4.netmask ~'' broadcast ''~ ipv4.broadcast %}
+                                    {% elseif interface.interface_type ==''vwan'' %}
+                                        {% set eth1 = eth1 +1 %}
+                                        {% set rc = ''# eth1:''~ eth1 ~'': ''~  ipv4.link.interface.ipv4.host_name ~''\n''%}
+                                        {% if link.flag not in '' Working Testing Building '' %}
+                                            {% set rc = rc ~''# '' %}
+                                        {% endif %}
+                                        {% set rc = ''ifconfig eth1:''~ eth1 ~'' ''~ ipv4.ipv4 ~'' netmask ''~ ipv4.netmask ~'' broadcast ''~ ipv4.broadcast %}
+
+                                    {% elseif interface.interface_type ==''vlan2'' or interface.interface_type ==''vlan3'' or interface.interface_type ==''vlan4''%}
+                                        {% set rc = ''# ''~ interface.interface_type ~'': ''~  ipv4.link.interface.ipv4.host_name ~''<br/>'' %}
+                                        {% if link.flag not in '' Working Testing Building '' %}
+                                            {% set rc = rc ~''# '' %}
+                                        {% endif %}
+                                        {% set rc = ''ifconfig ''~ interface.interface_type ~'' ''~ ipv4.ipv4 ~'' netmask ''~ ipv4.netmask ~'' broadcast ''~ ipv4.broadcast %}
+                                        {% set vlans = true %}
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+        {% if rc != '''' %}
+            {% set rc_startup = ''# VLANs -- radio: '' ~ dev.id ~''-''~ dev.nick %}
+            {% set rc_startup = rc_startup ~ rc %}
+        {% endif %}
+        {% if vlans  %}
+            #
+            # VLANs -- radio: {{ dev.id}}-{{ dev.nick}}
+            {% if dev.variable.model_id == ''1'' or dev.variable.model_id == ''15'' or dev.variable.model_id == ''17'' %}
+                {% if dev.variable.firmware == ''DD-guifi'' or dev.variable.firmware == ''DD-WRTv23'' %}
+                    nvram set vlan2hwname=\"et0\"
+                    nvram set vlan3hwname=\"et0\"
+                    nvram set vlan4hwname=\"et0\"
+                    nvram set vlan0ports=\"0 1 5*\"
+                    nvram set vlan2ports=\"2 5\"
+                    nvram set vlan3ports=\"3 5\"
+                    nvram set vlan4ports=\"4 5\"
+                {% else %}
+                    nvram set vlans=\"1\"
+                    nvram set port2vlans=\"2\"
+                    nvram set port3vlans=\"3\"
+                    nvram set port4vlans=\"4\"
+                    nvram set port5vlans=\"0 1 2 3 4 16\"
+                {% endif %}
+            {% elseif  dev.variable.model_id == ''16'' or dev.variable.model_id == ''18'' %}
+                nvram set vlan2hwname=\"et0\"
+                nvram set vlan3hwname=\"et0\"
+                nvram set vlan4hwname=\"et0\"
+                nvram set vlan0ports=\"4 3 5*\"
+                nvram set vlan1ports=\"4 5\"
+                nvram set vlan2ports=\"2 5\"
+                nvram set vlan3ports=\"1 5\"
+                nvram set vlan4ports=\"0 5\"
+            {% endif %}
+        {% endif %}
+        #
+        nvram set rc_startup=\"#!/bin/ash
+        #
+        # unsolclic: v3.7
+        # radio: {{ dev.id }}-{{ dev.nick }}
+        #
+        {% if dev.variable.firmware == ''DD-WRTv23'' and dev.radios[0].mode ==''ap'' %}
+            /bin/sleep 5
+            {# Write the config for bird, for compatibility with Alchemy and area support #}
+            /bin/kill -9 \/bin/ps |/bin/grep bird|/usr/bin/cut -c1-5|/usr/bin/head -n 1\;
+            /bin/rm /tmp/bird/bird.conf
+            /bin/echo -e ''router id {{ dev.ipv4 }}
+            protocol kernel { learn; persist; scan time 10; import all; export all; }
+            protocol device { scan time 10; }
+            protocol direct { interface \\\"*\\\";} 
+            protocol ospf WRT54G_ospf {
+            area ''.$ospf_zone.'' { tick 8;
+            interface \"*\" { cost 1; hello 10; priority 1; retransmit 7; authentication none; };
+            };
+            }
+            '' >/tmp/bird/bird.conf
+        {% endif %}
+        #
+        {{ rc_startup }}
+        {% if dev.variable.firmware == ''DD-WRTv23'' %}
+            /bin/sleep 3
+            bird -c /tmp/bird/bird.conf
+            /usr/sbin/wl shortslot_override 0
+            ifconfig eth1 -promisc -allmulti
+            ifconfig br0 -promisc -allmulti
+            ifconfig eth0 promisc \"
+        {% else %}
+            {% if dev.variable.firmware == ''DD-guifi'' %}
+              /bin/sleep 10
+              /usr/sbin/wl shortslot_override 0
+              ifconfig eth1 -promisc -allmulti
+              ifconfig br0 -promisc -allmulti
+              ifconfig eth0 promisc \"
+            {% else %}
+                /bin/sleep 10
+                /usr/sbin/wl shortslot_override 0
+            {% endif %}
+        {% endif %}
+    {% endmacro %}
+    {% endspaceless %}
