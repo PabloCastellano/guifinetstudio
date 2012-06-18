@@ -26,7 +26,7 @@ def getCoords(filename):
 	coords = []
 
 	for i in nodes:
-		c = (float(i.attributes["lat"].value), float(i.attributes["lon"].value))
+		c = (float(i.getAttribute("lat")), float(i.getAttribute("lon")))
 		coords.append(c)
 #		print c[0], c[1]
 
@@ -39,7 +39,7 @@ def getCoords_with_name(filename):
 	coords = []
 
 	for i in nodes:
-		c = (float(i.attributes["lat"].value), float(i.attributes["lon"].value), i.attributes["title"].value)
+		c = (float(i.getAttribute("lat")), float(i.getAttribute("lon")), i.getAttribute('title'))
 		coords.append(c)
 #		print c[0], c[1], c[2]
 
