@@ -3,6 +3,9 @@
 		<menuitem action="action1"/>
 		<separator/>
 		<menuitem action="action2"/>
+		<menuitem action="action3"/>
+		<separator/>
+		<menuitem action="action4"/>
 		<separator/>
 	</popup>
 	

@@ -23,13 +23,22 @@ from gi.repository import Gtk, GtkChamplain, Champlain
 
 #import gtk
 import xml.dom.minidom as MD
-import sys
 
+import jinja2
+
+import os
+import sys
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+from getCoords import getCoords_with_name
+from unsolclic import UnSolClic
 
 class GuifinetStudio:
 	def __init__(self, cnmlFile="tests/detail.3"):
 		self.currentView = 1
 		
+		self.linklayers = []
+
 		self.ui = Gtk.Builder()
 		self.ui.add_from_file("guifinet_studio.ui")
 		self.ui.connect_signals(self)
@@ -58,6 +67,10 @@ class GuifinetStudio:
 		self.view.set_zoom_level(13)
 		self.view.center_on(36.72341, -4.42428)
         
+		scale = Champlain.Scale()
+		scale.connect_view(self.view)
+		self.view.bin_layout_add(scale, Clutter.BinAlignment.START, Clutter.BinAlignment.END)
+
 		self.embedBox.pack_start(self.embed, True, True, 0)
 		self.embedBox.reorder_child(self.embed, 0)
 		self.embedBox.reparent(self.vbox1)
@@ -83,36 +96,41 @@ class GuifinetStudio:
 
 		self.completaArbol(cnmlFile)
 		self.completaMapa()
-		
-	def completaMapa(self):
-		from getCoords import getCoords, getCoords_with_name
-		
-		def add_node_point(layer, lat, lon):
-			p = Champlain.Point.new()
-			p.set_location(lat, lon)
-			layer.add_marker(p)
-		
-		def add_node_label(layer, lat, lon, nombre):
-			p = Champlain.Label.new()
-			p.set_text(nombre)
-			color = Clutter.Color.new(0,0,0,255)
-			p.set_text_color(color)
-			p.set_location(lat, lon)
-			p.set_draw_background(False)
-			layer.add_marker(p)
+
+		# Unsolclic instance
+		self.usc = UnSolClic()
+
+	def add_node_point(self, layer, lat, lon, size=12):
+		p = Champlain.Point.new()
+		p.set_location(lat, lon)
+		p.set_size(size)
+		layer.add_marker(p)
 	
+	def add_node_label(self, layer, lat, lon, nombre):
+		p = Champlain.Label.new()
+		p.set_text(nombre)
+		color = Clutter.Color.new(0, 0, 0, 255)
+		p.set_text_color(color)
+		p.set_location(lat, lon)
+		p.set_draw_background(False)
+		layer.add_marker(p)
+
+	def completaMapa(self):
 		self.points_layer = Champlain.MarkerLayer()
 		self.points_layer.set_selection_mode(Champlain.SelectionMode.SINGLE)
 		self.labels_layer = Champlain.MarkerLayer()
-		self.labels_layer.set_selection_mode(Champlain.SelectionMode.SINGLE)
 
 		coords = getCoords_with_name(self.cnml)
 		for c in coords:
-			add_node_point(self.points_layer, c[0], c[1])
-			add_node_label(self.labels_layer, c[0], c[1], c[2])
+			self.add_node_point(self.points_layer, c[0], c[1])
+			self.add_node_label(self.labels_layer, c[0], c[1], c[2])
 #			print c[0], c[1], c[2]
-		self.view.add_layer(self.points_layer)
+		# It's important to add points the last. Points are selectable while labels are not
+		# If labels is added later, then you click on some point and it doesn't get selected
+		# because you are really clicking on the label. Looks like an usability bug?
 		self.view.add_layer(self.labels_layer)
+		self.view.add_layer(self.points_layer)
+		
 
 
 	def completaArbol(self, cnmlFile):
@@ -177,7 +195,7 @@ class GuifinetStudio:
 		return (n_working, n_building, n_testing, n_planned)
 
 	def on_showPointsButton_toggled(self, widget, data=None):
-		print 'Show points:', widget.get_active()
+		print 'Show points:', widget.get_active()	
 		if widget.get_active():
 			self.points_layer.show_all_markers()
 		else:
@@ -199,7 +217,13 @@ class GuifinetStudio:
 
 	def on_action2_activate(self, action, data=None):
 		Gtk.show_uri(None, "http://guifi.net/node/", Gtk.get_current_event_time())
+		
+	def on_action3_activate(self, action, data=None):
+		print 'View in map'
 
+	def on_action4_activate(self, action, data=None):
+		print 'Generate unsolclic'
+		
 	def on_button1_clicked(self, widget, data=None):
 		self.nodedialog.hide()
 		return True
@@ -213,7 +237,7 @@ class GuifinetStudio:
 		if data.button == 3: # Right button
 			if col is self.t6 and model.get_value(it, 5) is not None: 
 				#user clicked on a node
-				self.menu.popup(None, None, None, data.button, data.time)
+				self.menu.popup(None, None, None, None, data.button, data.time)
 	
 	def on_filechooserdialog1_file_activated(self, widget, data=None):
 		print 'activated'
@@ -251,7 +275,9 @@ class GuifinetStudio:
 		
 	def gtk_main_quit(self, widget, data=None):
 		Gtk.main_quit()
-
+	
+	def generate_unsolclic(self):
+		pass
 
 if __name__ == "__main__":
 
