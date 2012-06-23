@@ -30,12 +30,13 @@ import os
 import sys
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-from getCoords import getCoords_with_name
+from libcnml import CNMLParser
 from unsolclic import UnSolClic
 
 class GuifinetStudio:
 	def __init__(self, cnmlFile="tests/detail.3"):
 		self.currentView = 1
+		self.cnmlFile = cnmlFile
 		
 		self.linklayers = []
 
@@ -91,12 +92,15 @@ class GuifinetStudio:
 		self.opendialog.set_action(Gtk.FileChooserAction.OPEN)
 		
 		self.about_ui = self.ui.get_object("aboutdialog1")
+
 		with open("COPYING") as f:
 			self.about_ui.set_license(f.read())
 
-		self.completaArbol(cnmlFile)
+		self.completaArbol(self.cnmlFile)
 		self.completaMapa()
 
+		self.uscdialog = self.ui.get_object("uscdialog")
+		self.usctextbuffer = self.ui.get_object("usctextbuffer")
 		# Unsolclic instance
 		self.usc = UnSolClic()
 
@@ -120,11 +124,15 @@ class GuifinetStudio:
 		self.points_layer.set_selection_mode(Champlain.SelectionMode.SINGLE)
 		self.labels_layer = Champlain.MarkerLayer()
 
-		coords = getCoords_with_name(self.cnml)
-		for c in coords:
-			self.add_node_point(self.points_layer, c[0], c[1])
-			self.add_node_label(self.labels_layer, c[0], c[1], c[2])
-#			print c[0], c[1], c[2]
+		cnmlp = CNMLParser(self.cnmlFile)
+		cnmlp.build()
+		data = cnmlp.getData()
+		idnodes = data.keys()
+
+		for nid in idnodes:
+			self.add_node_point(self.points_layer, data[nid]['lat'], data[nid]['lon'])
+			self.add_node_label(self.labels_layer, data[nid]['lat'], data[nid]['lon'], data[nid]['title'])
+			
 		# It's important to add points the last. Points are selectable while labels are not
 		# If labels is added later, then you click on some point and it doesn't get selected
 		# because you are really clicking on the label. Looks like an usability bug?
@@ -137,7 +145,7 @@ class GuifinetStudio:
 		try:
 			self.cnmlTree = MD.parse(cnmlFile)
 		except IOError:
-			self.cnml = None
+			self.cnmlFile = None
 			self.statusbar.push(0, "CNML file \"%s\" couldn't be loaded" %cnmlFile)
 			return
 
@@ -168,7 +176,6 @@ class GuifinetStudio:
 
 		self.treeview.expand_all()
 		self.statusbar.push(0, "Cargadas %d zonas con %d nodos en total." %(len(zones), n_nodes))
-		self.cnml = cnmlFile
 
 
 	def countNodes(self, nodes):
@@ -222,12 +229,28 @@ class GuifinetStudio:
 		print 'View in map'
 
 	def on_action4_activate(self, action, data=None):
-		print 'Generate unsolclic'
+		self.uscdialog.show()
+		self.uscdialog.set_title("Unsolclic for device XXX")
+		self.usctextbuffer.set_text(self.usc.test1())
 		
-	def on_button1_clicked(self, widget, data=None):
+	def on_nodeDialog_delete_event(self, widget, data=None):
 		self.nodedialog.hide()
 		return True
 	
+	def on_autoloaduscbutton_clicked(self, widget, data=None):
+		print 'Autoload configuration'
+		raise NotImplementedError
+		
+	def on_copyuscbutton_clicked(self, widget, data=None):
+		print 'copy usc to clipboard'
+		cb = Gtk.Clipboard()
+		cb.set_text(self.usctextbuffer.get_text(), -1)
+		raise NotImplementedError
+		
+	def on_uscdialog_delete_event(self, widget, data=None):
+		self.uscdialog.hide()
+		return True
+		
 	def on_treeview1_button_release_event(self, widget, data=None):
 		sel = widget.get_selection()
 		(model, it) = sel.get_selected()
@@ -276,8 +299,6 @@ class GuifinetStudio:
 	def gtk_main_quit(self, widget, data=None):
 		Gtk.main_quit()
 	
-	def generate_unsolclic(self):
-		pass
 
 if __name__ == "__main__":
 

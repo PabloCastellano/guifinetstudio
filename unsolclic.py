@@ -49,5 +49,7 @@ class UnSolClic:
 			   'radio1txpower':'8W'
 			   }
 		t = self.env.get_template('AirOsv30')
-		print t.render(context)
+		r = t.render(context)
+		#print r
+		return r
 

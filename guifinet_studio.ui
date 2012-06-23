@@ -22,7 +22,7 @@
     </child>
     <child>
       <object class="GtkAction" id="action4">
-        <property name="label" translatable="yes">Generate unsolclic</property>
+        <property name="label" translatable="yes">Unsolclic</property>
         <signal name="activate" handler="on_action4_activate" swapped="no"/>
       </object>
     </child>
@@ -33,7 +33,7 @@
     <property name="type_hint">dialog</property>
     <property name="program_name">Guifi·net Studio</property>
     <property name="version">v1.0</property>
-    <property name="copyright" translatable="yes">Copyright © 2011 Pablo Castellano</property>
+    <property name="copyright" translatable="yes">Copyright © 2011-2012 Pablo Castellano</property>
     <property name="comments" translatable="yes">Explore your free network offline!</property>
     <property name="website">http://lainconscienciadepablo.net</property>
     <property name="website_label" translatable="yes">Blog del autor</property>
@@ -467,11 +467,12 @@
     <property name="can_focus">False</property>
     <property name="border_width">5</property>
     <property name="type_hint">dialog</property>
-    <signal name="delete-event" handler="on_button1_clicked" swapped="no"/>
+    <signal name="delete-event" handler="on_nodeDialog_delete_event" swapped="no"/>
     <child internal-child="vbox">
       <object class="GtkBox" id="dialog-vbox4">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
         <property name="spacing">2</property>
         <child internal-child="action_area">
           <object class="GtkButtonBox" id="dialog-action_area4">
@@ -487,7 +488,7 @@
                 <property name="receives_default">True</property>
                 <property name="use_action_appearance">False</property>
                 <property name="use_stock">True</property>
-                <signal name="clicked" handler="on_button1_clicked" swapped="no"/>
+                <signal name="clicked" handler="on_nodeDialog_delete_event" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -905,6 +906,51 @@ Iberian Peninsula</property>
                       <placeholder/>
                     </child>
                     <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
                       <object class="GtkLabel" id="label18">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
@@ -954,6 +1000,111 @@ Iberian Peninsula</property>
       <!-- column-name Nodo -->
       <column type="gchararray"/>
     </columns>
+  </object>
+  <object class="GtkTextBuffer" id="usctextbuffer">
+    <property name="text" translatable="yes">unsolclic configuration</property>
+  </object>
+  <object class="GtkDialog" id="uscdialog">
+    <property name="width_request">700</property>
+    <property name="height_request">600</property>
+    <property name="can_focus">False</property>
+    <property name="hexpand">True</property>
+    <property name="vexpand">True</property>
+    <property name="border_width">5</property>
+    <property name="type_hint">dialog</property>
+    <signal name="delete-event" handler="on_uscdialog_delete_event" swapped="no"/>
+    <child internal-child="vbox">
+      <object class="GtkBox" id="dialog-vbox3">
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child internal-child="action_area">
+          <object class="GtkButtonBox" id="dialog-action_area3">
+            <property name="can_focus">False</property>
+            <property name="layout_style">end</property>
+            <child>
+              <object class="GtkButton" id="autoloaduscbutton">
+                <property name="label" translatable="yes">Auto-load to device</property>
+                <property name="use_action_appearance">False</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_action_appearance">False</property>
+                <signal name="clicked" handler="on_autoloaduscbutton_clicked" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="copyuscbutton">
+                <property name="label" translatable="yes">Copy to clipboard</property>
+                <property name="use_action_appearance">False</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_action_appearance">False</property>
+                <signal name="clicked" handler="on_copyuscbutton_clicked" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="uscclosebutton">
+                <property name="label" translatable="yes">Close</property>
+                <property name="use_action_appearance">False</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_action_appearance">False</property>
+                <signal name="clicked" handler="on_uscdialog_delete_event" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="pack_type">end</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkScrolledWindow" id="uscscrolledwindow">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="shadow_type">in</property>
+            <child>
+              <object class="GtkTextView" id="usctextview">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="editable">False</property>
+                <property name="buffer">usctextbuffer</property>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+    <action-widgets>
+      <action-widget response="0">autoloaduscbutton</action-widget>
+      <action-widget response="0">copyuscbutton</action-widget>
+      <action-widget response="0">uscclosebutton</action-widget>
+    </action-widgets>
   </object>
   <object class="GtkWindow" id="window3">
     <property name="can_focus">False</property>
