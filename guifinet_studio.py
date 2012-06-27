@@ -21,9 +21,6 @@ from gi.repository import GtkClutter, Clutter
 GtkClutter.init([]) # Must be initialized before importing those:
 from gi.repository import Gtk, GtkChamplain, Champlain
 
-#import gtk
-import xml.dom.minidom as MD
-
 import jinja2
 
 import os
@@ -37,9 +34,15 @@ class GuifinetStudio:
 	def __init__(self, cnmlFile="tests/detail.3"):
 		self.currentView = 1
 		self.cnmlFile = cnmlFile
+		self.points_layer = None
+		self.labels_layer = None
+		self.cnmlp = None
+		self.parentzone = 0
 		
-		self.linklayers = []
+		# Unsolclic instance
+		self.usc = UnSolClic()
 
+		# UI Widgets
 		self.ui = Gtk.Builder()
 		self.ui.add_from_file("guifinet_studio.ui")
 		self.ui.connect_signals(self)
@@ -76,17 +79,16 @@ class GuifinetStudio:
 		self.embedBox.reorder_child(self.embed, 0)
 		self.embedBox.reparent(self.vbox1)
 		self.vbox1.reorder_child(self.embedBox, 2)
-		
-		self.mainWindow.show_all()
-		
-		self.t6 = self.ui.get_object("treeviewcolumn6")
-		
+				
 		self.uimanager = Gtk.UIManager()
 		self.uimanager.add_ui_from_file("guifinet_studio_menu.ui")
 		self.uimanager.insert_action_group(self.actiongroup1)
 		self.menu = self.uimanager.get_widget("/KeyPopup")
-		
+
+		self.t6 = self.ui.get_object("treeviewcolumn6")
 		self.nodedialog = self.ui.get_object("nodeDialog")
+		self.uscdialog = self.ui.get_object("uscdialog")
+		self.usctextbuffer = self.ui.get_object("usctextbuffer")
 		
 		self.opendialog = self.ui.get_object("filechooserdialog1")
 		self.opendialog.set_action(Gtk.FileChooserAction.OPEN)
@@ -96,13 +98,11 @@ class GuifinetStudio:
 		with open("COPYING") as f:
 			self.about_ui.set_license(f.read())
 
-		self.completaArbol(self.cnmlFile)
+		self.completaArbol()
 		self.completaMapa()
 
-		self.uscdialog = self.ui.get_object("uscdialog")
-		self.usctextbuffer = self.ui.get_object("usctextbuffer")
-		# Unsolclic instance
-		self.usc = UnSolClic()
+		self.mainWindow.show_all()
+
 
 	def add_node_point(self, layer, lat, lon, size=12):
 		p = Champlain.Point.new()
@@ -124,12 +124,11 @@ class GuifinetStudio:
 		self.points_layer.set_selection_mode(Champlain.SelectionMode.SINGLE)
 		self.labels_layer = Champlain.MarkerLayer()
 
-		cnmlp = CNMLParser(self.cnmlFile)
-		cnmlp.build()
-		data = cnmlp.getData()
-		idnodes = data.keys()
+		self.cnmlp = CNMLParser(self.cnmlFile)
+		self.cnmlp.load()
+		data = self.cnmlp.getData()
 
-		for nid in idnodes:
+		for nid in data.keys():
 			self.add_node_point(self.points_layer, data[nid]['lat'], data[nid]['lon'])
 			self.add_node_label(self.labels_layer, data[nid]['lat'], data[nid]['lon'], data[nid]['title'])
 			
@@ -140,29 +139,32 @@ class GuifinetStudio:
 		self.view.add_layer(self.points_layer)
 		
 
-
-	def completaArbol(self, cnmlFile):
+	def completaArbol(self):
+		
 		try:
-			self.cnmlTree = MD.parse(cnmlFile)
+			self.cnmlp = CNMLParser(self.cnmlFile)
 		except IOError:
+			self.statusbar.push(0, "CNML file \"%s\" couldn't be loaded" %self.cnmlFile)
 			self.cnmlFile = None
-			self.statusbar.push(0, "CNML file \"%s\" couldn't be loaded" %cnmlFile)
 			return
 
-		zones = self.cnmlTree.getElementsByTagName("zone")
+		zones = self.cnmlp.zones
 		parent = [None]
 
 		n_nodes = 0
 		
 		# Bug: no se muestran nodos de la primera zona
 		# Lo suyo sería una función que te devolviera los nodos del primer nivel solamente
-		for z in zones:
+		for zid in zones.keys():
 			
-			n_subzones = len(z.getElementsByTagName("zone"))
-			nodes = z.getElementsByTagName("node")
-			(w, b, t, p) = self.countNodes(nodes)
+			n_subzones = len(zones[zid]['subzones'])
+			nnodes = zones[zid]['nnodes']
+			nodeids = zones[zid]['nodes']
+			# Necesita ids de nodos de esa zona
+			# Contar los nodos Planned, Working, Testing, Building de una zona 
+			(w, b, t, p) = self.countNodes(nodeids)
 			
-			col1 = "%s (%d)" %(z.getAttribute("title"), len(nodes))
+			col1 = "%s (%d)" %(zones[zid]['subzones'], nnodes)
 			p = self.treestore.append(parent[-1], (col1, str(w), str(b), str(t), str(p), None))
 			
 			# Add zone
@@ -170,12 +172,12 @@ class GuifinetStudio:
 				parent.append(p)
 			else:
 				# Add nodes
-				for n in nodes:
-					self.treestore.append(p, (None, None, None, None, None, n.getAttribute("title")))
+				for nid in nodeids:
+					self.treestore.append(p, (None, None, None, None, None, self.cnmlp.nodes[nid]['title']))
 					n_nodes += 1
 
 		self.treeview.expand_all()
-		self.statusbar.push(0, "Cargadas %d zonas con %d nodos en total." %(len(zones), n_nodes))
+		self.statusbar.push(0, "Loaded %d zones with %d nodes." %(len(zones), n_nodes))
 
 
 	def countNodes(self, nodes):
@@ -184,8 +186,8 @@ class GuifinetStudio:
 		n_testing = 0
 		n_building = 0
 
-		for n in nodes:
-			st = n.getAttribute("status")
+		for nid in nodes:
+			st = self.cnmlp.nodes[nid]['status']
 
 			if st == "Planned":
 				n_planned += 1
@@ -231,7 +233,8 @@ class GuifinetStudio:
 	def on_action4_activate(self, action, data=None):
 		self.uscdialog.show()
 		self.uscdialog.set_title("Unsolclic for device XXX")
-		self.usctextbuffer.set_text(self.usc.test1())
+		#self.usctextbuffer.set_text(self.usc.test1())
+		self.usctextbuffer.set_text(self.usc.generate())
 		
 	def on_nodeDialog_delete_event(self, widget, data=None):
 		self.nodedialog.hide()
@@ -269,10 +272,10 @@ class GuifinetStudio:
 		self.opendialog.run()
 
 	def on_button3_clicked(self, widget, data=None):
-		filename = self.opendialog.get_filename()
+		self.cnmlFile = self.opendialog.get_filename()
 		print filename
 		self.opendialog.hide()
-		self.completaArbol(filename)
+		self.completaArbol()
 
 	def on_aboutdialog1_close(self, widget, data=None):
 		self.about_ui.hide()
