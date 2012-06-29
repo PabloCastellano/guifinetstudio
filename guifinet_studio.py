@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+
 from gi.repository import GtkClutter, Clutter
 GtkClutter.init([]) # Must be initialized before importing those:
 from gi.repository import Gtk, GtkChamplain, Champlain
@@ -27,7 +28,7 @@ import os
 import sys
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-from libcnml import CNMLParser
+from libcnml import CNMLParser, Status
 from unsolclic import UnSolClic
 
 class GuifinetStudio:
@@ -36,8 +37,6 @@ class GuifinetStudio:
 		self.cnmlFile = cnmlFile
 		self.points_layer = None
 		self.labels_layer = None
-		self.cnmlp = None
-		self.parentzone = 0
 		
 		# Unsolclic instance
 		self.usc = UnSolClic()
@@ -98,8 +97,13 @@ class GuifinetStudio:
 		with open("COPYING") as f:
 			self.about_ui.set_license(f.read())
 
-		self.completaArbol()
-		self.completaMapa()
+		try:
+			self.cnmlp = CNMLParser(self.cnmlFile)
+			self.completaArbol()
+			self.completaMapa()
+		except IOError:
+			self.statusbar.push(0, "CNML file \"%s\" couldn't be loaded" %self.cnmlFile)
+			self.cnmlFile = None
 
 		self.mainWindow.show_all()
 
@@ -124,14 +128,12 @@ class GuifinetStudio:
 		self.points_layer.set_selection_mode(Champlain.SelectionMode.SINGLE)
 		self.labels_layer = Champlain.MarkerLayer()
 
-		self.cnmlp = CNMLParser(self.cnmlFile)
-		self.cnmlp.load()
 		data = self.cnmlp.getData()
 
 		for nid in data.keys():
 			self.add_node_point(self.points_layer, data[nid]['lat'], data[nid]['lon'])
 			self.add_node_label(self.labels_layer, data[nid]['lat'], data[nid]['lon'], data[nid]['title'])
-			
+		
 		# It's important to add points the last. Points are selectable while labels are not
 		# If labels is added later, then you click on some point and it doesn't get selected
 		# because you are really clicking on the label. Looks like an usability bug?
@@ -140,68 +142,62 @@ class GuifinetStudio:
 		
 
 	def completaArbol(self):
+		# Add root zone
+		parenttree = self.__addZoneToTree(self.cnmlp.rootzone, None)
+		self.__addNodesFromZoneToTree(self.cnmlp.rootzone, parenttree)
 		
-		try:
-			self.cnmlp = CNMLParser(self.cnmlFile)
-		except IOError:
-			self.statusbar.push(0, "CNML file \"%s\" couldn't be loaded" %self.cnmlFile)
-			self.cnmlFile = None
-			return
-
-		zones = self.cnmlp.zones
-		parent = [None]
-
-		n_nodes = 0
-		
-		# Bug: no se muestran nodos de la primera zona
-		# Lo suyo sería una función que te devolviera los nodos del primer nivel solamente
-		for zid in zones.keys():
-			
-			n_subzones = len(zones[zid]['subzones'])
-			nnodes = zones[zid]['nnodes']
-			nodeids = zones[zid]['nodes']
-			# Necesita ids de nodos de esa zona
-			# Contar los nodos Planned, Working, Testing, Building de una zona 
-			(w, b, t, p) = self.countNodes(nodeids)
-			
-			col1 = "%s (%d)" %(zones[zid]['subzones'], nnodes)
-			p = self.treestore.append(parent[-1], (col1, str(w), str(b), str(t), str(p), None))
-			
-			# Add zone
-			if n_subzones > 0:
-				parent.append(p)
-			else:
-				# Add nodes
-				for nid in nodeids:
-					self.treestore.append(p, (None, None, None, None, None, self.cnmlp.nodes[nid]['title']))
-					n_nodes += 1
-
+		# Iter for every zone (except root) and adds them with nodes to the TreeView
+		self.__completaArbol_recursive(self.cnmlp.rootzone, parenttree)
+										
 		self.treeview.expand_all()
-		self.statusbar.push(0, "Loaded %d zones with %d nodes." %(len(zones), n_nodes))
+		self.statusbar.push(0, "Loaded CNML succesfully")
 
 
-	def countNodes(self, nodes):
-		n_planned = 0
-		n_working = 0
-		n_testing = 0
-		n_building = 0
+	# Recursive
+	def __completaArbol_recursive(self, parentzid, parenttree):
+		zids = self.cnmlp.zones[parentzid]['subzones']
+		
+		for zid in zids:
+			tree = self.__addZoneToTree(zid, parenttree)
+			self.__addNodesFromZoneToTree(zid, tree)
+			self.__completaArbol_recursive(zid, tree)
+			
+		
+	def __addZoneToTree(self, zid, parentzone):
+		zones = self.cnmlp.zones
+		nodeids = zones[zid]['nodes']
+		
+		col1 = "%s (%d)" %(zones[zid]['title'], len(nodeids))
+		(nplanned, nworking, ntesting, nbuilding) = self.countNodes(nodeids)
 
-		for nid in nodes:
+		# Add a new row for the zone
+		row = (col1, str(nworking), str(nbuilding), str(ntesting), str(nplanned), None)
+		tree = self.treestore.append(parentzone, row)
+		return tree
+		
+		
+	def __addNodesFromZoneToTree(self, zid, parentzone):
+		for nid in self.cnmlp.zones[zid]['nodes']:
+			self.treestore.append(parentzone, (None, None, None, None, None, self.cnmlp.nodes[nid]['title']))
+		
+		
+	# Given a list of node ids, counts how many of them are for each status (working, planned...)
+	def countNodes(self, nodesid):
+		nodescount = dict()
+		nodescount[Status.UNKNOWN] = 0
+		nodescount[Status.PLANNED] = 0
+		nodescount[Status.WORKING] = 0
+		nodescount[Status.TESTING] = 0
+		nodescount[Status.BUILDING] = 0
+		
+		for nid in nodesid:
 			st = self.cnmlp.nodes[nid]['status']
+			nodescount[st] += 1
+		
+		assert nodescount[Status.UNKNOWN] == 0
+		
+		return (nodescount[Status.PLANNED], nodescount[Status.WORKING], nodescount[Status.TESTING], nodescount[Status.BUILDING])
 
-			if st == "Planned":
-				n_planned += 1
-			elif st == "Working":
-				n_working += 1
-			elif st == "Testing":
-				n_testing += 1
-			elif st == "Building":
-				n_building += 1
-			else:
-				print "Unknown node status:", st
-
-		# Working, Building, Testing, Planned.
-		return (n_working, n_building, n_testing, n_planned)
 
 	def on_showPointsButton_toggled(self, widget, data=None):
 		print 'Show points:', widget.get_active()	
@@ -209,6 +205,7 @@ class GuifinetStudio:
 			self.points_layer.show_all_markers()
 		else:
 			self.points_layer.hide_all_markers()
+
 	
 	def on_showLabelsButton_toggled(self, widget, data=None):
 		print 'Show labels:', widget.get_active()
@@ -217,43 +214,53 @@ class GuifinetStudio:
 		else:
 			self.labels_layer.hide_all_markers()
 	
+	
 	def on_showLinksButton_toggled(self, widget, data=None):
 		print 'Show links:', widget.get_active()
+	
 	
 	def on_action1_activate(self, action, data=None):
 		self.nodedialog.show()
 		self.nodedialog.set_title("Information about node XXX")
 
+
 	def on_action2_activate(self, action, data=None):
 		Gtk.show_uri(None, "http://guifi.net/node/", Gtk.get_current_event_time())
 		
+
 	def on_action3_activate(self, action, data=None):
 		print 'View in map'
+
 
 	def on_action4_activate(self, action, data=None):
 		self.uscdialog.show()
 		self.uscdialog.set_title("Unsolclic for device XXX")
 		#self.usctextbuffer.set_text(self.usc.test1())
 		self.usctextbuffer.set_text(self.usc.generate())
+
 		
 	def on_nodeDialog_delete_event(self, widget, data=None):
 		self.nodedialog.hide()
 		return True
+
 	
 	def on_autoloaduscbutton_clicked(self, widget, data=None):
 		print 'Autoload configuration'
 		raise NotImplementedError
 		
+
 	def on_copyuscbutton_clicked(self, widget, data=None):
 		print 'copy usc to clipboard'
 		cb = Gtk.Clipboard()
 		cb.set_text(self.usctextbuffer.get_text(), -1)
 		raise NotImplementedError
 		
+
 	def on_uscdialog_delete_event(self, widget, data=None):
 		self.uscdialog.hide()
 		return True
 		
+
 	def on_treeview1_button_release_event(self, widget, data=None):
 		sel = widget.get_selection()
 		(model, it) = sel.get_selected()
@@ -265,11 +272,14 @@ class GuifinetStudio:
 				#user clicked on a node
 				self.menu.popup(None, None, None, None, data.button, data.time)
 	
+
 	def on_filechooserdialog1_file_activated(self, widget, data=None):
 		print 'activated'
 
+
 	def on_imagemenuitem2_activate(self, widget, data=None):
 		self.opendialog.run()
+
 
 	def on_button3_clicked(self, widget, data=None):
 		self.cnmlFile = self.opendialog.get_filename()
@@ -277,12 +287,15 @@ class GuifinetStudio:
 		self.opendialog.hide()
 		self.completaArbol()
 
+
 	def on_aboutdialog1_close(self, widget, data=None):
 		self.about_ui.hide()
 		return True
 
+
 	def on_imagemenuitem10_activate(self, widget, data=None):
 		self.about_ui.show()
+
 
 	# This is really shabby, there must be better ways without
 	# needing to reparent everytime :?

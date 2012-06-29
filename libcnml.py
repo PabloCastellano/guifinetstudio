@@ -29,13 +29,37 @@ import sys
 #self.nodes[99]['devices'][deviceid]
 #self.nodes[99]['devices'][deviceid]['status']
 #self.nodes[99]['devices'][deviceid]['firmware']
+
+
+class Status:
+	UNKNOWN = 0
+	PLANNED = 1
+	WORKING = 2
+	TESTING = 3
+	BUILDING = 4
+	
+	@staticmethod
+	def strToStatus(status):
+		st = Status.UNKNOWN
 		
+		if status.lower() == "planned":
+			st = Status.PLANNED
+		elif status.lower() == "working":
+			st = Status.WORKING
+		elif status.lower() == "testing":
+			st = Status.TESTING
+		elif status.lower() == "building":
+			st = Status.BUILDING
+
+		return st
+	
+
 class CNMLParser():
 	def __init__(self, filename, lazy=False):
 		self.filename = filename
 		self.nodes = None
 		self.zones = None
-		self.parentzone = 0
+		self.rootzone = 0
 		
 		if not lazy:
 			self.load()
@@ -50,8 +74,8 @@ class CNMLParser():
 		zones = tree.getElementsByTagName("zone")
 		self.zones = dict()
 		
-		self.parentzone = int(zones[0].getAttribute("id"))
-		print 'parent zone:', self.parentzone
+		self.rootzone = int(zones[0].getAttribute("id"))
+		print 'parent zone:', self.rootzone
 		print 'numero de zonas:', len(zones)
 		
 		for z in zones:
@@ -75,13 +99,14 @@ class CNMLParser():
 			nservices = z.getAttribute('services') or 0
 			nservices = int(nservices)
 			title = z.getAttribute('title')
-			nnodes = int(z.getAttribute('zone_nodes'))
-				
+#			nnodes = int(z.getAttribute('zone_nodes'))
+#			nnodes is not useful --> len(nodes)				
+
 			self.zones[zid] = {'parent':zparentid, 'aps':nAPs, 'box':box, 'nclients':nclients, 
 							'ndevices':ndevices, 'nlinks':nlinks, 'nservices':nservices, 'title':title, 
-							'nnodes':nnodes, 'subzones':[], 'nodes':[]}
+							'subzones':[], 'nodes':[]}
 			
-			if zid != self.parentzone and zparentid != None:
+			if zid != self.rootzone and zparentid != None:
 				print zparentid, ' -- ', zid
 				self.zones[zparentid]['subzones'].append(zid)
 		
@@ -100,11 +125,14 @@ class CNMLParser():
 			nlinks = n.getAttribute('links') or 0
 			nlinks = int(nlinks)
 			status = n.getAttribute('status')
+			status = Status.strToStatus(status)
 			
+			self.nodes[nid] = {'lat':lat, 'lon':lon, 'title':title, 'ndevices':ndevices, 'nlinks':nlinks, 'status':status}
+							
 			devicestree = n.getElementsByTagName("device")
 			
 			if extracheck:
-				assert(ndevices == len(devicestree))
+				assert(ndevices == len(devicestree))			
 			
 			devs = dict()
 			for d in devicestree:
@@ -112,12 +140,12 @@ class CNMLParser():
 				firmware = d.getAttribute("firmware")
 				name = d.getAttribute("name")
 				status = d.getAttribute("status")
+				status = Status.strToStatus(status)
 				title = d.getAttribute("title")
 				dtype = d.getAttribute("type")
 				
 				devs[did] = {'firmware':firmware, 'name':name, 'status':status, 'title':title, 'type':dtype}
 					
-			self.nodes[nid] = {'lat':lat, 'lon':lon, 'title':title, 'ndevices':ndevices, 'nlinks':nlinks, 'status':status}
 			self.nodes[nid]['devices'] = devs
 
 			assert n.parentNode.localName == u'zone'
@@ -170,32 +198,6 @@ class CNMLParser():
 			titles.append(n['title'])
 
 		return titles
-	
-	
-def getCoords(filename):
-	tree = MD.parse(filename)
-	nodes = tree.getElementsByTagName("node")
-	coords = []
-
-	for i in nodes:
-		c = (float(i.getAttribute("lat")), float(i.getAttribute("lon")))
-		coords.append(c)
-#		print c[0], c[1]
-
-	return coords
-
-
-def getCoords_with_name(filename):
-	tree = MD.parse(filename)
-	nodes = tree.getElementsByTagName("node")
-	coords = []
-
-	for i in nodes:
-		c = (float(i.getAttribute("lat")), float(i.getAttribute("lon")), i.getAttribute('title'))
-		coords.append(c)
-#		print c[0], c[1], c[2]
-
-	return coords
 
 
 if __name__ == '__main__':
