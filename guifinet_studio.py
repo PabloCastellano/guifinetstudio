@@ -33,7 +33,7 @@ from unsolclic import UnSolClic
 
 class GuifinetStudio:
 	def __init__(self, cnmlFile="tests/detail.3"):
-		self.currentView = 1
+		self.currentView = 0
 		self.cnmlFile = cnmlFile
 		self.points_layer = None
 		self.labels_layer = None
@@ -50,16 +50,13 @@ class GuifinetStudio:
 		self.listNodesWindow = self.ui.get_object("listNodesWindow")
 		
 		self.nodesList = self.ui.get_object("scrolledwindow1")
-		self.vbox1 = self.ui.get_object("vbox1")
 		self.treestore = self.ui.get_object("treestore1")
 		self.treeview = self.ui.get_object("treeview1")
 		self.statusbar = self.ui.get_object("statusbar1")
 		self.actiongroup1 = self.ui.get_object("actiongroup1")
 
 		self.embedBox = self.ui.get_object("embedBox")
-		#self.vbox1.add(self.nodesList)
-		#self.nodesList.reparent(self.vbox1)
-		#self.vbox1.reorder_child(self.nodesList, 2)
+		self.notebook1 = self.ui.get_object("notebook1")
 		
 		self.embed = GtkChamplain.Embed()
 		self.embed.set_size_request(640, 480)
@@ -76,8 +73,6 @@ class GuifinetStudio:
 
 		self.embedBox.pack_start(self.embed, True, True, 0)
 		self.embedBox.reorder_child(self.embed, 0)
-		self.embedBox.reparent(self.vbox1)
-		self.vbox1.reorder_child(self.embedBox, 2)
 				
 		self.uimanager = Gtk.UIManager()
 		self.uimanager.add_ui_from_file("guifinet_studio_menu.ui")
@@ -164,11 +159,28 @@ class GuifinetStudio:
 			
 		
 	def __addZoneToTree(self, zid, parentzone):
+		
+		# Given a list of node ids, counts how many of them are for each status (working, planned...)
+		def countNodes(nodesid):
+			nodescount = dict()
+			nodescount[Status.UNKNOWN] = 0
+			nodescount[Status.PLANNED] = 0
+			nodescount[Status.WORKING] = 0
+			nodescount[Status.TESTING] = 0
+			nodescount[Status.BUILDING] = 0
+			
+			for nid in nodesid:
+				st = self.cnmlp.nodes[nid]['status']
+				nodescount[st] += 1
+			
+			assert nodescount[Status.UNKNOWN] == 0
+			return (nodescount[Status.PLANNED], nodescount[Status.WORKING], nodescount[Status.TESTING], nodescount[Status.BUILDING])
+
 		zones = self.cnmlp.zones
 		nodeids = zones[zid]['nodes']
 		
 		col1 = "%s (%d)" %(zones[zid]['title'], len(nodeids))
-		(nplanned, nworking, ntesting, nbuilding) = self.countNodes(nodeids)
+		(nplanned, nworking, ntesting, nbuilding) = countNodes(nodeids)
 
 		# Add a new row for the zone
 		row = (col1, str(nworking), str(nbuilding), str(ntesting), str(nplanned), None)
@@ -180,24 +192,6 @@ class GuifinetStudio:
 		for nid in self.cnmlp.zones[zid]['nodes']:
 			self.treestore.append(parentzone, (None, None, None, None, None, self.cnmlp.nodes[nid]['title']))
 		
-		
-	# Given a list of node ids, counts how many of them are for each status (working, planned...)
-	def countNodes(self, nodesid):
-		nodescount = dict()
-		nodescount[Status.UNKNOWN] = 0
-		nodescount[Status.PLANNED] = 0
-		nodescount[Status.WORKING] = 0
-		nodescount[Status.TESTING] = 0
-		nodescount[Status.BUILDING] = 0
-		
-		for nid in nodesid:
-			st = self.cnmlp.nodes[nid]['status']
-			nodescount[st] += 1
-		
-		assert nodescount[Status.UNKNOWN] == 0
-		
-		return (nodescount[Status.PLANNED], nodescount[Status.WORKING], nodescount[Status.TESTING], nodescount[Status.BUILDING])
-
 
 	def on_showPointsButton_toggled(self, widget, data=None):
 		print 'Show points:', widget.get_active()	
@@ -297,20 +291,14 @@ class GuifinetStudio:
 		self.about_ui.show()
 
 
-	# This is really shabby, there must be better ways without
-	# needing to reparent everytime :?
 	def on_changeViewButton_toggled(self, widget, data=None):
 		print 'on_changeViewButton_toggled:', self.currentView
 		
-		if self.currentView == 1:
-			self.currentView = 2
-			self.vbox1.remove(self.embedBox)
-			self.nodesList.reparent(self.vbox1)
-		else:
+		if self.currentView == 0:
 			self.currentView = 1
-			self.nodesList.reparent(self.listNodesWindow)
-			self.vbox1.pack_start(self.embedBox, True, True, 0)
-			
+		else:
+			self.currentView = 0
+		self.notebook1.set_current_page(self.currentView)
 		
 	def gtk_main_quit(self, widget, data=None):
 		Gtk.main_quit()
