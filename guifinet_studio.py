@@ -58,6 +58,7 @@ class GuifinetStudio:
 		self.treestore2 = self.ui.get_object("treestore2")
 		self.statusbar = self.ui.get_object("statusbar1")
 		self.actiongroup1 = self.ui.get_object("actiongroup1")
+		self.menuitem6 = self.ui.get_object("menuitem6")
 
 		self.embedBox = self.ui.get_object("embedBox")
 		self.notebook1 = self.ui.get_object("notebook1")
@@ -252,13 +253,23 @@ class GuifinetStudio:
 		(model, it) = sel.get_selected()
 		nid = model.get_value(it, 6)
 			
-		conf = self.usc.generate('AirOsv30', self.cnmlp.nodes[nid])
-		if conf is None:
+		# Varias interfaces - varios unsolclic
+		# TODO: Ventana con la interfaz seleccionable que quieras generar
+		devices = self.cnmlp.nodes[nid]['devices']
+		
+		if devices == []:
 			g = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, 
 								"Couldn't generate unsolclick.\nThe node doesn't have any device defined.")
 			g.run()
 			g.destroy()
 			return
+		elif len(devices) > 1:
+			g = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, 
+								"Several devices in this node. Generating just the first one.")
+			g.run()
+			g.destroy()
+			
+		conf = self.usc.generate('AirOsv30', self.cnmlp.devices[devices[0]])
 		
 		self.uscdialog.show()
 		self.uscdialog.set_title("Unsolclic for device "+model.get_value(it, 5))
@@ -286,8 +297,28 @@ class GuifinetStudio:
 		return True
 
 
+	def on_menuitem5_toggled(self, widget, data=None):
+		isActive = widget.get_active()
+		
+		if isActive:
+			self.statusbar.show()
+		else:
+			self.statusbar.hide()
+
+
+	def on_menuitem6_toggled(self, widget, data=None):
+		isActive = widget.get_active()
+		
+		if isActive:
+			self.box1.show()
+		else:
+			self.box1.hide()
+		
+		
+		
 	def on_button5_clicked(self, widget, data=None):
 		self.box1.hide()
+		self.menuitem6.set_active(False)
 		
 
 	def on_treeview1_button_release_event(self, widget, data=None):

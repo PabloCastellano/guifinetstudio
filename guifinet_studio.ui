@@ -233,6 +233,8 @@
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">Statusbar</property>
                         <property name="use_underline">True</property>
+                        <property name="active">True</property>
+                        <signal name="toggled" handler="on_menuitem5_toggled" swapped="no"/>
                       </object>
                     </child>
                     <child>
@@ -242,6 +244,8 @@
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">Side Pane</property>
                         <property name="use_underline">True</property>
+                        <property name="active">True</property>
+                        <signal name="toggled" handler="on_menuitem6_toggled" swapped="no"/>
                       </object>
                     </child>
                     <child>
@@ -1418,6 +1422,21 @@ Iberian Peninsula</property>
                       <placeholder/>
                     </child>
                     <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
                       <object class="GtkLabel" id="label18">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
@@ -1477,9 +1496,6 @@ Iberian Peninsula</property>
       <!-- column-name nid -->
       <column type="gint"/>
     </columns>
-  </object>
-  <object class="GtkTextBuffer" id="usctextbuffer">
-    <property name="text" translatable="yes">unsolclic configuration</property>
   </object>
   <object class="GtkDialog" id="uscdialog">
     <property name="width_request">700</property>
@@ -1598,5 +1614,8 @@ Iberian Peninsula</property>
       <action-widget response="0">autoloaduscbutton</action-widget>
       <action-widget response="0">uscclosebutton</action-widget>
     </action-widgets>
+  </object>
+  <object class="GtkTextBuffer" id="usctextbuffer">
+    <property name="text" translatable="yes">unsolclic configuration</property>
   </object>
 </interface>
