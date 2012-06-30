@@ -57,9 +57,13 @@ class Status:
 class CNMLParser():
 	def __init__(self, filename, lazy=False):
 		self.filename = filename
+		self.rootzone = 0
+		
 		self.nodes = None
 		self.zones = None
-		self.rootzone = 0
+		self.ifaces = None
+		self.radios = None
+		self.links = None
 		
 		if not lazy:
 			self.load()
@@ -143,7 +147,55 @@ class CNMLParser():
 				status = Status.strToStatus(status)
 				title = d.getAttribute("title")
 				dtype = d.getAttribute("type")
+				ndevices = d.getAttribute('devices') or 0
+				ndevices = int(ndevices)
+				nlinks = d.getAttribute('links') or 0
+				nlinks = int(nlinks)
+				#por qué no tiene un atributo radios="2" ??
 				
+				# radios
+				radiostree = d.getElementsByTagName("radio")
+				radios = dict()
+				for r in radiostree:
+					#print r
+					rid = r.getAttribute('id')
+					protocol = r.getAttribute('protocol')
+					snmp_name = r.getAttribute('snmp_name')
+					ssid = r.getAttribute('ssid')
+					mode = r.getAttribute('mode')
+					#device_id
+					antenna_gain = r.getAttribute('antenna_gain')
+					antenna_angle = r.getAttribute('antenna_angle')
+					
+					ifaces = dict()
+					ifacestree = r.getElementsByTagName("interface")
+					for i in ifacestree:
+						#print i
+						iid = i.getAttribute('id')
+						ipv4 = i.getAttribute('ipv4')
+						mac = i.getAttribute('mac')
+						#checkMac
+						mask = i.getAttribute('mask')
+						itype = i.getAttribute('type') #wLan/Lan
+						
+						links = dict()
+						linkstree = i.getElementsByTagName("link")
+						
+						# link_status -> status
+						# link_type -> type
+						# linked_device_id -> device_id
+						# linked_interface_id -> interface_id
+						# linked_node_id -> node_id
+						for l in linkstree:
+						#	print l
+							lid = l.getAttribute('id')
+							lstatus = l.getAttribute('link_status')
+							ltype = l.getAttribute('link_type')
+							ldid = l.getAttribute('linked_device_id')
+							liid = l.getAttribute('linked_interface_id')
+							lnid = l.getAttribute('linked_node_id')
+							
+							
 				devs[did] = {'firmware':firmware, 'name':name, 'status':status, 'title':title, 'type':dtype}
 					
 			self.nodes[nid]['devices'] = devs
@@ -209,7 +261,7 @@ if __name__ == '__main__':
 		filename = sys.argv[1]
 
 	cnmlp = CNMLParser(filename)
-	d = cnmlp.getData()
+	d = cnmlp.nodes
 
 	print d
 	print
