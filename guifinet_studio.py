@@ -20,7 +20,8 @@
 
 from gi.repository import GtkClutter, Clutter
 GtkClutter.init([]) # Must be initialized before importing those:
-from gi.repository import Gtk, GtkChamplain, Champlain
+from gi.repository import Gdk, Gtk
+from gi.repository import GtkChamplain, Champlain
 
 import jinja2
 
@@ -30,6 +31,7 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 from libcnml import CNMLParser, Status
 from unsolclic import UnSolClic
+
 
 class GuifinetStudio:
 	def __init__(self, cnmlFile="tests/detail.3"):
@@ -52,11 +54,14 @@ class GuifinetStudio:
 		self.nodesList = self.ui.get_object("scrolledwindow1")
 		self.treestore = self.ui.get_object("treestore1")
 		self.treeview = self.ui.get_object("treeview1")
+		self.treeview2 = self.ui.get_object("treeview2")
+		self.treestore2 = self.ui.get_object("treestore2")
 		self.statusbar = self.ui.get_object("statusbar1")
 		self.actiongroup1 = self.ui.get_object("actiongroup1")
 
 		self.embedBox = self.ui.get_object("embedBox")
 		self.notebook1 = self.ui.get_object("notebook1")
+		self.notebook1.set_show_tabs(False)
 		
 		self.embed = GtkChamplain.Embed()
 		self.embed.set_size_request(640, 480)
@@ -71,8 +76,11 @@ class GuifinetStudio:
 		scale.connect_view(self.view)
 		self.view.bin_layout_add(scale, Clutter.BinAlignment.START, Clutter.BinAlignment.END)
 
-		self.embedBox.pack_start(self.embed, True, True, 0)
-		self.embedBox.reorder_child(self.embed, 0)
+		self.box1 = self.ui.get_object('box1')
+		self.paned = self.ui.get_object("paned1")
+		self.paned.pack2(self.embed, True, True)
+#		self.embedBox.pack_start(self.embed, True, True, 0)
+#		self.embedBox.reorder_child(self.embed, 0)
 				
 		self.uimanager = Gtk.UIManager()
 		self.uimanager.add_ui_from_file("guifinet_studio_menu.ui")
@@ -95,7 +103,7 @@ class GuifinetStudio:
 		try:
 			self.cnmlp = CNMLParser(self.cnmlFile)
 			self.completaArbol()
-			self.completaMapa()
+			self.paintMap()
 		except IOError:
 			self.statusbar.push(0, "CNML file \"%s\" couldn't be loaded" %self.cnmlFile)
 			self.cnmlFile = None
@@ -109,6 +117,7 @@ class GuifinetStudio:
 		p.set_size(size)
 		layer.add_marker(p)
 	
+	
 	def add_node_label(self, layer, lat, lon, nombre):
 		p = Champlain.Label.new()
 		p.set_text(nombre)
@@ -118,16 +127,20 @@ class GuifinetStudio:
 		p.set_draw_background(False)
 		layer.add_marker(p)
 
-	def completaMapa(self):
+	
+	# Two layers:
+	#  1) Points only
+	#  2) Labels only
+	def paintMap(self):
 		self.points_layer = Champlain.MarkerLayer()
 		self.points_layer.set_selection_mode(Champlain.SelectionMode.SINGLE)
 		self.labels_layer = Champlain.MarkerLayer()
 
-		data = self.cnmlp.getData()
+		nodes = self.cnmlp.nodes
 
-		for nid in data.keys():
-			self.add_node_point(self.points_layer, data[nid]['lat'], data[nid]['lon'])
-			self.add_node_label(self.labels_layer, data[nid]['lat'], data[nid]['lon'], data[nid]['title'])
+		for nid in nodes.keys():
+			self.add_node_point(self.points_layer, nodes[nid]['lat'], nodes[nid]['lon'])
+			self.add_node_label(self.labels_layer, nodes[nid]['lat'], nodes[nid]['lon'], nodes[nid]['title'])
 		
 		# It's important to add points the last. Points are selectable while labels are not
 		# If labels is added later, then you click on some point and it doesn't get selected
@@ -183,14 +196,17 @@ class GuifinetStudio:
 		(nplanned, nworking, ntesting, nbuilding) = countNodes(nodeids)
 
 		# Add a new row for the zone
-		row = (col1, str(nworking), str(nbuilding), str(ntesting), str(nplanned), None)
+		row = (col1, str(nworking), str(nbuilding), str(ntesting), str(nplanned), None, None)
 		tree = self.treestore.append(parentzone, row)
 		return tree
 		
 		
 	def __addNodesFromZoneToTree(self, zid, parentzone):
 		for nid in self.cnmlp.zones[zid]['nodes']:
-			self.treestore.append(parentzone, (None, None, None, None, None, self.cnmlp.nodes[nid]['title']))
+			row = (None, None, None, None, None, self.cnmlp.nodes[nid]['title'], nid)
+			self.treestore.append(parentzone, row)
+			#self.treestore2.append(None, (self.cnmlp.nodes[nid]['title']))
+			self.treestore2.append(None, (self.cnmlp.nodes[nid]['title'], nid))
 		
 
 	def on_showPointsButton_toggled(self, widget, data=None):
@@ -212,7 +228,11 @@ class GuifinetStudio:
 	def on_showLinksButton_toggled(self, widget, data=None):
 		print 'Show links:', widget.get_active()
 	
-	
+
+	def on_showZonesButton_toggled(self, widget, data=None):
+		print 'Show zones:', widget.get_active()
+		
+		
 	def on_action1_activate(self, action, data=None):
 		self.nodedialog.show()
 		self.nodedialog.set_title("Information about node XXX")
@@ -227,11 +247,22 @@ class GuifinetStudio:
 
 
 	def on_action4_activate(self, action, data=None):
+		# get node id
+		sel = self.treeview.get_selection()
+		(model, it) = sel.get_selected()
+		nid = model.get_value(it, 6)
+			
+		conf = self.usc.generate('AirOsv30', self.cnmlp.nodes[nid])
+		if conf is None:
+			g = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, 
+								"Couldn't generate unsolclick.\nThe node doesn't have any device defined.")
+			g.run()
+			g.destroy()
+			return
+		
 		self.uscdialog.show()
-		self.uscdialog.set_title("Unsolclic for device XXX")
-		#self.usctextbuffer.set_text(self.usc.test1())
-		self.usctextbuffer.set_text(self.usc.generate())
-
+		self.uscdialog.set_title("Unsolclic for device "+model.get_value(it, 5))
+		self.usctextbuffer.set_text(conf)
 		
 	def on_nodeDialog_delete_event(self, widget, data=None):
 		self.nodedialog.hide()
@@ -253,6 +284,10 @@ class GuifinetStudio:
 	def on_uscdialog_delete_event(self, widget, data=None):
 		self.uscdialog.hide()
 		return True
+
+
+	def on_button5_clicked(self, widget, data=None):
+		self.box1.hide()
 		
 
 	def on_treeview1_button_release_event(self, widget, data=None):
@@ -267,6 +302,28 @@ class GuifinetStudio:
 				self.menu.popup(None, None, None, None, data.button, data.time)
 	
 
+	def on_treeview2_button_release_event(self, widget, data=None):
+		sel = widget.get_selection()
+		(model, it) = sel.get_selected()
+		
+		if data.button == 1: # Right button
+			nid = model.get_value(it, 1)
+			lat = float(self.cnmlp.nodes[nid]['lat'])
+			lon = float(self.cnmlp.nodes[nid]['lon'])
+			self.view.center_on(lat, lon)
+		
+	
+	def on_treeview2_key_press_event(self, widget, data=None):
+		sel = widget.get_selection()
+		(model, it) = sel.get_selected()
+		
+		if data.keyval == Gdk.KEY_space or data.keyval == Gdk.KEY_KP_Space	or data.keyval == Gdk.KEY_Return or data.keyval == Gdk.KEY_KP_Enter:
+			nid = model.get_value(it, 1)
+			lat = float(self.cnmlp.nodes[nid]['lat'])
+			lon = float(self.cnmlp.nodes[nid]['lon'])
+			self.view.center_on(lat, lon)
+		
+		
 	def on_filechooserdialog1_file_activated(self, widget, data=None):
 		print 'activated'
 
