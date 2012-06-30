@@ -61,6 +61,7 @@ class CNMLParser():
 		
 		self.nodes = None
 		self.zones = None
+		self.devices = None
 		self.ifaces = None
 		self.radios = None
 		self.links = None
@@ -77,6 +78,11 @@ class CNMLParser():
 		# --zones--
 		zones = tree.getElementsByTagName("zone")
 		self.zones = dict()
+		self.nodes = dict()
+		self.devices = dict()
+		self.ifaces = dict()
+		self.radios = dict()
+		self.links = dict()
 		
 		self.rootzone = int(zones[0].getAttribute("id"))
 		print 'parent zone:', self.rootzone
@@ -117,28 +123,30 @@ class CNMLParser():
 		
 		# --nodes--
 		nodes = tree.getElementsByTagName("node")
-		self.nodes = dict()
 		
 		for n in nodes:
 			nid = int(n.getAttribute("id"))
 			lat = float(n.getAttribute("lat"))
 			lon = float(n.getAttribute("lon"))
 			title = n.getAttribute('title')
-			ndevices = n.getAttribute('devices') or 0
-			ndevices = int(ndevices)
+			#ndevices = n.getAttribute('devices') or 0
+			#ndevices = int(ndevices)
 			nlinks = n.getAttribute('links') or 0
 			nlinks = int(nlinks)
 			status = n.getAttribute('status')
 			status = Status.strToStatus(status)
 			
-			self.nodes[nid] = {'lat':lat, 'lon':lon, 'title':title, 'ndevices':ndevices, 'nlinks':nlinks, 'status':status}
-							
+			self.nodes[nid] = {'lat':lat, 'lon':lon, 'title':title, 'nlinks':nlinks, 'status':status, 'devices':[]}
+			
+			zid = int(n.parentNode.getAttribute('id'))
+			self.zones[zid]['nodes'].append(nid)
+			
+			# devices							
 			devicestree = n.getElementsByTagName("device")
-			
-			if extracheck:
-				assert(ndevices == len(devicestree))			
-			
+			#assert(ndevices == len(devicestree))			
+			assert n.parentNode.localName == u'zone'
 			devs = dict()
+			
 			for d in devicestree:
 				did = int(d.getAttribute("id"))
 				firmware = d.getAttribute("firmware")
@@ -147,11 +155,13 @@ class CNMLParser():
 				status = Status.strToStatus(status)
 				title = d.getAttribute("title")
 				dtype = d.getAttribute("type")
-				ndevices = d.getAttribute('devices') or 0
-				ndevices = int(ndevices)
-				nlinks = d.getAttribute('links') or 0
-				nlinks = int(nlinks)
-				#por qué no tiene un atributo radios="2" ??
+				#nlinks = d.getAttribute('links') or 0
+				#nlinks = int(nlinks)
+				#por qué no tiene un atributo radios="2" en lugar de links="2"??
+				
+				self.devices[did] = {'firmware':firmware, 'name':name, 'status':status, 'title':title, 'type':dtype, 'radios':[]}
+				
+				self.nodes[nid]['devices'].append(did)
 				
 				# radios
 				radiostree = d.getElementsByTagName("radio")
@@ -163,10 +173,17 @@ class CNMLParser():
 					snmp_name = r.getAttribute('snmp_name')
 					ssid = r.getAttribute('ssid')
 					mode = r.getAttribute('mode')
-					#device_id
 					antenna_gain = r.getAttribute('antenna_gain')
 					antenna_angle = r.getAttribute('antenna_angle')
+					#falta atributo interfaces="2"
+					#sobra atributo device_id
 					
+					self.radios[rid] = {'protocol':protocol, 'snmp_name':snmp_name, 'ssid':ssid, 'mode':mode, 
+										'antenna_gain':antenna_gain, 'antenna_angle':antenna_angle, 'interfaces':[]}
+					
+					self.devices[did]['radios'].append(rid)
+					
+					# interfaces
 					ifaces = dict()
 					ifacestree = r.getElementsByTagName("interface")
 					for i in ifacestree:
@@ -178,14 +195,14 @@ class CNMLParser():
 						mask = i.getAttribute('mask')
 						itype = i.getAttribute('type') #wLan/Lan
 						
+						self.ifaces[iid] = {'ipv4':ipv4, 'mac':mac, 'mask':mask, 'type':itype, 'links':[]}
+						
+						self.radios[rid]['interfaces'].append(iid)
+						
+						# links
 						links = dict()
 						linkstree = i.getElementsByTagName("link")
 						
-						# link_status -> status
-						# link_type -> type
-						# linked_device_id -> device_id
-						# linked_interface_id -> interface_id
-						# linked_node_id -> node_id
 						for l in linkstree:
 						#	print l
 							lid = l.getAttribute('id')
@@ -194,16 +211,18 @@ class CNMLParser():
 							ldid = l.getAttribute('linked_device_id')
 							liid = l.getAttribute('linked_interface_id')
 							lnid = l.getAttribute('linked_node_id')
+							# Cambiar nombres:
+							# link_status -> status
+							# link_type -> type
+							# linked_device_id -> device_id
+							# linked_interface_id -> interface_id
+							# linked_node_id -> node_id							
+														
+							self.links[lid] = {'status':lstatus, 'type':ltype, 'linked_device':ldid, 'linked_iface':liid, 'linked_node':lnid}
 							
+							self.ifaces[iid]['links'].append(lid)
 							
-				devs[did] = {'firmware':firmware, 'name':name, 'status':status, 'title':title, 'type':dtype}
-					
-			self.nodes[nid]['devices'] = devs
 
-			assert n.parentNode.localName == u'zone'
-			zid = int(n.parentNode.getAttribute('id'))
-			self.zones[zid]['nodes'].append(nid)
-				
 		self.loaded = True
 		
 		
