@@ -63,7 +63,6 @@ class CNMLParser():
 		self.zones = None
 		self.devices = None
 		self.ifaces = None
-		self.radios = None
 		self.links = None
 		
 		if not lazy:
@@ -81,7 +80,6 @@ class CNMLParser():
 		self.nodes = dict()
 		self.devices = dict()
 		self.ifaces = dict()
-		self.radios = dict()
 		self.links = dict()
 		
 		self.rootzone = int(zones[0].getAttribute("id"))
@@ -145,7 +143,6 @@ class CNMLParser():
 			devicestree = n.getElementsByTagName("device")
 			#assert(ndevices == len(devicestree))			
 			assert n.parentNode.localName == u'zone'
-			devs = dict()
 			
 			for d in devicestree:
 				did = int(d.getAttribute("id"))
@@ -159,7 +156,7 @@ class CNMLParser():
 				#nlinks = int(nlinks)
 				#por qué no tiene un atributo radios="2" en lugar de links="2"??
 				
-				self.devices[did] = {'firmware':firmware, 'name':name, 'status':status, 'title':title, 'type':dtype, 'radios':[]}
+				self.devices[did] = {'firmware':firmware, 'name':name, 'status':status, 'title':title, 'type':dtype, 'radios':{}}
 				
 				self.nodes[nid]['devices'].append(did)
 				
@@ -167,8 +164,8 @@ class CNMLParser():
 				radiostree = d.getElementsByTagName("radio")
 				radios = dict()
 				for r in radiostree:
-					#print r
-					rid = r.getAttribute('id')
+					#radio ids are 0, 1, 2...
+					rid = int(r.getAttribute('id'))
 					protocol = r.getAttribute('protocol')
 					snmp_name = r.getAttribute('snmp_name')
 					ssid = r.getAttribute('ssid')
@@ -178,17 +175,13 @@ class CNMLParser():
 					#falta atributo interfaces="2"
 					#sobra atributo device_id
 					
-					self.radios[rid] = {'protocol':protocol, 'snmp_name':snmp_name, 'ssid':ssid, 'mode':mode, 
-										'antenna_gain':antenna_gain, 'antenna_angle':antenna_angle, 'interfaces':[]}
-					
-					self.devices[did]['radios'].append(rid)
+					self.devices[did]['radios'][rid] = {'protocol':protocol, 'snmp_name':snmp_name, 'ssid':ssid, 'mode':mode,
+													'antenna_gain':antenna_gain, 'antenna_angle':antenna_angle, 'interfaces':[]}
 					
 					# interfaces
-					ifaces = dict()
 					ifacestree = r.getElementsByTagName("interface")
 					for i in ifacestree:
-						#print i
-						iid = i.getAttribute('id')
+						iid = int(i.getAttribute('id'))
 						ipv4 = i.getAttribute('ipv4')
 						mac = i.getAttribute('mac')
 						#checkMac
@@ -197,15 +190,13 @@ class CNMLParser():
 						
 						self.ifaces[iid] = {'ipv4':ipv4, 'mac':mac, 'mask':mask, 'type':itype, 'links':[]}
 						
-						self.radios[rid]['interfaces'].append(iid)
+						self.devices[did]['radios'][rid]['interfaces'].append(iid)
 						
 						# links
-						links = dict()
 						linkstree = i.getElementsByTagName("link")
 						
 						for l in linkstree:
-						#	print l
-							lid = l.getAttribute('id')
+							lid = int(l.getAttribute('id'))
 							lstatus = l.getAttribute('link_status')
 							ltype = l.getAttribute('link_type')
 							ldid = l.getAttribute('linked_device_id')
@@ -224,8 +215,54 @@ class CNMLParser():
 							
 
 		self.loaded = True
+	
+	
+	# data['devices'][29482]['radios'][1]['interfaces'][50522]['links'][29893]
+	# data.devices[29482].radios[1].interfaces[50522].links[29893]
+	# data.getDevice(29482).getRadio(1).getIface(50522).getLink(29893)
+	def dataFromNode(self, nid):
+		node = self.nodes[nid]
 		
+		print '--node--'
+		print node
 		
+		t = dict()
+		for did in node['devices']:
+			t[did] = self.devices[did]
+		
+			print '--devices--', node['devices'], did
+			print t[did]
+			
+			r = dict()
+			for rid in t[did]['radios']:
+				r[rid] = t[did]['radios'][rid]
+				
+				print '--radios--', t[did]['radios'], rid
+				print r[rid]
+			
+				i = dict()
+				for iid in r[rid]['interfaces']:
+					i[iid] = self.ifaces[iid]
+
+					print '--ifaces--', r[rid]['interfaces'], iid
+					print i[iid]
+					
+					l = dict()
+					for lid in i[iid]['links']:
+						l[lid] = self.links[lid]
+						
+						print '--links--', i[iid]['links'], lid
+						print l[lid]
+						
+						
+					i[iid]['links'] = l
+				r[rid]['interfaces'] = i
+			t[did]['radios'] = r
+		node['devices'] = t
+		
+		return node
+		
+	
 	def getNodesFromZone(zid):
 		nodes = []
 		return nodes
@@ -285,7 +322,18 @@ if __name__ == '__main__':
 	print d
 	print
 	print d[26997]
-	print d[26997]['ndevices']
 	print d[26997]['devices']
-	print d[26997]['devices'].keys()
 	print cnmlp.getTitles()
+	
+	for dev in cnmlp.devices.keys():
+		print cnmlp.devices[dev]['name']
+
+# <interface> cuelga de <device> WTF?!:
+#	<device created="20101105 0125" firmware="AirOsv52" id="25621" name="AirMaxM2 Bullet/PwBrg/AirGrd/NanoBr" status="Working" title="MLGInvisibleRd1" type="radio" updated="20110724 0113">
+#		<radio antenna_gain="8" device_id="25621" id="0" mode="client" protocol="802.11b" snmp_name="ath0" ssid="MlagaMLGnvsbltmpRd1CPE0">
+#			<interface id="48981" ipv4="10.228.172.36" mac="00:15:6D:4E:AF:13" mask="255.255.255.224" type="Wan">
+#				<link id="28692" link_status="Working" link_type="ap/client" linked_device_id="19414" linked_interface_id="19414" linked_node_id="26999"/>
+#			</interface>
+#		</radio>
+#		<interface id="48981" ipv4="10.228.172.36" mac="00:15:6D:4E:AF:13" mask="255.255.255.224" type="Wan"/>
+#	</device>
