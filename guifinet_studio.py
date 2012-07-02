@@ -268,8 +268,9 @@ class GuifinetStudio:
 								"Several devices in this node. Generating just the first one.")
 			g.run()
 			g.destroy()
-			
-		conf = self.usc.generate('AirOsv30', self.cnmlp.devices[devices[0]])
+		
+		data = self.cnmlp.dataFromNode(nid)
+		conf = self.usc.generate(data)
 		
 		self.uscdialog.show()
 		self.uscdialog.set_title("Unsolclic for device "+model.get_value(it, 5))
