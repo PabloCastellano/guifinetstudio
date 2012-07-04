@@ -23,8 +23,6 @@ GtkClutter.init([]) # Must be initialized before importing those:
 from gi.repository import Gdk, Gtk
 from gi.repository import GtkChamplain, Champlain
 
-import jinja2
-
 import os
 import sys
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -82,7 +80,7 @@ class GuifinetStudio:
 		self.paned.pack2(self.embed, True, True)
 #		self.embedBox.pack_start(self.embed, True, True, 0)
 #		self.embedBox.reorder_child(self.embed, 0)
-				
+		
 		self.uimanager = Gtk.UIManager()
 		self.uimanager.add_ui_from_file("guifinet_studio_menu.ui")
 		self.uimanager.insert_action_group(self.actiongroup1)
@@ -137,11 +135,11 @@ class GuifinetStudio:
 		self.points_layer.set_selection_mode(Champlain.SelectionMode.SINGLE)
 		self.labels_layer = Champlain.MarkerLayer()
 
-		nodes = self.cnmlp.nodes
+		nodes = self.cnmlp.getNodes()
 
-		for nid in nodes.keys():
-			self.add_node_point(self.points_layer, nodes[nid]['lat'], nodes[nid]['lon'])
-			self.add_node_label(self.labels_layer, nodes[nid]['lat'], nodes[nid]['lon'], nodes[nid]['title'])
+		for n in nodes:
+			self.add_node_point(self.points_layer, n.latitude, n.longitude)
+			self.add_node_label(self.labels_layer, n.latitude, n.longitude, n.title)
 		
 		# It's important to add points the last. Points are selectable while labels are not
 		# If labels is added later, then you click on some point and it doesn't get selected
@@ -159,23 +157,25 @@ class GuifinetStudio:
 		self.__completaArbol_recursive(self.cnmlp.rootzone, parenttree)
 										
 		self.treeview.expand_all()
+		
+		self.treestore.set_sort_column_id (5, Gtk.SortType.ASCENDING)
 		self.statusbar.push(0, "Loaded CNML succesfully")
 
 
 	# Recursive
 	def __completaArbol_recursive(self, parentzid, parenttree):
-		zids = self.cnmlp.zones[parentzid]['subzones']
+		zones = self.cnmlp.getSubzonesFromZone(parentzid)
 		
-		for zid in zids:
-			tree = self.__addZoneToTree(zid, parenttree)
-			self.__addNodesFromZoneToTree(zid, tree)
-			self.__completaArbol_recursive(zid, tree)
+		for z in zones:
+			tree = self.__addZoneToTree(z.id, parenttree)
+			self.__addNodesFromZoneToTree(z.id, tree)
+			self.__completaArbol_recursive(z.id, tree)
 			
 		
 	def __addZoneToTree(self, zid, parentzone):
 		
 		# Given a list of node ids, counts how many of them are for each status (working, planned...)
-		def countNodes(nodesid):
+		def countNodes(nodes):
 			nodescount = dict()
 			nodescount[Status.UNKNOWN] = 0
 			nodescount[Status.PLANNED] = 0
@@ -183,18 +183,18 @@ class GuifinetStudio:
 			nodescount[Status.TESTING] = 0
 			nodescount[Status.BUILDING] = 0
 			
-			for nid in nodesid:
-				st = self.cnmlp.nodes[nid]['status']
+			for n in nodes:
+				st = n.status
 				nodescount[st] += 1
 			
 			assert nodescount[Status.UNKNOWN] == 0
 			return (nodescount[Status.PLANNED], nodescount[Status.WORKING], nodescount[Status.TESTING], nodescount[Status.BUILDING])
 
-		zones = self.cnmlp.zones
-		nodeids = zones[zid]['nodes']
+		zone = self.cnmlp.getZone(zid)
+		nodes = zone.getNodes()
 		
-		col1 = "%s (%d)" %(zones[zid]['title'], len(nodeids))
-		(nplanned, nworking, ntesting, nbuilding) = countNodes(nodeids)
+		col1 = "%s (%d)" %(zone.title, len(nodes))
+		(nplanned, nworking, ntesting, nbuilding) = countNodes(nodes)
 
 		# Add a new row for the zone
 		row = (col1, str(nworking), str(nbuilding), str(ntesting), str(nplanned), None, None)
@@ -203,11 +203,11 @@ class GuifinetStudio:
 		
 		
 	def __addNodesFromZoneToTree(self, zid, parentzone):
-		for nid in self.cnmlp.zones[zid]['nodes']:
-			row = (None, None, None, None, None, self.cnmlp.nodes[nid]['title'], nid)
+		nodes = self.cnmlp.getNodesFromZone(zid)
+		for n in nodes:
+			row = (None, None, None, None, None, n.title, n.id)
 			self.treestore.append(parentzone, row)
-			#self.treestore2.append(None, (self.cnmlp.nodes[nid]['title']))
-			self.treestore2.append(None, (self.cnmlp.nodes[nid]['title'], nid))
+			self.treestore2.append(None, (n.title, n.id))
 		
 
 	def on_showPointsButton_toggled(self, widget, data=None):
@@ -247,6 +247,22 @@ class GuifinetStudio:
 		print 'View in map'
 
 
+	def on_treeviewcolumn6_clicked(self, action, data=None):
+		#print action.get_sort_column_id()
+		(column_id, sorttype) = self.treestore.get_sort_column_id()
+		name = action.get_name()
+		
+		if sorttype == Gtk.SortType.ASCENDING:
+			sorttype = Gtk.SortType.DESCENDING
+		else:
+			sorttype = Gtk.SortType.ASCENDING
+			
+		# 'treeview1, treeview2, treeview3, ..., treeview6
+		column_id = int(name[-1]) -1
+		
+		self.treestore.set_sort_column_id (column_id, sorttype)
+	
+	
 	def on_action4_activate(self, action, data=None):
 		# get node id
 		sel = self.treeview.get_selection()
@@ -255,9 +271,9 @@ class GuifinetStudio:
 			
 		# Varias interfaces - varios unsolclic
 		# TODO: Ventana con la interfaz seleccionable que quieras generar
-		devices = self.cnmlp.nodes[nid]['devices']
+		devices = self.cnmlp.nodes[nid].devices
 		
-		if devices == []:
+		if devices == {}:
 			g = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, 
 								"Couldn't generate unsolclick.\nThe node doesn't have any device defined.")
 			g.run()
@@ -269,12 +285,14 @@ class GuifinetStudio:
 			g.run()
 			g.destroy()
 		
-		data = self.cnmlp.dataFromNode(nid)
-		conf = self.usc.generate(data)
+		node = self.cnmlp.nodes[nid]
+		conf = self.usc.generate(node)
 		
 		self.uscdialog.show()
-		self.uscdialog.set_title("Unsolclic for device "+model.get_value(it, 5))
+		#self.uscdialog.set_title("Unsolclic for device "+model.get_value(it, 5))
+		self.uscdialog.set_title("Unsolclic for node "+node.title)
 		self.usctextbuffer.set_text(conf)
+		
 		
 	def on_nodeDialog_delete_event(self, widget, data=None):
 		self.nodedialog.hide()

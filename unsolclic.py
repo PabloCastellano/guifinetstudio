@@ -62,48 +62,47 @@ class UnSolClic:
 		return r
 		
 
-	def generateContextAirOSv30(self, data, deviceid):
-		device = data['devices'][deviceid]
+	def generateContextAirOSv30(self, node, deviceid):
+		device = node.devices[deviceid]
 		
-		assert len(device['radios']) <= 1
+		assert len(device.radios) <= 1
 			
-		for rid in device['radios']:
-			radio = device['radios'][rid]
-			assert len(radio['interfaces']) <= 1
+		for radio in device.radios.values():
+			assert len(radio.interfaces) <= 1
 				
-			for iid in radio['interfaces']:
-				iface = radio['interfaces'][iid]
+			for iface in radio.interfaces.values():
+				assert len(iface.links) <= 1
 					
-				assert len(iface['links']) <= 1
+				ipv4_ip = iface.ipv4			##
+				ipv4_netmask = iface.mask		##
+				
+				for link in iface.links.values():
+					remote_if = link.linked_interface
+					remote_radio = remote_if.parentInterface
 					
-				ipv4_ip = iface['ipv4']			##
-				ipv4_netmask = iface['mask']	##
-					
-				for lid in iface['links']:
-					link = iface['links'][lid]
-					# get remote ssid and remote ipv4 (gateway)
-					#<radio ssid="">, <interface ipv4="">
+					ssid = remote_radio.ssid
+					gateway = remote_if.ipv4
 			
-		if device['name'] == 'NanoStation2':
+		if device.name == 'NanoStation2':
 			(net_mode, rate_max, txpower, ack, ext_antenna, mcastrate) = ('b', '11M', '6', '45', 'disabled', '11')
-		elif device['name'] == 'NanoStation5':
+		elif device.name == 'NanoStation5':
 			(net_mode, rate_max, txpower, ack, ext_antenna, mcastrate) = ('a', '54M', '6', '25', 'disabled', '54')
-		elif device['name'] == 'NanoStation Loco2':
+		elif device.name == 'NanoStation Loco2':
 			(net_mode, rate_max, txpower, ack, ext_antenna, mcastrate) = ('b', '11M', '6', '44', 'enabled', '11')
-		elif device['name'] == 'NanoStation Loco5':
+		elif device.name == 'NanoStation Loco5':
 			(net_mode, rate_max, txpower, ack, ext_antenna, mcastrate) = ('a', '54M', '6', '25', 'disabled', '54')
 		else:
 			raise NotImplementedError
 		
 		radio1txpower = '6'
-		dev = {'nick':device['title']}
-		node_nick = data['title']
+		dev = {'nick':device.title}
+		node_nick = node.title
 		radio_rx = radio_tx = 2 #antenna_mode is not available in CNML, what is this for?
 		
 		# -- AirOsv30 --
 		# zone_primary_dns, zone_secondary_dns
-		context = {'wireless1ssid':'Not Available', 'ipv4_ip':ipv4_ip, 'ipv4_netmask':ipv4_netmask,
-				'wangateway':'Not available', 'zone_primary_dns':'', 'zone_secondary_dns':'',
+		context = {'wireless1ssid':ssid, 'ipv4_ip':ipv4_ip, 'ipv4_netmask':ipv4_netmask,
+				'wangateway':gateway, 'zone_primary_dns':'', 'zone_secondary_dns':'',
 				'dev':dev, 'node_nick':node_nick, 'radio1txpower':radio1txpower, 'net_mode':net_mode,
 				'rate_max':rate_max, 'ack':ack, 'ext_antenna':ext_antenna, 'mcastrate':mcastrate,
 				'radio_rx':radio_rx, 'radio_tx':radio_tx
@@ -112,10 +111,10 @@ class UnSolClic:
 		return context
 	
 	
-	def generateContext(self, data, deviceid, template_name):
+	def generateContext(self, node, deviceid, template_name):
 		
 		if template_name in ('AirOsv30',):
-			context = self.generateContextAirOSv30(data, deviceid)
+			context = self.generateContextAirOSv30(node, deviceid)
 		else:
 			raise NotImplementedError
 		
@@ -125,24 +124,23 @@ class UnSolClic:
 	# En el cnml
 	# en Nanostation clientes <radio ssid="MlagaMLGnvsbltmpRd1CPE0"> no se usa
 	# solo se usa el ssid de la antena a la que se conecta.
-	def generate(self, data):
+	def generate(self, node):
 		
-		for did in data['devices'].keys():
-			dev = data['devices'][did]
+		for dev in node.devices.values():
 			
-			if dev['type'] != 'radio': # server, ...
+			if dev.type != 'radio': # server, ...
 				continue
 				
-			print 'Firmware:', dev['firmware']
-			if dev['firmware'] in ('AirOsv3.6+',):
+			print 'Firmware:', dev.firmware
+			if dev.firmware in ('AirOsv3.6+','AirOsv52'):
 				template_name = 'AirOsv30'
 			else:
-				#if dev['firmware'] not in self.getSupportedDevices():
+				#if dev.firmware not in self.getSupportedDevices():
 				raise NotImplementedError
 				
 			t = self.env.get_template(template_name)
 			
-			context = self.generateContext(data, did, template_name)
+			context = self.generateContext(node, dev.id, template_name)
 		#if device.name = NANOSTATION2...
 		#elif device.name= NANONSTATION_LOCO5...
 		
