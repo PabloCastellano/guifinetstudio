@@ -31,6 +31,241 @@ import sys
 #self.nodes[99]['devices'][deviceid]['firmware']
 
 
+class CNMLZone:
+	def __init__(self, zid, parentid, aps=0, box=[], nclients=0, ndevices=0, nlinks=0, nservices=0, title=''):
+		self.id = zid
+		self.parentzone = parentid
+		self.totalAPs = aps
+		self.box = box
+		self.totalClients = nclients
+		self.totalDevices = ndevices
+		self.totalLinks = nlinks
+		self.totalServices = nservices
+		self.title = title
+		self.subzones = dict()
+		self.nodes = dict()
+	
+	
+	# @param z: CNMLZone
+	def addSubzone(self, z):
+		self.subzones[z.id] = z
+	
+	# @param z: CNMLNode
+	def addNode(self, n):
+		self.nodes[n.id] = n
+	
+	def getNodes(self):
+		return self.nodes.values()
+		
+	def getSubzones(self):
+		return self.subzones.values()
+		
+	# @param z: xml.dom.minidom.Element
+	@staticmethod
+	def parse(z):
+		zid = int(z.getAttribute("id"))
+		try:
+			zparentid = int(z.getAttribute("parent_id"))
+		except:
+			# guifi.net World doesn't have parent_id
+			zparentid = None
+		
+		nAPs = z.getAttribute("access_points") or 0
+		nAPs = int(nAPs)
+		box = z.getAttribute("box").split(',')
+		box = [box[:2], box[2:]]
+		nclients = z.getAttribute("clients") or 0
+		nclients = int(nclients)
+		ndevices = z.getAttribute('devices') or 0
+		ndevices = int(ndevices)
+		nlinks = z.getAttribute('links') or 0
+		nlinks = int(nlinks)
+		nservices = z.getAttribute('services') or 0
+		nservices = int(nservices)
+		title = z.getAttribute('title')
+#		nnodes = int(z.getAttribute('zone_nodes'))
+#		nnodes is not useful --> len(nodes)				
+
+		newzone = CNMLZone(zid, zparentid, nAPs, box, nclients, ndevices, nlinks, nservices, title)
+		return newzone
+		
+		
+class CNMLNode:
+	def __init__(self, nid, title, lat, lon, nlinks, status):
+		self.id = nid
+		self.title = title
+		self.latitude = lat
+		self.longitude = lon
+		self.totalLinks = nlinks
+		self.status = status
+		self.devices = dict()
+		
+	def addDevice(self, dev):
+		self.devices[dev.id] = dev
+		
+	@staticmethod
+	def parse(n):
+		nid = int(n.getAttribute("id"))
+		lat = float(n.getAttribute("lat"))
+		lon = float(n.getAttribute("lon"))
+		title = n.getAttribute('title')
+		#ndevices = n.getAttribute('devices') or 0
+		#ndevices = int(ndevices)
+		nlinks = n.getAttribute('links') or 0
+		nlinks = int(nlinks)
+		status = n.getAttribute('status')
+		status = Status.strToStatus(status)
+		
+		newnode = CNMLNode(nid, title, lat, lon, nlinks, status)		
+		return newnode
+		
+		
+class CNMLDevice:
+	def __init__(self, did, name, firmware, status, title, dtype, parent):
+		self.id = did
+		self.name = name
+		self.firmware = firmware
+		self.status = status
+		self.title = title
+		self.type = dtype
+		self.radios = dict()
+		self.parentNode = parent
+		
+	def addRadio(self, radio):
+		self.radios[radio.id] = radio
+		
+	@staticmethod
+	def parse(d, parent):
+		did = int(d.getAttribute("id"))
+		name = d.getAttribute("name")
+		firmware = d.getAttribute("firmware")
+		status = d.getAttribute("status")
+		status = Status.strToStatus(status)
+		title = d.getAttribute("title")
+		dtype = d.getAttribute("type")
+		#nlinks = d.getAttribute('links') or 0
+		#nlinks = int(nlinks)
+		#por qué no tiene un atributo radios="2" en lugar de links="2"??
+		
+		newdevice = CNMLDevice(did, name, firmware, status, title, dtype, parent)
+		return newdevice
+
+	
+	
+class CNMLRadio:
+	def __init__(self, rid, protocol, snmp_name, ssid, mode, gain, angle, channel, clients, parent):
+		self.id = rid
+		self.protocol = protocol
+		self.snmp_name = snmp_name
+		self.ssid = ssid
+		self.mode = mode
+		self.antenna_gain = gain
+		self.antenna_angle = angle
+		self.channel = channel
+		self.clients_accepted = clients
+		self.interfaces = dict()
+		self.parentDevice = parent
+		
+	def addInterface(self, iface):
+		self.interfaces[iface.id] = iface
+		
+	@staticmethod
+	def parse(r, parent):
+		#radio ids are 0, 1, 2...
+		rid = int(r.getAttribute('id'))
+		protocol = r.getAttribute('protocol')
+		snmp_name = r.getAttribute('snmp_name')
+		ssid = r.getAttribute('ssid')
+		mode = r.getAttribute('mode')
+		antenna_gain = r.getAttribute('antenna_gain')
+		antenna_angle = r.getAttribute('antenna_angle')
+		channel = r.getAttribute('channel') or 0 # ugly
+		channel = int(channel)
+		clients = r.getAttribute('clients_accepted') == 'Yes'
+		
+		#falta atributo interfaces="2"
+		#sobra atributo device_id
+
+		newradio = CNMLRadio(rid, protocol, snmp_name, ssid, mode, antenna_gain, antenna_angle, channel, clients, parent)
+		return newradio
+		
+		
+class CNMLInterface:
+	def __init__(self, iid, ipv4, mask, mac, itype, parent):
+		self.id = iid
+		self.ipv4 = ipv4
+		self.mask = mask
+		self.mac = mac
+		self.type = itype
+		self.links = dict()
+		self.parentRadio = parent
+		
+	def addLink(self, link):
+		self.links[link.id] = link
+		
+	@staticmethod
+	def parse(i, parent):
+		iid = int(i.getAttribute('id'))
+		ipv4 = i.getAttribute('ipv4')
+		mac = i.getAttribute('mac')
+		#checkMac
+		mask = i.getAttribute('mask')
+		itype = i.getAttribute('type') #wLan/Lan
+		
+		newiface = CNMLInterface(iid, ipv4, mask, mac, itype, parent)
+		
+		return newiface
+		
+		
+class CNMLLink:
+	def __init__(self, lid, status, ltype, ldid, liid, lnid, parent):
+		self.id = lid
+		self.status = status
+		self.type = ltype
+		#self.linked_device = {ldid:None}
+		#self.linked_interface = {liid:None}
+		#self.linked_node = {lnid:None}
+		self.linked_device = ldid
+		self.linked_interface = liid
+		self.linked_node = lnid
+		self.parentInterface = parent
+		
+	def setLinkedParameters(self, devs, ifaces, nodes):
+		if devs.has_key(self.linked_device):
+			self.linked_device = devs[self.linked_device]
+		else:
+			print 'Device id %d not found' %self.linked_device
+			
+		if ifaces.has_key(self.linked_interface):
+			self.linked_interface = ifaces[self.linked_interface]
+		else:
+			print 'Interface id %d not found' %self.linked_interface
+			
+		if nodes.has_key(self.linked_node):
+			self.linked_node = nodes[self.linked_node]
+		else:
+			print 'Node id %d not found' %self.linked_node
+		
+	@staticmethod
+	def parse(l, parent):
+		lid = int(l.getAttribute('id'))
+		status = l.getAttribute('link_status')
+		ltype = l.getAttribute('link_type')
+		ldid = int(l.getAttribute('linked_device_id'))
+		liid = int(l.getAttribute('linked_interface_id'))
+		lnid = int(l.getAttribute('linked_node_id'))
+		# Cambiar nombres:
+		# link_status -> status
+		# link_type -> type
+		# linked_device_id -> device_id
+		# linked_interface_id -> interface_id
+		# linked_node_id -> node_id					
+							
+		newlink = CNMLLink(lid, status, ltype, ldid, liid, lnid, parent)
+		return newlink
+
+		
+
 class Status:
 	UNKNOWN = 0
 	PLANNED = 1
@@ -62,6 +297,7 @@ class CNMLParser():
 		self.nodes = None
 		self.zones = None
 		self.devices = None
+		self.radios = None
 		self.ifaces = None
 		self.links = None
 		
@@ -71,6 +307,24 @@ class CNMLParser():
 			self.loaded = False
 	
 	
+	def getNodes(self):
+		return self.nodes.values()
+		
+	def getZones(self):
+		return self.zones.values()
+		
+	def getDevices(self):
+		return self.devices.values()
+	
+	def getRadios(self):
+		return self.radios.values()
+	
+	def getInterfaces(self):
+		return self.ifaces.values()
+		
+	def getLinks(self):
+		return self.links.values()
+		
 	def load(self, extracheck=True):
 		tree = MD.parse(self.filename)
 	
@@ -79,208 +333,89 @@ class CNMLParser():
 		self.zones = dict()
 		self.nodes = dict()
 		self.devices = dict()
+		self.radios = dict()
 		self.ifaces = dict()
 		self.links = dict()
 		
+		
 		self.rootzone = int(zones[0].getAttribute("id"))
-		print 'parent zone:', self.rootzone
-		print 'numero de zonas:', len(zones)
 		
 		for z in zones:
 			zid = int(z.getAttribute("id"))
-			try:
-				zparentid = int(z.getAttribute("parent_id"))
-			except:
-				# guifi.net World doesn't have parent_id
-				zparentid = None
-			
-			nAPs = z.getAttribute("access_points") or 0
-			nAPs = int(nAPs)
-			box = z.getAttribute("box").split(',')
-			box = [box[:2], box[2:]]
-			nclients = z.getAttribute("clients") or 0
-			nclients = int(nclients)
-			ndevices = z.getAttribute('devices') or 0
-			ndevices = int(ndevices)
-			nlinks = z.getAttribute('links') or 0
-			nlinks = int(nlinks)
-			nservices = z.getAttribute('services') or 0
-			nservices = int(nservices)
-			title = z.getAttribute('title')
-#			nnodes = int(z.getAttribute('zone_nodes'))
-#			nnodes is not useful --> len(nodes)				
-
-			self.zones[zid] = {'parent':zparentid, 'aps':nAPs, 'box':box, 'nclients':nclients, 
-							'ndevices':ndevices, 'nlinks':nlinks, 'nservices':nservices, 'title':title, 
-							'subzones':[], 'nodes':[]}
+			newzone = CNMLZone.parse(z)
+			self.zones[zid] = newzone
+			zparentid = newzone.parentzone
 			
 			if zid != self.rootzone and zparentid != None:
-				print zparentid, ' -- ', zid
-				self.zones[zparentid]['subzones'].append(zid)
+				self.zones[zparentid].addSubzone(newzone)
 		
 		
 		# --nodes--
-		nodes = tree.getElementsByTagName("node")
-		
-		for n in nodes:
+		for n in tree.getElementsByTagName("node"):
 			nid = int(n.getAttribute("id"))
-			lat = float(n.getAttribute("lat"))
-			lon = float(n.getAttribute("lon"))
-			title = n.getAttribute('title')
-			#ndevices = n.getAttribute('devices') or 0
-			#ndevices = int(ndevices)
-			nlinks = n.getAttribute('links') or 0
-			nlinks = int(nlinks)
-			status = n.getAttribute('status')
-			status = Status.strToStatus(status)
-			
-			self.nodes[nid] = {'lat':lat, 'lon':lon, 'title':title, 'nlinks':nlinks, 'status':status, 'devices':[]}
-			
 			zid = int(n.parentNode.getAttribute('id'))
-			self.zones[zid]['nodes'].append(nid)
+			newnode = CNMLNode.parse(n)
+			self.nodes[nid] = newnode
+			self.zones[zid].addNode(newnode)
+					
+			#assert n.parentNode.localName == u'zone'
+			#assert(ndevices == len(devicestree))
 			
-			# devices							
-			devicestree = n.getElementsByTagName("device")
-			#assert(ndevices == len(devicestree))			
-			assert n.parentNode.localName == u'zone'
-			
-			for d in devicestree:
+			# --devices--			
+			for d in n.getElementsByTagName("device"):
 				did = int(d.getAttribute("id"))
-				firmware = d.getAttribute("firmware")
-				name = d.getAttribute("name")
-				status = d.getAttribute("status")
-				status = Status.strToStatus(status)
-				title = d.getAttribute("title")
-				dtype = d.getAttribute("type")
-				#nlinks = d.getAttribute('links') or 0
-				#nlinks = int(nlinks)
-				#por qué no tiene un atributo radios="2" en lugar de links="2"??
+				newdevice = CNMLDevice.parse(d, newnode)
+				self.devices[did] = newdevice
+				self.nodes[nid].addDevice(newdevice)
 				
-				self.devices[did] = {'firmware':firmware, 'name':name, 'status':status, 'title':title, 'type':dtype, 'radios':{}}
-				
-				self.nodes[nid]['devices'].append(did)
-				
-				# radios
-				radiostree = d.getElementsByTagName("radio")
-				radios = dict()
-				for r in radiostree:
-					#radio ids are 0, 1, 2...
+				# --radios--
+				for r in d.getElementsByTagName("radio"):
 					rid = int(r.getAttribute('id'))
-					protocol = r.getAttribute('protocol')
-					snmp_name = r.getAttribute('snmp_name')
-					ssid = r.getAttribute('ssid')
-					mode = r.getAttribute('mode')
-					antenna_gain = r.getAttribute('antenna_gain')
-					antenna_angle = r.getAttribute('antenna_angle')
-					#falta atributo interfaces="2"
-					#sobra atributo device_id
+					newradio = CNMLRadio.parse(r, newdevice)
+					self.devices[did].addRadio(newradio)
 					
-					self.devices[did]['radios'][rid] = {'protocol':protocol, 'snmp_name':snmp_name, 'ssid':ssid, 'mode':mode,
-													'antenna_gain':antenna_gain, 'antenna_angle':antenna_angle, 'interfaces':[]}
-					
-					# interfaces
-					ifacestree = r.getElementsByTagName("interface")
-					for i in ifacestree:
+					# --interfaces--
+					for i in r.getElementsByTagName("interface"):
 						iid = int(i.getAttribute('id'))
-						ipv4 = i.getAttribute('ipv4')
-						mac = i.getAttribute('mac')
-						#checkMac
-						mask = i.getAttribute('mask')
-						itype = i.getAttribute('type') #wLan/Lan
+						newiface = CNMLInterface.parse(i, newradio)
+						self.ifaces[iid] = newiface
+						self.devices[did].radios[rid].addInterface(newiface)
 						
-						self.ifaces[iid] = {'ipv4':ipv4, 'mac':mac, 'mask':mask, 'type':itype, 'links':[]}
-						
-						self.devices[did]['radios'][rid]['interfaces'].append(iid)
-						
-						# links
-						linkstree = i.getElementsByTagName("link")
-						
-						for l in linkstree:
+						# --links--
+						for l in i.getElementsByTagName("link"):
 							lid = int(l.getAttribute('id'))
-							lstatus = l.getAttribute('link_status')
-							ltype = l.getAttribute('link_type')
-							ldid = l.getAttribute('linked_device_id')
-							liid = l.getAttribute('linked_interface_id')
-							lnid = l.getAttribute('linked_node_id')
-							# Cambiar nombres:
-							# link_status -> status
-							# link_type -> type
-							# linked_device_id -> device_id
-							# linked_interface_id -> interface_id
-							# linked_node_id -> node_id							
-														
-							self.links[lid] = {'status':lstatus, 'type':ltype, 'linked_device':ldid, 'linked_iface':liid, 'linked_node':lnid}
-							
-							self.ifaces[iid]['links'].append(lid)
+							newlink = CNMLLink.parse(l, newiface)
+							self.links[lid] = newlink
+							self.ifaces[iid].addLink(newlink)
 							
 
+		# Replace None by true reference of nodes/devices/interfaces
+		# Note that if they belong to a different zone they might not be defined in the CNML file
+		for link in self.links.values():
+			link.setLinkedParameters(self.devices, self.ifaces, self.nodes)
+		
 		self.loaded = True
-	
-	
-	# data['devices'][29482]['radios'][1]['interfaces'][50522]['links'][29893]
-	# data.devices[29482].radios[1].interfaces[50522].links[29893]
-	# data.getDevice(29482).getRadio(1).getIface(50522).getLink(29893)
-	def dataFromNode(self, nid):
-		node = self.nodes[nid]
-		
-		print '--node--'
-		print node
-		
-		t = dict()
-		for did in node['devices']:
-			t[did] = self.devices[did]
-		
-			print '--devices--', node['devices'], did
-			print t[did]
 			
-			r = dict()
-			for rid in t[did]['radios']:
-				r[rid] = t[did]['radios'][rid]
-				
-				print '--radios--', t[did]['radios'], rid
-				print r[rid]
-			
-				i = dict()
-				for iid in r[rid]['interfaces']:
-					i[iid] = self.ifaces[iid]
-
-					print '--ifaces--', r[rid]['interfaces'], iid
-					print i[iid]
-					
-					l = dict()
-					for lid in i[iid]['links']:
-						l[lid] = self.links[lid]
-						
-						print '--links--', i[iid]['links'], lid
-						print l[lid]
-						
-						
-					i[iid]['links'] = l
-				r[rid]['interfaces'] = i
-			t[did]['radios'] = r
-		node['devices'] = t
-		
-		return node
-		
 	
-	def getNodesFromZone(zid):
-		nodes = []
-		return nodes
-		
-		
-	def getData(self):
+	def getNodesFromZone(self, zid):
 		if not self.loaded:
 			self.load()
-		return self.nodes
+		return self.zones[zid].nodes.values()
 	
 	
-	def getNode(nid):
+	def getSubzonesFromZone(self, zid):
+		if not self.loaded:
+			self.load()
+		return self.zones[zid].subzones.values()
+		
+		
+	def getNode(self, nid):
 		if not self.loaded:
 			self.load()
 		return self.nodes[nid]
 		
 		
-	def getZone(zid):
+	def getZone(self, zid):
 		if not self.loaded:
 			self.load()
 		return self.zones[zid]
