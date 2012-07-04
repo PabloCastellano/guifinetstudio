@@ -657,7 +657,6 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="model">treestore1</property>
-                    <property name="headers_clickable">False</property>
                     <property name="search_column">5</property>
                     <property name="enable_grid_lines">vertical</property>
                     <signal name="button-release-event" handler="on_treeview1_button_release_event" swapped="no"/>
@@ -667,6 +666,9 @@
                     <child>
                       <object class="GtkTreeViewColumn" id="treeviewcolumn1">
                         <property name="title" translatable="yes">Zona</property>
+                        <property name="clickable">True</property>
+                        <property name="sort_indicator">True</property>
+                        <signal name="clicked" handler="on_treeviewcolumn6_clicked" swapped="no"/>
                         <child>
                           <object class="GtkCellRendererText" id="cellrenderertext1"/>
                           <attributes>
@@ -678,6 +680,9 @@
                     <child>
                       <object class="GtkTreeViewColumn" id="treeviewcolumn2">
                         <property name="title" translatable="yes">Operativos</property>
+                        <property name="clickable">True</property>
+                        <property name="sort_indicator">True</property>
+                        <signal name="clicked" handler="on_treeviewcolumn6_clicked" swapped="no"/>
                         <child>
                           <object class="GtkCellRendererText" id="cellrenderertext2"/>
                           <attributes>
@@ -689,6 +694,9 @@
                     <child>
                       <object class="GtkTreeViewColumn" id="treeviewcolumn3">
                         <property name="title" translatable="yes">En construcción</property>
+                        <property name="clickable">True</property>
+                        <property name="sort_indicator">True</property>
+                        <signal name="clicked" handler="on_treeviewcolumn6_clicked" swapped="no"/>
                         <child>
                           <object class="GtkCellRendererText" id="cellrenderertext3"/>
                           <attributes>
@@ -700,6 +708,9 @@
                     <child>
                       <object class="GtkTreeViewColumn" id="treeviewcolumn4">
                         <property name="title" translatable="yes">En pruebas</property>
+                        <property name="clickable">True</property>
+                        <property name="sort_indicator">True</property>
+                        <signal name="clicked" handler="on_treeviewcolumn6_clicked" swapped="no"/>
                         <child>
                           <object class="GtkCellRendererText" id="cellrenderertext4"/>
                           <attributes>
@@ -711,6 +722,9 @@
                     <child>
                       <object class="GtkTreeViewColumn" id="treeviewcolumn5">
                         <property name="title" translatable="yes">Proyectados</property>
+                        <property name="clickable">True</property>
+                        <property name="sort_indicator">True</property>
+                        <signal name="clicked" handler="on_treeviewcolumn6_clicked" swapped="no"/>
                         <child>
                           <object class="GtkCellRendererText" id="cellrenderertext5"/>
                           <attributes>
@@ -722,6 +736,9 @@
                     <child>
                       <object class="GtkTreeViewColumn" id="treeviewcolumn6">
                         <property name="title" translatable="yes">Nodo</property>
+                        <property name="clickable">True</property>
+                        <property name="sort_indicator">True</property>
+                        <signal name="clicked" handler="on_treeviewcolumn6_clicked" swapped="no"/>
                         <child>
                           <object class="GtkCellRendererText" id="cellrenderertext6"/>
                           <attributes>
@@ -1091,6 +1108,81 @@ Iberian Peninsula</property>
                     <property name="can_focus">False</property>
                     <property name="n_rows">3</property>
                     <property name="n_columns">2</property>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
                     <child>
                       <placeholder/>
                     </child>
