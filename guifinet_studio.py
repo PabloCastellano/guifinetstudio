@@ -149,6 +149,8 @@ class GuifinetStudio:
 		
 
 	def completaArbol(self):
+		self.treestore.clear()
+		self.treestore2.clear()
 		# Add root zone
 		parenttree = self.__addZoneToTree(self.cnmlp.rootzone, None)
 		self.__addNodesFromZoneToTree(self.cnmlp.rootzone, parenttree)
@@ -159,6 +161,7 @@ class GuifinetStudio:
 		self.treeview.expand_all()
 		
 		self.treestore.set_sort_column_id (5, Gtk.SortType.ASCENDING)
+		self.treestore2.set_sort_column_id (0, Gtk.SortType.ASCENDING)
 		self.statusbar.push(0, "Loaded CNML succesfully")
 
 
@@ -304,6 +307,9 @@ class GuifinetStudio:
 		raise NotImplementedError
 		
 
+	def on_uscsave_clicked(self, widget, data=None):
+		raise NotImplementedError
+		
 	def on_copyuscbutton_clicked(self, widget, data=None):
 		print 'copy usc to clipboard'
 		cb = Gtk.Clipboard()
@@ -358,8 +364,8 @@ class GuifinetStudio:
 		
 		if data.button == 1: # Right button
 			nid = model.get_value(it, 1)
-			lat = float(self.cnmlp.nodes[nid]['lat'])
-			lon = float(self.cnmlp.nodes[nid]['lon'])
+			lat = float(self.cnmlp.getNode(nid).latitude)
+			lon = float(self.cnmlp.getNode(nid).longitude)
 			self.view.center_on(lat, lon)
 		
 	
@@ -369,25 +375,35 @@ class GuifinetStudio:
 		
 		if data.keyval == Gdk.KEY_space or data.keyval == Gdk.KEY_KP_Space	or data.keyval == Gdk.KEY_Return or data.keyval == Gdk.KEY_KP_Enter:
 			nid = model.get_value(it, 1)
-			lat = float(self.cnmlp.nodes[nid]['lat'])
-			lon = float(self.cnmlp.nodes[nid]['lon'])
+			lat = float(self.cnmlp.getNode(nid).latitude)
+			lon = float(self.cnmlp.getNode(nid).longitude)
 			self.view.center_on(lat, lon)
 		
-		
-	def on_filechooserdialog1_file_activated(self, widget, data=None):
-		print 'activated'
-
 
 	def on_imagemenuitem2_activate(self, widget, data=None):
 		self.opendialog.run()
 
-
+	def on_imagemenuitem3_activate(self, widget, data=None):
+		self.treestore.clear()
+		self.treestore2.clear()
+		self.points_layer.remove_all()
+		self.labels_layer.remove_all()
+		self.statusbar.push(0, "Closed CNML file")
+		self.cnmlFile = None
+		
 	def on_button3_clicked(self, widget, data=None):
 		self.cnmlFile = self.opendialog.get_filename()
-		print filename
+		print self.cnmlFile
 		self.opendialog.hide()
-		self.completaArbol()
 
+		try:
+			self.cnmlp = CNMLParser(self.cnmlFile)
+			self.completaArbol()
+			self.paintMap()
+		except IOError:
+			self.statusbar.push(0, "CNML file \"%s\" couldn't be loaded" %self.cnmlFile)
+			self.cnmlFile = None
+			
 
 	def on_aboutdialog1_close(self, widget, data=None):
 		self.about_ui.hide()
