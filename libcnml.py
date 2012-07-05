@@ -100,6 +100,9 @@ class CNMLNode:
 		self.status = status
 		self.devices = dict()
 		
+	def getDevices(self):
+		return self.devices.values()
+		
 	def addDevice(self, dev):
 		self.devices[dev.id] = dev
 		
@@ -130,6 +133,9 @@ class CNMLDevice:
 		self.type = dtype
 		self.radios = dict()
 		self.parentNode = parent
+		
+	def getRadios(self):
+		return self.radios.values()
 		
 	def addRadio(self, radio):
 		self.radios[radio.id] = radio
@@ -166,9 +172,12 @@ class CNMLRadio:
 		self.interfaces = dict()
 		self.parentDevice = parent
 		
+	def getInterfaces(self):
+		return self.interfaces.values()
+	
 	def addInterface(self, iface):
 		self.interfaces[iface.id] = iface
-		
+	
 	@staticmethod
 	def parse(r, parent):
 		#radio ids are 0, 1, 2...
@@ -200,6 +209,9 @@ class CNMLInterface:
 		self.links = dict()
 		self.parentRadio = parent
 		
+	def getLinks(self):
+		return self.links.values()
+		
 	def addLink(self, link):
 		self.links[link.id] = link
 		
@@ -216,7 +228,9 @@ class CNMLInterface:
 		
 		return newiface
 		
-		
+
+# Note that for two connected nodes there's just one link, that is,
+# two different links (different linked dev/if/node) but same id
 class CNMLLink:
 	def __init__(self, lid, status, ltype, ldid, liid, lnid, parent):
 		self.id = lid
@@ -225,27 +239,67 @@ class CNMLLink:
 		#self.linked_device = {ldid:None}
 		#self.linked_interface = {liid:None}
 		#self.linked_node = {lnid:None}
-		self.linked_device = ldid
-		self.linked_interface = liid
-		self.linked_node = lnid
 		self.parentInterface = parent
+		self.nodeA = lnid
+		self.deviceA = ldid
+		self.interfaceA =  liid
+		self.nodeB = 0
+		self.deviceB = 0
+		self.interfaceB = 0
+		
+	def getLinkedNodes(self):
+		return [self.nodeA, self.nodeB]
+		
+	def getLinkedDevices(self):
+		return [self.deviceA, self.deviceB]
+		
+	def getLinkedInterfaces(self):
+		return [self.interfaceA, self.interfaceB]
+		
+	def setLinkB(self, did, iid, nid):
+		self.nodeB = nid
+		self.deviceB = did
+		self.interfaceB = iid
 		
 	def setLinkedParameters(self, devs, ifaces, nodes):
-		if devs.has_key(self.linked_device):
-			self.linked_device = devs[self.linked_device]
-		else:
-			print 'Device id %d not found' %self.linked_device
-			
-		if ifaces.has_key(self.linked_interface):
-			self.linked_interface = ifaces[self.linked_interface]
-		else:
-			print 'Interface id %d not found' %self.linked_interface
-			
-		if nodes.has_key(self.linked_node):
-			self.linked_node = nodes[self.linked_node]
-		else:
-			print 'Node id %d not found' %self.linked_node
+		didA = self.deviceA
+		iidA = self.interfaceA
+		nidA = self.nodeA
+		didB = self.deviceB
+		iidB = self.interfaceB
+		nidB = self.nodeB
 		
+		if devs.has_key(didA):
+			self.deviceA = devs[didA]
+		else:
+			print 'Device id %d not found' %self.deviceA
+		
+		if devs.has_key(didB):
+			self.deviceB = devs[didB]
+		else:
+			print 'Device id %d not found' %self.deviceB
+		
+		if ifaces.has_key(iidA):
+			self.interfaceA = ifaces[iidA]
+		else:
+			print 'Interface id %d not found' %self.interfaceA
+		
+		if ifaces.has_key(iidB):
+			self.interfaceB = ifaces[iidB]
+		else:
+			print 'Interface id %d not found' %self.interfaceB
+		
+		if nodes.has_key(nidA):
+			self.nodeA = nodes[nidA]
+		else:
+			print 'Node id %d not found' %self.nodeA
+		
+		if nodes.has_key(nidB):
+			self.nodeB = nodes[nidB]
+		else:
+			print 'Node id %d not found' %self.nodeB
+		
+	#check if the link id already exists
 	@staticmethod
 	def parse(l, parent):
 		lid = int(l.getAttribute('id'))
@@ -263,7 +317,6 @@ class CNMLLink:
 							
 		newlink = CNMLLink(lid, status, ltype, ldid, liid, lnid, parent)
 		return newlink
-
 		
 
 class Status:
@@ -307,6 +360,10 @@ class CNMLParser():
 			self.loaded = False
 	
 	
+
+	def getInterfaces(self):
+		return self.ifaces.values()
+		
 	def getNodes(self):
 		return self.nodes.values()
 		
@@ -384,16 +441,22 @@ class CNMLParser():
 						# --links--
 						for l in i.getElementsByTagName("link"):
 							lid = int(l.getAttribute('id'))
-							newlink = CNMLLink.parse(l, newiface)
-							self.links[lid] = newlink
-							self.ifaces[iid].addLink(newlink)
+							
+							if self.links.has_key(lid):
+								self.links[lid].setLinkB(did, iid, nid)
+								self.ifaces[iid].addLink(self.links[lid])
+							else:
+								newlink = CNMLLink.parse(l, newiface)
+								self.links[lid] = newlink
+								self.ifaces[iid].addLink(newlink)
 							
 
 		# Replace None by true reference of nodes/devices/interfaces
 		# Note that if they belong to a different zone they might not be defined in the CNML file
-		for link in self.links.values():
+		for link in self.getLinks():
 			link.setLinkedParameters(self.devices, self.ifaces, self.nodes)
 		
+		print 'Loaded OK'
 		self.loaded = True
 			
 	
@@ -408,25 +471,37 @@ class CNMLParser():
 			self.load()
 		return self.zones[zid].subzones.values()
 		
+	def getInterface(self, iid):
+		if not self.loaded:
+			self.load()
+		return self.ifaces[iid]
 		
 	def getNode(self, nid):
 		if not self.loaded:
 			self.load()
 		return self.nodes[nid]
 		
-		
 	def getZone(self, zid):
 		if not self.loaded:
 			self.load()
 		return self.zones[zid]
 		
+	def getLink(self, lid):
+		if not self.loaded:
+			self.load()
+		return self.links[lid]
+		
+	def getDevice(self, did):
+		if not self.loaded:
+			self.load()
+		return self.devices[did]
 		
 	def getZonesNames(self):
 		if not self.loaded:
 			self.load()
 		zones = []
 		
-		for z in self.zones.values():
+		for z in self.getZones():
 			zones.append(n['title'])
 		
 		return zones
@@ -437,7 +512,7 @@ class CNMLParser():
 			self.load()
 		titles = []
 		
-		for n in self.nodes.values():
+		for n in self.getNodes():
 			titles.append(n['title'])
 
 		return titles
