@@ -67,22 +67,25 @@ class UnSolClic:
 		
 		assert len(device.radios) <= 1
 			
-		for radio in device.radios.values():
+		for radio in device.getRadios():
 			assert len(radio.interfaces) <= 1
 				
-			for iface in radio.interfaces.values():
+			for iface in radio.getInterfaces():
 				assert len(iface.links) <= 1
 					
 				ipv4_ip = iface.ipv4			##
 				ipv4_netmask = iface.mask		##
 				
-				for link in iface.links.values():
-					remote_if = link.linked_interface
-					remote_radio = remote_if.parentInterface
+				for link in iface.getLinks():
+					remote_if = link.interfaceB
+					print remote_if
+					remote_radio = remote_if.parentRadio
+					print remote_radio
 					
 					ssid = remote_radio.ssid
 					gateway = remote_if.ipv4
-			
+		
+		print device.name
 		if device.name == 'NanoStation2':
 			(net_mode, rate_max, txpower, ack, ext_antenna, mcastrate) = ('b', '11M', '6', '45', 'disabled', '11')
 		elif device.name == 'NanoStation5':
@@ -92,7 +95,9 @@ class UnSolClic:
 		elif device.name == 'NanoStation Loco5':
 			(net_mode, rate_max, txpower, ack, ext_antenna, mcastrate) = ('a', '54M', '6', '25', 'disabled', '54')
 		else:
-			raise NotImplementedError
+			# 'AirMaxM2 Bullet/PwBrg/AirGrd/NanoBr'
+			(net_mode, rate_max, txpower, ack, ext_antenna, mcastrate) = ('a', '54M', '6', '25', 'disabled', '54')
+			#raise NotImplementedError
 		
 		radio1txpower = '6'
 		dev = {'nick':device.title}
@@ -126,7 +131,7 @@ class UnSolClic:
 	# solo se usa el ssid de la antena a la que se conecta.
 	def generate(self, node):
 		
-		for dev in node.devices.values():
+		for dev in node.getDevices():
 			
 			if dev.type != 'radio': # server, ...
 				continue
