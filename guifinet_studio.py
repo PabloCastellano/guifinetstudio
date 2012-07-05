@@ -349,7 +349,10 @@ class GuifinetStudio:
 	def on_treeview1_button_release_event(self, widget, data=None):
 		sel = widget.get_selection()
 		(model, it) = sel.get_selected()
-		
+
+		if it is None: # treeview is clear
+			return True
+			
 		col = widget.get_path_at_pos(int(data.x), int(data.y))[1]
 		
 		if data.button == 3: # Right button
@@ -361,6 +364,9 @@ class GuifinetStudio:
 	def on_treeview2_button_release_event(self, widget, data=None):
 		sel = widget.get_selection()
 		(model, it) = sel.get_selected()
+		
+		if it is None: # treeview is clear
+			return True
 		
 		if data.button == 1: # Right button
 			nid = model.get_value(it, 1)
