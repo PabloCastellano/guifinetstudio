@@ -231,6 +231,7 @@ class CNMLInterface:
 
 # Note that for two connected nodes there's just one link, that is,
 # two different links (different linked dev/if/node) but same id
+# Given a device link, how to difference which is the linked device, A or B?
 class CNMLLink:
 	def __init__(self, lid, status, ltype, ldid, liid, lnid, parent):
 		self.id = lid
@@ -242,10 +243,10 @@ class CNMLLink:
 		self.parentInterface = parent
 		self.nodeA = lnid
 		self.deviceA = ldid
-		self.interfaceA =  liid
-		self.nodeB = 0
-		self.deviceB = 0
-		self.interfaceB = 0
+		self.interfaceA = liid
+		self.nodeB = None
+		self.deviceB = None
+		self.interfaceB = None
 		
 	def getLinkedNodes(self):
 		return [self.nodeA, self.nodeB]
@@ -256,10 +257,10 @@ class CNMLLink:
 	def getLinkedInterfaces(self):
 		return [self.interfaceA, self.interfaceB]
 		
-	def setLinkB(self, did, iid, nid):
-		self.nodeB = nid
-		self.deviceB = did
-		self.interfaceB = iid
+	def parseLinkB(self, l):
+		self.nodeB = int(l.getAttribute('linked_node_id'))
+		self.deviceB = int(l.getAttribute('linked_device_id'))
+		self.interfaceB = int(l.getAttribute('linked_interface_id'))
 		
 	def setLinkedParameters(self, devs, ifaces, nodes):
 		didA = self.deviceA
@@ -268,7 +269,11 @@ class CNMLLink:
 		didB = self.deviceB
 		iidB = self.interfaceB
 		nidB = self.nodeB
-		
+
+		if self.nodeB is None:
+			print "Couldn't find linked node (%d) in link %d. It may be defined in a different CNML zone." %(self.nodeA, self.id)
+			return
+			
 		if devs.has_key(didA):
 			self.deviceA = devs[didA]
 		else:
@@ -313,7 +318,7 @@ class CNMLLink:
 		# link_type -> type
 		# linked_device_id -> device_id
 		# linked_interface_id -> interface_id
-		# linked_node_id -> node_id					
+		# linked_node_id -> node_id
 							
 		newlink = CNMLLink(lid, status, ltype, ldid, liid, lnid, parent)
 		return newlink
@@ -443,7 +448,7 @@ class CNMLParser():
 							lid = int(l.getAttribute('id'))
 							
 							if self.links.has_key(lid):
-								self.links[lid].setLinkB(did, iid, nid)
+								self.links[lid].parseLinkB(l)
 								self.ifaces[iid].addLink(self.links[lid])
 							else:
 								newlink = CNMLLink.parse(l, newiface)
@@ -517,26 +522,6 @@ class CNMLParser():
 
 		return titles
 
-
-if __name__ == '__main__':
-	if len(sys.argv) != 2:
-		print "Usage: %s <detail_file>" %(sys.argv[0])
-		filename = 'tests/detail.3'
-	#	sys.exit(1)
-	else:
-		filename = sys.argv[1]
-
-	cnmlp = CNMLParser(filename)
-	d = cnmlp.nodes
-
-	print d
-	print
-	print d[26997]
-	print d[26997]['devices']
-	print cnmlp.getTitles()
-	
-	for dev in cnmlp.devices.keys():
-		print cnmlp.devices[dev]['name']
 
 # <interface> cuelga de <device> WTF?!:
 #	<device created="20101105 0125" firmware="AirOsv52" id="25621" name="AirMaxM2 Bullet/PwBrg/AirGrd/NanoBr" status="Working" title="MLGInvisibleRd1" type="radio" updated="20110724 0113">

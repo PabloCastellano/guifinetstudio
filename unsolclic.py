@@ -78,12 +78,14 @@ class UnSolClic:
 				
 				for link in iface.getLinks():
 					remote_if = link.interfaceB
-					print remote_if
-					remote_radio = remote_if.parentRadio
-					print remote_radio
-					
-					ssid = remote_radio.ssid
+					if remote_if.ipv4 == ipv4_ip:
+						remote_if = link.interfaceA
+						
 					gateway = remote_if.ipv4
+					
+					remote_radio = remote_if.parentRadio
+					ssid = remote_radio.ssid
+					
 		
 		print device.name
 		if device.name == 'NanoStation2':
