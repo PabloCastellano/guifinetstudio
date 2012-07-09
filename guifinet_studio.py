@@ -373,6 +373,7 @@ class GuifinetStudio:
 			lat = float(self.cnmlp.getNode(nid).latitude)
 			lon = float(self.cnmlp.getNode(nid).longitude)
 			self.view.center_on(lat, lon)
+			#self.view.go_to(lat, lon)
 		
 	
 	def on_treeview2_key_press_event(self, widget, data=None):
@@ -384,6 +385,7 @@ class GuifinetStudio:
 			lat = float(self.cnmlp.getNode(nid).latitude)
 			lon = float(self.cnmlp.getNode(nid).longitude)
 			self.view.center_on(lat, lon)
+			#self.view.go_to(lat, lon)
 		
 
 	def on_imagemenuitem2_activate(self, widget, data=None):
@@ -428,6 +430,15 @@ class GuifinetStudio:
 		else:
 			self.currentView = 0
 		self.notebook1.set_current_page(self.currentView)
+		
+		
+	def zoom_in(self, widget, data=None):
+		self.view.zoom_in()
+		
+		
+	def zoom_out(self, widget, data=None):
+		self.view.zoom_out()
+		
 		
 	def gtk_main_quit(self, widget, data=None):
 		Gtk.main_quit()
