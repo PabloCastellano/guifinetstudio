@@ -189,8 +189,12 @@ class GuifinetStudio:
 			for n in nodes:
 				st = n.status
 				nodescount[st] += 1
-			
-			assert nodescount[Status.UNKNOWN] == 0
+				
+			try:
+				assert nodescount[Status.UNKNOWN] == 0
+			except AssertionError:
+				print 'There are %d nodes with status == UNKNOWN' %nodescount[Status.UNKNOWN]
+				
 			return (nodescount[Status.PLANNED], nodescount[Status.WORKING], nodescount[Status.TESTING], nodescount[Status.BUILDING])
 
 		zone = self.cnmlp.getZone(zid)
@@ -422,9 +426,7 @@ class GuifinetStudio:
 		self.about_ui.show()
 
 
-	def on_changeViewButton_toggled(self, widget, data=None):
-		print 'on_changeViewButton_toggled:', self.currentView
-		
+	def on_changeViewButton_toggled(self, widget, data=None):		
 		if self.currentView == 0:
 			self.currentView = 1
 		else:

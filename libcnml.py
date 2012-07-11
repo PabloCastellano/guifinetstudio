@@ -17,19 +17,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import xml.dom.minidom as MD
+try:
+	from lxml import etree
+	LXML = True
+	print 'Using lxml which is more efficient'
+except ImportError:
+	import xml.dom.minidom as MD
+	LXML = False
+	print 'lxml module not found. Falling back to minidom'
+	
+
 import sys
-
-# Examples:
-#self.nodes[99]['name']
-#self.nodes[99]['lat']
-#self.nodes[99]['lon']
-#self.nodes[99]['ndevices'] // ndevices podria ser una lista con los ids
-#self.nodes[99]['devices']
-#self.nodes[99]['devices'][deviceid]
-#self.nodes[99]['devices'][deviceid]['status']
-#self.nodes[99]['devices'][deviceid]['firmware']
-
 
 class CNMLZone:
 	def __init__(self, zid, parentid, aps=0, box=[], nclients=0, ndevices=0, nlinks=0, nservices=0, title=''):
@@ -60,9 +58,39 @@ class CNMLZone:
 	def getSubzones(self):
 		return self.subzones.values()
 		
-	# @param z: xml.dom.minidom.Element
+
 	@staticmethod
-	def parse(z):
+	def parseLxml(z):
+		zid = int(z.get('id'))
+		try:
+			zparentid = int(z.get('parent_id'))
+		except:
+			# guifi.net World doesn't have parent_id
+			zparentid = None
+		
+		nAPs = z.get('access_points') or 0
+		nAPs = int(nAPs)
+		box = z.get('box').split(',')
+		box = [box[:2], box[2:]]
+		nclients = z.get('clients') or 0
+		nclients = int(nclients)
+		ndevices = z.get('devices') or 0
+		ndevices = int(ndevices)
+		nlinks = z.get('links') or 0
+		nlinks = int(nlinks)
+		nservices = z.get('services') or 0
+		nservices = int(nservices)
+		title = z.get('title')
+#		nnodes = int(z.getAttribute('zone_nodes'))
+#		nnodes is not useful --> len(nodes)				
+
+		newzone = CNMLZone(zid, zparentid, nAPs, box, nclients, ndevices, nlinks, nservices, title)
+		return newzone
+		
+		
+	@staticmethod
+	# @param z: xml.dom.minidom.Element
+	def parseMinidom(z):
 		zid = int(z.getAttribute("id"))
 		try:
 			zparentid = int(z.getAttribute("parent_id"))
@@ -90,6 +118,14 @@ class CNMLZone:
 		return newzone
 		
 		
+	@staticmethod
+	def parse(z):
+		if LXML:
+			return CNMLZone.parseLxml(z)
+		else:
+			return CNMLZone.parseMinidom(z)
+		
+		
 class CNMLNode:
 	def __init__(self, nid, title, lat, lon, nlinks, status):
 		self.id = nid
@@ -105,9 +141,9 @@ class CNMLNode:
 		
 	def addDevice(self, dev):
 		self.devices[dev.id] = dev
-		
+	
 	@staticmethod
-	def parse(n):
+	def parseMinidom(n):
 		nid = int(n.getAttribute("id"))
 		lat = float(n.getAttribute("lat"))
 		lon = float(n.getAttribute("lon"))
@@ -122,7 +158,31 @@ class CNMLNode:
 		newnode = CNMLNode(nid, title, lat, lon, nlinks, status)		
 		return newnode
 		
+	@staticmethod
+	def parseLxml(n):
+		nid = int(n.get('id'))
+		lat = float(n.get('lat'))
+		lon = float(n.get('lon'))
+		title = n.get('title')
+		#ndevices = n.getAttribute('devices') or 0
+		#ndevices = int(ndevices)
+		nlinks = n.get('links') or 0
+		nlinks = int(nlinks)
+		status = n.get('status')
+		status = Status.strToStatus(status)
 		
+		newnode = CNMLNode(nid, title, lat, lon, nlinks, status)		
+		return newnode
+		
+		
+	@staticmethod
+	def parse(n):
+		if LXML:
+			return CNMLNode.parseLxml(n)
+		else:
+			return CNMLNode.parseMinidom(n)
+
+
 class CNMLDevice:
 	def __init__(self, did, name, firmware, status, title, dtype, parent):
 		self.id = did
@@ -139,9 +199,25 @@ class CNMLDevice:
 		
 	def addRadio(self, radio):
 		self.radios[radio.id] = radio
+
+	@staticmethod
+	def parseLxml(d, parent):
+		did = int(d.get('id'))
+		name = d.get('name')
+		firmware = d.get('firmware')
+		status = d.get('status')
+		status = Status.strToStatus(status)
+		title = d.get('title')
+		dtype = d.get('type')
+		#nlinks = d.getAttribute('links') or 0
+		#nlinks = int(nlinks)
+		#por qué no tiene un atributo radios="2" en lugar de links="2"??
+		
+		newdevice = CNMLDevice(did, name, firmware, status, title, dtype, parent)
+		return newdevice
 		
 	@staticmethod
-	def parse(d, parent):
+	def parseMinidom(d, parent):
 		did = int(d.getAttribute("id"))
 		name = d.getAttribute("name")
 		firmware = d.getAttribute("firmware")
@@ -155,9 +231,16 @@ class CNMLDevice:
 		
 		newdevice = CNMLDevice(did, name, firmware, status, title, dtype, parent)
 		return newdevice
+		
+				
+	@staticmethod
+	def parse(d, parent):
+		if LXML:
+			return CNMLDevice.parseLxml(d, parent)
+		else:
+			return CNMLDevice.parseMinidom(d, parent)
 
-	
-	
+
 class CNMLRadio:
 	def __init__(self, rid, protocol, snmp_name, ssid, mode, gain, angle, channel, clients, parent):
 		self.id = rid
@@ -179,7 +262,28 @@ class CNMLRadio:
 		self.interfaces[iface.id] = iface
 	
 	@staticmethod
-	def parse(r, parent):
+	def parseLxml(r, parent):
+		#radio ids are 0, 1, 2...
+		rid = int(r.get('id'))
+		protocol = r.get('protocol')
+		snmp_name = r.get('snmp_name')
+		ssid = r.get('ssid')
+		mode = r.get('mode')
+		antenna_gain = r.get('antenna_gain')
+		antenna_angle = r.get('antenna_angle')
+		channel = r.get('channel') or 0 # ugly
+		channel = int(channel)
+		clients = r.get('clients_accepted') == 'Yes'
+		
+		#falta atributo interfaces="2"
+		#sobra atributo device_id
+
+		newradio = CNMLRadio(rid, protocol, snmp_name, ssid, mode, antenna_gain, antenna_angle, channel, clients, parent)
+		return newradio
+
+
+	@staticmethod
+	def parseMinidom(r, parent):
 		#radio ids are 0, 1, 2...
 		rid = int(r.getAttribute('id'))
 		protocol = r.getAttribute('protocol')
@@ -197,7 +301,14 @@ class CNMLRadio:
 
 		newradio = CNMLRadio(rid, protocol, snmp_name, ssid, mode, antenna_gain, antenna_angle, channel, clients, parent)
 		return newradio
-		
+
+	@staticmethod
+	def parse(r, parent):
+		if LXML:
+			return CNMLRadio.parseLxml(r, parent)
+		else:
+			return CNMLRadio.parseMinidom(r, parent)
+				
 		
 class CNMLInterface:
 	def __init__(self, iid, ipv4, mask, mac, itype, parent):
@@ -215,8 +326,22 @@ class CNMLInterface:
 	def addLink(self, link):
 		self.links[link.id] = link
 		
+		
 	@staticmethod
-	def parse(i, parent):
+	def parseLxml(i, parent):
+		iid = int(i.get('id'))
+		ipv4 = i.get('ipv4')
+		mac = i.get('mac')
+		#checkMac
+		mask = i.get('mask')
+		itype = i.get('type') #wLan/Lan
+		
+		newiface = CNMLInterface(iid, ipv4, mask, mac, itype, parent)
+		
+		return newiface
+		
+	@staticmethod
+	def parseMinidom(i, parent):
 		iid = int(i.getAttribute('id'))
 		ipv4 = i.getAttribute('ipv4')
 		mac = i.getAttribute('mac')
@@ -227,6 +352,14 @@ class CNMLInterface:
 		newiface = CNMLInterface(iid, ipv4, mask, mac, itype, parent)
 		
 		return newiface
+		
+	@staticmethod
+	def parse(i, parent):
+		if LXML:
+			return CNMLInterface.parseLxml(i, parent)
+		else:
+			return CNMLInterface.parseMinidom(i, parent)
+		
 		
 
 # Note that for two connected nodes there's just one link, that is,
@@ -257,10 +390,21 @@ class CNMLLink:
 	def getLinkedInterfaces(self):
 		return [self.interfaceA, self.interfaceB]
 		
-	def parseLinkB(self, l):
+	def parseLinkBLxml(self, l):
+		self.nodeB = int(l.get('linked_node_id'))
+		self.deviceB = int(l.get('linked_device_id'))
+		self.interfaceB = int(l.get('linked_interface_id'))
+		
+	def parseLinkBLMinidom(self, l):
 		self.nodeB = int(l.getAttribute('linked_node_id'))
 		self.deviceB = int(l.getAttribute('linked_device_id'))
 		self.interfaceB = int(l.getAttribute('linked_interface_id'))
+		
+	def parseLinkB(self, l):
+		if LXML:
+			self.parseLinkBLxml(l)
+		else:
+			self.parseLinkBLMinidom(l)
 		
 	def setLinkedParameters(self, devs, ifaces, nodes):
 		didA = self.deviceA
@@ -271,7 +415,7 @@ class CNMLLink:
 		nidB = self.nodeB
 
 		if self.nodeB is None:
-			print "Couldn't find linked node (%d) in link %d. It may be defined in a different CNML zone." %(self.nodeA, self.id)
+			#print "Couldn't find linked node (%d) in link %d. It may be defined in a different CNML zone." %(self.nodeA, self.id)
 			return
 			
 		if devs.has_key(didA):
@@ -304,24 +448,43 @@ class CNMLLink:
 		else:
 			print 'Node id %d not found' %self.nodeB
 		
-	#check if the link id already exists
+	# Cambiar nombres:
+	# link_status -> status
+	# link_type -> type
+	# linked_device_id -> device_id
+	# linked_interface_id -> interface_id
+	# linked_node_id -> node_id
 	@staticmethod
-	def parse(l, parent):
+	def parseLxml(l, parent):
+		lid = int(l.get('id'))
+		status = l.get('link_status')
+		ltype = l.get('link_type')
+		ldid = int(l.get('linked_device_id'))
+		liid = int(l.get('linked_interface_id'))
+		lnid = int(l.get('linked_node_id'))
+
+		newlink = CNMLLink(lid, status, ltype, ldid, liid, lnid, parent)
+		return newlink
+		
+	@staticmethod
+	def parseMinidom(l, parent):
 		lid = int(l.getAttribute('id'))
 		status = l.getAttribute('link_status')
 		ltype = l.getAttribute('link_type')
 		ldid = int(l.getAttribute('linked_device_id'))
 		liid = int(l.getAttribute('linked_interface_id'))
 		lnid = int(l.getAttribute('linked_node_id'))
-		# Cambiar nombres:
-		# link_status -> status
-		# link_type -> type
-		# linked_device_id -> device_id
-		# linked_interface_id -> interface_id
-		# linked_node_id -> node_id
 							
 		newlink = CNMLLink(lid, status, ltype, ldid, liid, lnid, parent)
 		return newlink
+		
+	@staticmethod
+	def parse(l, parent):
+		if LXML:
+			return CNMLLink.parseLxml(l, parent)
+		else:
+			return CNMLLink.parseMinidom(l, parent)
+		
 		
 
 class Status:
@@ -365,7 +528,6 @@ class CNMLParser():
 			self.loaded = False
 	
 	
-
 	def getInterfaces(self):
 		return self.ifaces.values()
 		
@@ -387,18 +549,77 @@ class CNMLParser():
 	def getLinks(self):
 		return self.links.values()
 		
-	def load(self, extracheck=True):
+	def loadLxml(self):
+		tree = etree.parse(self.filename)
+
+		# --zones--
+		zones = tree.iterfind('//zone')
+		
+		self.rootzone = int(tree.find('//zone[1]').get('id'))
+
+		for z in zones:
+			zid = int(z.get('id'))
+			newzone = CNMLZone.parse(z)
+			self.zones[zid] = newzone
+			zparentid = newzone.parentzone
+			
+			if zid != self.rootzone and zparentid != None:
+				self.zones[zparentid].addSubzone(newzone)
+		
+		# --nodes--
+		for n in tree.iterfind('//node'):
+			nid = int(n.get('id'))
+			zid = int(n.getparent().get('id'))
+			newnode = CNMLNode.parse(n)
+			self.nodes[nid] = newnode
+			self.zones[zid].addNode(newnode)
+					
+			#assert n.parentNode.localName == u'zone'
+			#assert(ndevices == len(devicestree))
+			
+			# --devices--			
+			for d in n.iterfind('device'):
+				did = int(d.get('id'))
+				newdevice = CNMLDevice.parse(d, newnode)
+				self.devices[did] = newdevice
+				self.nodes[nid].addDevice(newdevice)
+				
+				# --radios--
+				for r in d.iterfind('radio'):
+					rid = int(r.get('id'))
+					newradio = CNMLRadio.parse(r, newdevice)
+					self.devices[did].addRadio(newradio)
+					
+					# --interfaces--
+					for i in r.iterfind('interface'):
+						iid = int(i.get('id'))
+						newiface = CNMLInterface.parse(i, newradio)
+						self.ifaces[iid] = newiface
+						self.devices[did].radios[rid].addInterface(newiface)
+						
+						# --links--
+						for l in i.iterfind('link'):
+							lid = int(l.get('id'))
+							
+							if self.links.has_key(lid):
+								self.links[lid].parseLinkB(l)
+								self.ifaces[iid].addLink(self.links[lid])
+							else:
+								newlink = CNMLLink.parse(l, newiface)
+								self.links[lid] = newlink
+								self.ifaces[iid].addLink(newlink)
+							
+		# Replace None by true reference of nodes/devices/interfaces
+		# Note that if they belong to a different zone they might not be defined in the CNML file
+		for link in self.getLinks():
+			link.setLinkedParameters(self.devices, self.ifaces, self.nodes)
+			
+		
+	def loadMinidom(self):
 		tree = MD.parse(self.filename)
-	
+
 		# --zones--
 		zones = tree.getElementsByTagName("zone")
-		self.zones = dict()
-		self.nodes = dict()
-		self.devices = dict()
-		self.radios = dict()
-		self.ifaces = dict()
-		self.links = dict()
-		
 		
 		self.rootzone = int(zones[0].getAttribute("id"))
 		
@@ -410,7 +631,6 @@ class CNMLParser():
 			
 			if zid != self.rootzone and zparentid != None:
 				self.zones[zparentid].addSubzone(newzone)
-		
 		
 		# --nodes--
 		for n in tree.getElementsByTagName("node"):
@@ -454,17 +674,30 @@ class CNMLParser():
 								newlink = CNMLLink.parse(l, newiface)
 								self.links[lid] = newlink
 								self.ifaces[iid].addLink(newlink)
-							
-
+		
 		# Replace None by true reference of nodes/devices/interfaces
 		# Note that if they belong to a different zone they might not be defined in the CNML file
 		for link in self.getLinks():
 			link.setLinkedParameters(self.devices, self.ifaces, self.nodes)
+				
 		
+	def load(self):
+		self.zones = dict()
+		self.nodes = dict()
+		self.devices = dict()
+		self.radios = dict()
+		self.ifaces = dict()
+		self.links = dict()
+		
+		if LXML:
+			self.loadLxml()
+		else:
+			self.loadMinidom()
+
 		print 'Loaded OK'
 		self.loaded = True
-			
-	
+
+
 	def getNodesFromZone(self, zid):
 		if not self.loaded:
 			self.load()
@@ -504,23 +737,15 @@ class CNMLParser():
 	def getZonesNames(self):
 		if not self.loaded:
 			self.load()
-		zones = []
-		
-		for z in self.getZones():
-			zones.append(n['title'])
-		
-		return zones
+
+		return [z.title for z in self.getZones()]
 		
 		
 	def getTitles(self):
 		if not self.loaded:
 			self.load()
-		titles = []
-		
-		for n in self.getNodes():
-			titles.append(n['title'])
 
-		return titles
+		return [n.title for n in self.getNodes()]
 
 
 # <interface> cuelga de <device> WTF?!:
