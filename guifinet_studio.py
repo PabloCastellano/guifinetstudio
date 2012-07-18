@@ -43,11 +43,12 @@ class GuifinetStudio:
 
 		# UI Widgets
 		self.ui = Gtk.Builder()
-		self.ui.add_from_file("guifinet_studio.ui")
+		self.ui.add_from_file('guifinet_studio.ui')
 		self.ui.connect_signals(self)
 
-		self.mainWindow = self.ui.get_object("mainWindow")
-		self.listNodesWindow = self.ui.get_object("listNodesWindow")
+		self.mainWindow = self.ui.get_object('mainWindow')
+		self.listNodesWindow = self.ui.get_object('listNodesWindow')
+		self.preferencesdialog = self.ui.get_object('preferencesdialog')
 		
 		self.nodesList = self.ui.get_object("scrolledwindow1")
 		self.treestore = self.ui.get_object("treestore1")
@@ -70,7 +71,8 @@ class GuifinetStudio:
 		self.view.set_kinetic_mode(True)
 		self.view.set_zoom_level(13)
 		self.view.center_on(36.72341, -4.42428)
-        
+		self.view.connect('button-release-event', self.mouse_click_cb)
+		
 		scale = Champlain.Scale()
 		scale.connect_view(self.view)
 		self.view.bin_layout_add(scale, Clutter.BinAlignment.START, Clutter.BinAlignment.END)
@@ -84,10 +86,14 @@ class GuifinetStudio:
 		self.uimanager = Gtk.UIManager()
 		self.uimanager.add_ui_from_file("guifinet_studio_menu.ui")
 		self.uimanager.insert_action_group(self.actiongroup1)
-		self.menu = self.uimanager.get_widget("/KeyPopup")
+		self.menu1 = self.uimanager.get_widget("/KeyPopup1")
+		self.menu2 = self.uimanager.get_widget("/KeyPopup2")
 
 		self.t6 = self.ui.get_object("treeviewcolumn6")
 		self.nodedialog = self.ui.get_object("nodeDialog")
+		self.editnodedialog = self.ui.get_object("editnodedialog")
+		self.nodecoordinatesentry = self.ui.get_object('nodecoordinatesentry')
+		self.nodenameentry = self.ui.get_object('nodenameentry')
 		self.uscdialog = self.ui.get_object("uscdialog")
 		self.usctextbuffer = self.ui.get_object("usctextbuffer")
 		
@@ -362,7 +368,7 @@ class GuifinetStudio:
 		if data.button == 3: # Right button
 			if col is self.t6 and model.get_value(it, 5) is not None: 
 				#user clicked on a node
-				self.menu.popup(None, None, None, None, data.button, data.time)
+				self.menu1.popup(None, None, None, None, data.button, data.time)
 	
 
 	def on_treeview2_button_release_event(self, widget, data=None):
@@ -445,7 +451,39 @@ class GuifinetStudio:
 	def gtk_main_quit(self, widget, data=None):
 		Gtk.main_quit()
 	
+	def on_preferencesmenuitem_activate(self, widget ,data=None):
+		self.preferencesdialog.show()
+		
+	def on_preferencesdialog_delete_event(self, widget, data=None):
+		self.preferencesdialog.hide()
+		# TODO: Save changed preferences
+		return True
+		
+	def on_createnodemenuitem_activate(self, widget, data=None):
+		self.editnodedialog.set_title('Create new Guifi.net node')
+		self.editnodedialog.show()
+		
+	def on_editnodedialog_delete_event(self, widget, data=None):
+		self.editnodedialog.hide()
+		return True
+		
+	def mouse_click_cb(self, widget, event):
+		# event == void (GdkEventButton?)
+		if event.button == 3: # Right button
+			X, Y = event.x, event.y
+			self.lon, self.lat = self.view.x_to_longitude(X), self.view.y_to_latitude(Y)
+			self.menu2.popup(None, None, None, None, event.button, event.time)
+		return True
 
+	def on_action5_activate(self, action, data=None):
+		# TODO: set selected coordinates
+		self.editnodedialog.set_title('Create new Guifi.net node')
+		self.nodecoordinatesentry.set_text(str(self.last_lat) + ', ' + str(self.last_lon))
+		self.nodenameentry.grab_focus()
+		del self.last_lat, self.last_lon
+		self.editnodedialog.show()
+	
+	
 if __name__ == "__main__":
 
 	if len(sys.argv) > 1:
