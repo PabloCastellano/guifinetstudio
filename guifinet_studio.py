@@ -478,9 +478,9 @@ class GuifinetStudio:
 	def on_action5_activate(self, action, data=None):
 		# TODO: set selected coordinates
 		self.editnodedialog.set_title('Create new Guifi.net node')
-		self.nodecoordinatesentry.set_text(str(self.last_lat) + ', ' + str(self.last_lon))
+		self.nodecoordinatesentry.set_text(str(self.lat) + ', ' + str(self.lon))
 		self.nodenameentry.grab_focus()
-		del self.last_lat, self.last_lon
+		del self.lat, self.lon
 		self.editnodedialog.show()
 	
 	
