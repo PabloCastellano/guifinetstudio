@@ -26,8 +26,12 @@ from gi.repository import GtkChamplain, Champlain
 import os
 import sys
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append('lib')
 
 from libcnml import CNMLParser, Status
+import pyGuifiAPI
+
+from configmanager import GuifinetStudioConfig
 from unsolclic import UnSolClic
 
 
@@ -48,7 +52,6 @@ class GuifinetStudio:
 
 		self.mainWindow = self.ui.get_object('mainWindow')
 		self.listNodesWindow = self.ui.get_object('listNodesWindow')
-		self.preferencesdialog = self.ui.get_object('preferencesdialog')
 		
 		self.nodesList = self.ui.get_object("scrolledwindow1")
 		self.treestore = self.ui.get_object("treestore1")
@@ -91,17 +94,35 @@ class GuifinetStudio:
 
 		self.t6 = self.ui.get_object("treeviewcolumn6")
 		self.nodedialog = self.ui.get_object("nodeDialog")
-		self.editnodedialog = self.ui.get_object("editnodedialog")
-		self.nodecoordinatesentry = self.ui.get_object('nodecoordinatesentry')
-		self.nodenameentry = self.ui.get_object('nodenameentry')
+
+		# preferences dialog
+		self.preferencesdialog = self.ui.get_object('preferencesdialog')
+		self.userentry = self.ui.get_object('userentry')
+		self.passwordentry = self.ui.get_object('passwordentry')
+		
+		# unsolclic dialog
 		self.uscdialog = self.ui.get_object("uscdialog")
 		self.usctextbuffer = self.ui.get_object("usctextbuffer")
 		
+		# edit node dialog
+		self.editnodeokbutton = self.ui.get_object("editnodeokbutton")
+		self.editnodedialog = self.ui.get_object("editnodedialog")
+		self.nodecoordinatesentry = self.ui.get_object('nodecoordinatesentry')
+		self.nodenameentry = self.ui.get_object('nodenameentry')		
+		
+		# file chooser dialog
 		self.opendialog = self.ui.get_object("filechooserdialog1")
 		self.opendialog.set_action(Gtk.FileChooserAction.OPEN)
 		
+		# about dialog
 		self.about_ui = self.ui.get_object("aboutdialog1")
 
+		# Guifi.net API
+		self.guifiAPI = pyGuifiAPI.GuifiAPI()
+		
+		# configuration
+		self.configmanager = GuifinetStudioConfig()
+		
 		with open("COPYING") as f:
 			self.about_ui.set_license(f.read())
 
@@ -453,6 +474,8 @@ class GuifinetStudio:
 	
 	def on_preferencesmenuitem_activate(self, widget ,data=None):
 		self.preferencesdialog.show()
+		self.userentry.set_text(self.configmanager.getUsername())
+		self.passwordentry.set_text(self.configmanager.getPassword())
 		
 	def on_preferencesdialog_delete_event(self, widget, data=None):
 		self.preferencesdialog.hide()
@@ -483,7 +506,15 @@ class GuifinetStudio:
 		del self.lat, self.lon
 		self.editnodedialog.show()
 	
-	
+	def on_acceptxolncheckbutton_toggled(self, widget, data=None):
+		isActive = widget.get_active()
+		self.editnodeokbutton.set_sensitive(isActive)
+		
+	def on_editnodeokbutton_clicked(self, widget, data=None):
+		print 'saving'
+		self.editnodedialog.hide()
+		
+		
 if __name__ == "__main__":
 
 	if len(sys.argv) > 1:
