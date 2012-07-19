@@ -36,7 +36,17 @@ class GuifinetStudioConfig:
 			self.createDefaultConfig()
 			
 		self.config = ConfigParser.SafeConfigParser()
-		self.config.read(config_filename)
+		self.reload()
+
+	def reload(self):
+		try:
+			res = self.config.read(config_filename)
+			if res == []:
+				raise Exception
+		except Exception:
+			print 'Error reading file:', config_filename
+			raise
+			
 
 	def createDefaultConfig(self):
 		defaultconfig = ConfigParser.SafeConfigParser()
