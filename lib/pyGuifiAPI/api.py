@@ -57,6 +57,16 @@ class GuifiAPI:
  		self.headers = {'User-Agent':user_agent}
 		
 	
+	def setUsername(self, username):
+		if username != self.username:
+			#invalidate auth token
+			self.authToken = None
+			self.username = username
+		
+	def setPassword(self, password):
+		self.passwd = password
+		
+		
 	def setHost(self, host):
 		"""Checks for a valid host and set it as attribute"""
 		if host.endswith('/'):
@@ -123,6 +133,9 @@ class GuifiAPI:
 	def auth(self):
 		""" Authenticate user and get the Authorization Token """
 		
+		if self.username is None or self.passwd is None:
+			raise GuifiApiError('You need to set username and password first')
+			
 		self.authToken = None
 		if self.headers.has_key('Authorization'):
 			del self.headers['Authorization']
