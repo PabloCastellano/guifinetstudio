@@ -30,10 +30,12 @@ sys.path.append('lib')
 
 from libcnml import CNMLParser, Status
 import pyGuifiAPI
+from pyGuifiAPI.error import GuifiApiError
 
 from configmanager import GuifinetStudioConfig
 from unsolclic import UnSolClic
 
+from urllib2 import URLError
 
 class GuifinetStudio:
 	def __init__(self, cnmlFile="tests/detail.3"):
@@ -108,7 +110,28 @@ class GuifinetStudio:
 		self.editnodeokbutton = self.ui.get_object("editnodeokbutton")
 		self.editnodedialog = self.ui.get_object("editnodedialog")
 		self.nodecoordinatesentry = self.ui.get_object('nodecoordinatesentry')
-		self.nodenameentry = self.ui.get_object('nodenameentry')		
+		self.nodetitleentry = self.ui.get_object('nodetitleentry')		
+		self.nodeinfotextview = self.ui.get_object('nodeinfotextview')
+		self.nodenickentry = self.ui.get_object('nodenickentry')
+		self.nodecontactentry = self.ui.get_object('nodecontactentry')
+		self.nodezonecombobox = self.ui.get_object('nodezonecombobox')
+		self.nodezonedescentry = self.ui.get_object('nodezonedescentry')
+		self.nodeelevationentry = self.ui.get_object('nodeelevationentry')
+		
+		# edit zone dialog
+		self.editzonedialog = self.ui.get_object('editzonedialog')
+		
+		# edit device dialog
+		self.editdevicedialog = self.ui.get_object('editdevicedialog')
+		
+		# edit radio dialog
+		self.editradiodialog = self.ui.get_object('editradiodialog')
+		
+		# edit interface dialog
+		self.editinterfacedialog = self.ui.get_object('editinterfacedialog')
+		
+		# edit link dialog
+		self.editlinkdialog = self.ui.get_object('editlinkdialog')
 		
 		# file chooser dialog
 		self.opendialog = self.ui.get_object("filechooserdialog1")
@@ -117,11 +140,12 @@ class GuifinetStudio:
 		# about dialog
 		self.about_ui = self.ui.get_object("aboutdialog1")
 
-		# Guifi.net API
-		self.guifiAPI = pyGuifiAPI.GuifiAPI()
-		
 		# configuration
 		self.configmanager = GuifinetStudioConfig()
+
+		# Guifi.net API
+		self.guifiAPI = pyGuifiAPI.GuifiAPI(self.configmanager.getUsername(), self.configmanager.getPassword())
+		self.authenticated = False
 		
 		with open("COPYING") as f:
 			self.about_ui.set_license(f.read())
@@ -135,6 +159,7 @@ class GuifinetStudio:
 			self.cnmlFile = None
 
 		self.mainWindow.show_all()
+		self.authAPI()
 
 
 	def add_node_point(self, layer, lat, lon, size=12):
@@ -490,6 +515,46 @@ class GuifinetStudio:
 		self.editnodedialog.hide()
 		return True
 		
+	def on_createzonemenuitem_activate(self, widget, data=None):
+		self.editzonedialog.set_title('Create new Guifi.net zone')
+		self.editzonedialog.show()
+		
+	def on_editzonedialog_delete_event(self, widget, data=None):
+		self.editzonedialog.hide()
+		return True
+	
+	def on_createdevicemenuitem_activate(self, widget, data=None):
+		self.editdevicedialog.set_title('Create new Guifi.net device')
+		self.editdevicedialog.show()
+		
+	def on_editdevicedialog_delete_event(self, widget, data=None):
+		self.editdevicedialog.hide()
+		return True
+	
+	def on_createradiomenuitem_activate(self, widget, data=None):
+		self.editradiodialog.set_title('Create new Guifi.net radio')
+		self.editradiodialog.show()
+		
+	def on_editradiodialog_delete_event(self, widget, data=None):
+		self.editradiodialog.hide()
+		return True
+		
+	def on_createinterfacemenuitem_activate(self, widget, data=None):
+		self.editinterfacedialog.set_title('Create new Guifi.net interface')
+		self.editinterfacedialog.show()
+	
+	def on_editinterfacedialog_delete_event(self, widget, data=None):
+		self.editinterfacedialog.hide()
+		return True
+		
+	def on_createlinkmenuitem_activate(self, widget, data=None):
+		self.editlinkdialog.set_title('Create new Guifi.net link')
+		self.editlinkdialog.show()
+		
+	def on_editlinkdialog_delete_event(self, widget, data=None):
+		self.editlinkdialog.hide()
+		return True
+		
 	def mouse_click_cb(self, widget, event):
 		# event == void (GdkEventButton?)
 		if event.button == 3: # Right button
@@ -502,7 +567,7 @@ class GuifinetStudio:
 		# TODO: set selected coordinates
 		self.editnodedialog.set_title('Create new Guifi.net node')
 		self.nodecoordinatesentry.set_text(str(self.lat) + ', ' + str(self.lon))
-		self.nodenameentry.grab_focus()
+		self.nodetitleentry.grab_focus()
 		del self.lat, self.lon
 		self.editnodedialog.show()
 	
@@ -513,6 +578,55 @@ class GuifinetStudio:
 	def on_editnodeokbutton_clicked(self, widget, data=None):
 		print 'saving'
 		self.editnodedialog.hide()
+		
+		"""
+		nodezonecombobox
+		
+		nodestablecombobox
+		nodegraphscombobox
+		takefromparentscheckbutton
+		
+		status?
+		"""
+		
+		print self.editnodedialog.get_children()
+		
+		lat,lon = self.nodecoordinatesentry.get_text().split(',')
+		
+		print "Title:", self.nodetitleentry.get_text()
+		print "Zone:", self.nodezonecombobox
+		print "Latitude:", lat
+		print "Longitude:", lon
+		print "Nick:", self.nodenickentry.get_text()
+		print 'Node description:', self.nodeinfotextview.get_buffer()#.get_text()
+		print 'Zone description:', self.nodezonedescentry.get_text()
+		print 'Contact:', self.nodecontactentry.get_text()
+		print 'Elevation:', self.nodeelevationentry.get_text()
+		
+		#self.guifiAPI.addNode(title=self.nodetitleentry.get_text(),
+		#			zone_id, lat, lon, nick=nodenickentry.get_text(), body=nodeinfotextview.get_text(),
+		#			zone_desc=nodezonedescentry.get_text(), notification=nodecontactentry.get_text(), elevation=nodeelevationentry.get_text(),
+		#			stable=True, graph_server=None, status='Planned'):
+						
+	
+	def fillZonesComboBox(self, combobox):
+		# zoneid - title
+		pass
+		
+	def authAPI(self):
+		try:
+			self.guifiAPI.auth()
+			self.authenticated = True
+			self.statusbar.push(0, "Logged into Guifi.net")
+		except URLError, e: # Not connected to the Internets
+			self.statusbar.push(0, "Couldn't login into Guifi.net: check your Internet connection")
+			self.authenticated = False
+		except GuifiApiError, e:
+			g = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, 
+								"Couldn't login into Guifi.net:\n" + e.reason)
+			g.run()
+			g.destroy()
+			self.authenticated = False
 		
 		
 if __name__ == "__main__":
