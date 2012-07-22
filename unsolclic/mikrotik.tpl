@@ -2,7 +2,7 @@
 # {{ firmware_name }}
 :log info \"Unsolclic for {{ dev.id }}-{{ dev.nick }} going to be executed.\"
 #
-# Configuration for {{ firmware_description}}
+# Configuration for {{ firmware_name }}
 # Trasto: {{  dev.id  }}-{{ dev.nick }}
 #
 # Methods to upload/execute this script:
@@ -37,6 +37,20 @@
 # -Don''t run the script from telnet and being connected through an IP connection at
 #   the wLan/Lan interface: This interface will be destroyed during the script.
 #
+{% macro bgp_peer(id, host_name, ipv4, disabled) %}
+/ routing bgp peer
+:foreach i in [find name={{ host_name }}] do={/routing bgp peer remove $i;}
+add name=\"{{ host_name }}\" instance=default remote-address={{ ipv4 }} remote-as={{ id }} \
+multihop=no route-reflect=no ttl=default in-filter=ebgp-in out-filter=ebgp-out disabled={{ disabled }}{% endmacro %}
+{% macro ospf_interface(iname, netid, maskbits, ospf_name , ospf_zone, ospf_id, disabled) %}
+/ routing ospf interface
+:foreach i in [/routing ospf interface find interface={{ iname }}] do={/routing ospf interface remove $i;}
+add interface={{ iname }}
+/ routing ospf network
+:foreach i in [/routing ospf network find network={{ netid }}/{{ maskbits }}] do={/routing ospf network remove $i;}
+add network={{ netid }}/{{ maskbits }} area={{ ospf_name }} disabled={{ disabled }}
+{% endmacro %}
+#
 / system identity set name={{ dev.nick }}
 #
 # DNS (client & server cache) zone: {{ zone_id }}
@@ -44,7 +58,7 @@
 {% if zone_secondary_dns %}
 /ip dns set servers={{ zone_primary_dns }},{{ zone_secondary_dns }} allow-remote-requests=yes
 {% else %}
-/ip dns set  servers={{ zone_primary_dns }} allow-remote-requests=yes
+/ip dns set servers={{ zone_primary_dns }} allow-remote-requests=yes
 {% endif %}
 {% endif %}
 :delay 1
@@ -52,7 +66,7 @@
 # NTP (client & server cache) zone:  {{ zone_id }}
 {% if zone_primary_ntp %}
 {% if zone_secondary_ntp %}
-/system ntp client set enabled=yes mode=unicast primary-ntp={{zone_primary_ntp }} secondary-ntp={{ zone_secondary_ntp }}
+/system ntp client set enabled=yes mode=unicast primary-ntp={{ zone_primary_ntp }} secondary-ntp={{ zone_secondary_ntp }}
 {% else %}
 /system ntp client set enabled=yes mode=unicast primary-ntp={{ zone_primary_ntp }}
 {% endif %}
@@ -83,7 +97,7 @@ do=[/system logging action remove $i]
 /system logging add action=guifi_remot topics=critical
 /system logging add action=guifi_remot topics=account
 {% endif %}
-{% if dev.mode != ''client'' %}
+{% if dev.mode != "client" %}
 # Remove current wLan/Lan bridge if exists
 :foreach i in [/interface bridge find name=wLan/Lan] \
 do={:foreach i in [/interface bridge port find bridge=wLan/Lan] \
@@ -100,31 +114,29 @@ add interface=wlan1 bridge=wLan/Lan
 {% endif %}
 {% if dev.radios %}
 :delay 1
-#
 {# la declarem aqui perque sino no hi puc accedir fora del foreach radio #}
-{% set ospf_routerid = ''ospf_routerid'' %}
+{% set ospf_routerid = "ospf_routerid" %}
 {% for radio_id, radio in dev.radios %}
 # Radio#: {{ radio.radiodev_counter }} {{ radio.ssid }}
-{% spaceless %}
 /interface wireless set wlan{{ radio.radiodev_counter+1 }} name=\"wlan{{ radio.radiodev_counter+1 }}\" \
 radio-name=\"{{ radio.ssid }}\" mode={{ radio.mode }}-bridge ssid=\"guifi.net-{{ radio.ssid }}\" \
-{% if radio.mode == ''ap'' %}
-   {% set mode = ''ap-bridge'' %}
+{% if radio.mode == "ap" %}
+   {% set mode = "ap-bridge" %}
     {% if radio.channel < 5000 %}
-      {% set band = ''2.4ghz-b'' %}
+      {% set band = "2.4ghz-b" %}
     {% else %}
-      {% set band = ''5ghz'' %}
+      {% set band = "5ghz" %}
     {% endif %}
-{% elseif (radio.mode == ''client'' or radio.mode == ''clientrouted'') %}
-   {% set mode = ''station'' %}
+{% elif (radio.mode == "client" or radio.mode == "clientrouted") %}
+   {% set mode = "station" %}
     {% if radio.channel != 5000 %}
-      {% set band = ''2.4ghz-b'' %}
+      {% set band = "2.4ghz-b" %}
     {% else %}
-      {% set band = ''5ghz'' %}
+      {% set band = "5ghz" %}
     {% endif %}
 {% endif %}
-{% if radio.protocol == ''802.11n'' and radio.channel > 5000 and mai == true %}
-  {% set band = ''5ghz-a/n'' %}
+{% if radio.protocol == "802.11n" and radio.channel > 5000 and mai == true %}
+  {% set band = "5ghz-a/n" %}
 {% endif %}
 band=\"{{ band }}\" \
 frequency-mode=regulatory-domain country=spain antenna-gain={{ radio.antenna_gain }} \
@@ -135,27 +147,27 @@ frequency-mode=regulatory-domain country=spain antenna-gain={{ radio.antenna_gai
       {% endif %}
 frequency={{ channel }} \
     {% endif %}
-    {% if ((radio.1.band == ''5ghz'' or ''5ghz-a'') and (channel == 5000 )) or
-         ((radio.1.band == ''2.4ghz-b'' or ''2ghz-b'') and (channel == 0 )) %}
- dfs-mode=radar-detect \
+    {% if ((radio.1.band == "5ghz" or "5ghz-a") and (channel == 5000 )) or
+         ((radio.1.band == "2.4ghz-b" or "2ghz-b") and (channel == 0 )) %}
+dfs-mode=radar-detect \
     {% else %}
- dfs-mode=none \
+dfs-mode=none \
     {% endif %}
-    {% if radio.antenna_mode =='''' %}
- wds-mode=static wds-default-bridge=none wds-default-cost=100 \
+    {% if radio.antenna_mode =="" %}
+wds-mode=static wds-default-bridge=none wds-default-cost=100 \
     {% else %}
-      {% if radio.antenna_mode != ''Main''%}
-         {% set antenna_mode = ''ant-b'' %}
+      {% if radio.antenna_mode != "Main"%}
+         {% set antenna_mode = "ant-b" %}
       {% else %}
-         {% set antenna_mode = ''ant-a'' %}
+         {% set antenna_mode = "ant-a" %}
       {% endif %}
- antenna-mode={{ antenna_mode }} wds-mode=static wds-default-bridge=none wds-default-cost=100 \
+antenna-mode={{ antenna_mode }} wds-mode=static wds-default-bridge=none wds-default-cost=100 \
     {% endif %}
- wds-cost-range=50-150 wds-ignore-ssid=yes hide-ssid=no
+wds-cost-range=50-150 wds-ignore-ssid=yes hide-ssid=no
     {% for interface_id, interface in radio.interfaces %}
 :delay 1
 # Type: {{ interface.interface_type }}
-      {% if interface.interface_type == ''wds/p2p'' %}
+      {% if interface.interface_type == "wds/p2p" %}
 # Remove all existing wds interfaces
 :foreach i in [/interface wireless wds find master-interface=wlan{{ radio.radiodev_counter+1 }}] \
 do={:foreach n in [/interface wireless wds get $i name] \
@@ -166,26 +178,26 @@ do={/ip address remove $inum;};}; \
           {% for ipv4_id,ipv4 in interface.ipv4 %}
                     {% if ipv4.links %}
                       {% for link_id, link in ipv4.links %}
-                        {% if link.flag == ''Working'' or link.flag == ''Testing'' or link.flag == ''Building'' %}
-                           {% set disabled = ''no'' %}
+                        {% if link.flag == "Working" or link.flag == "Testing" or link.flag == "Building" %}
+                           {% set disabled = "no" %}
                         {% else %}
-                           {% set disabled = ''yes'' %}
+                           {% set disabled = "yes" %}
                         {% endif %}
-                        {% set wds_name = ''wds_''. link.interface.ipv4.host_name %}
+                        {% set wds_name = "wds_". link.interface.ipv4.host_name %}
                         {% if not link.interface.mac %}
-                          {% set link_mac = ''FF:FF:FF:FF:FF:FF'' %}
+                          {% set link_mac = "FF:FF:FF:FF:FF:FF" %}
                         {% else %}
                           {% set link_mac = link.interface.mac %}
                         {% endif %}
 / interface wireless wds
 add name=\"wds_{{ link.interface.ipv4.host_name }}\" master-interface=wlan{{ radio_id+1 }} wds-address={{ link_mac }} disabled={{ disabled }}
 / ip address add address={{ ipv4.ipv4 }}/{{ ipv4.maskbits }} network={{ ipv4.netid }} broadcast={{ ipv4.broadcast }} interface=wds_{{ link.interface.ipv4.host_name }} disabled={{ disabled }} comment=\"wds_{{ link.interface.ipv4.host_name }}\"
-                        {% if link.routing == ''OSPF'' %}
-                          {{ _self.ospf_interface(''wds_'' ~ link.interface.ipv4.host_name , ipv4.netid , ipv4.maskbits , ospf_name , ospf_zone, ospf_id, ''no'') }}
-                          {{ _self.bgp_peer(link.device_id, link.interface.ipv4.host_name, link.interface.ipv4.ipv4, ''yes'') }}
+                        {% if link.routing == "OSPF" %}
+                          {{ ospf_interface("wds_" ~ link.interface.ipv4.host_name , ipv4.netid , ipv4.maskbits , ospf_name , ospf_zone, ospf_id, "no") }}
+                          {{ bgp_peer(link.device_id, link.interface.ipv4.host_name, link.interface.ipv4.ipv4, "yes") }}
                         {% else %}
-                          {{ _self.ospf_interface(''wds_'' ~ link.interface.ipv4.host_name , ipv4.netid , ipv4.maskbits , ospf_name , ospf_zone, ospf_id, ''yes'') }}
-                          {{ _self.bgp_peer(link.device_id, link.interface.ipv4.host_name, link.interface.ipv4.ipv4, ''no'') }}
+                          {{ ospf_interface("wds_" ~ link.interface.ipv4.host_name , ipv4.netid , ipv4.maskbits , ospf_name , ospf_zone, ospf_id, "yes") }}
+                          {{ bgp_peer(link.device_id, link.interface.ipv4.host_name, link.interface.ipv4.ipv4, "no") }}
                         {% endif %}
                       {% endfor %}
                     {% endif %}
@@ -196,15 +208,15 @@ add name=\"wds_{{ link.interface.ipv4.host_name }}\" master-interface=wlan{{ rad
           {% if interface.ipv4 %}
              {% for ipv4_id,ipv4 in interface.ipv4 %}
                 {# aixo a l''original no es ben be aixi #}
-                {% if interface.interface_type == ''wLan/Lan'' %}
+                {% if interface.interface_type == "wLan/Lan" %}
                   {% set iname = interface.interface_type %}
                   {% set ospf_routerid = ipv4.ipv4 %}
                 {% else  %}
                   {% set radioindex = radio_id+1 %}
-                  {% set iname = ''wlan'' ~ radioindex %}
+                  {% set iname = "wlan" ~ radioindex %}
                 {% endif %}
 /ip address
-                {% if interface.interface_type == ''Wan''%}
+                {% if interface.interface_type == "Wan"%}
 :foreach i in [find interface={{ iname }}] do={remove $i}
                 {% endif  %}
 :foreach i in [find address=\"{{ ipv4.ipv4 }}/{{ ipv4.maskbits }}\"] do={remove $i}
@@ -212,13 +224,13 @@ add name=\"wds_{{ link.interface.ipv4.host_name }}\" master-interface=wlan{{ rad
 / routing bgp network
 :foreach i in [/routing bgp network find network={{ ipv4.netid }}/{{ ipv4.maskbits }}] do={/routing bgp network remove $i;}
 add network={{ ipv4.netid }}/{{ ipv4.maskbits }} disabled=no
-                {% if dev.mode != ''client'' %}
+                {% if dev.mode != "client" %}
 / routing ospf interface
 :foreach i in [/routing ospf interface find interface={{ iname }}] do={/routing ospf interface remove $i;}
 add interface={{ iname }}
 / routing ospf network
 :foreach i in [/routing ospf network find network={{ ipv4.netid }}/{{ ipv4.maskbits }}] do={/routing ospf network remove $i;}
-add network={{ ipv4.netid }}/{{ ipv4.maskbits }} area={%if ipv4.ospf_name=='''' %} backbone{% else %}{{ ipv4.ospf_name }}{% endif %} disabled=no
+add network={{ ipv4.netid }}/{{ ipv4.maskbits }} area={%if ipv4.ospf_name== "" %} backbone{% else %}{{ ipv4.ospf_name }}{% endif %} disabled=no
                 {% else %}
 / routing ospf interface
 :foreach i in [/routing ospf interface find interface={{ iname }}] do={/routing ospf interface remove $i;}
@@ -227,7 +239,7 @@ add interface={{ iname }}
 :foreach i in [/routing ospf network find network={{ ipv4.netid }}/{{ ipv4.maskbits }}] do={/routing ospf network remove $i;}
 add network={{ ipv4.netid }}/{{ ipv4.maskbits }} area={{ ipv4.ospf_name }} disabled=yes
                 {% endif %}
-                {% if interface.interface_type == ''HotSpot'' %}
+                {% if interface.interface_type == "HotSpot" %}
 #
 # HotSpot
 /interface wireless
@@ -256,15 +268,15 @@ add name=\"hotspot{{ radio.id+1 }}\" interface=hotspot{{ radio.id+1 }} address-p
 end of HotSpot
                 {% endif %} {# end hotspot #}
 :delay 1
-                {% if interface.interface_type != ''HotSpot'' and interface.interface_type != ''Wan'' %}
-                  {% if mode == ''ap-bridge'' %}
+                {% if interface.interface_type != "HotSpot" and interface.interface_type != "Wan" %}
+                  {% if mode == "ap-bridge" %}
                     {% set maxip = ip2long(ipv4.netstart) +1  %}
                     {% if maxip +5 >  ip2long(ipv4.netend) -5 %}
                       {% set maxip = ip2long(ipv4.netend) %}
-                      {% set dhcpDisabled = ''yes'' %}
+                      {% set dhcpDisabled = "yes" %}
                     {% else %}
                       {% set maxip = maxip +5 %}
-                      {% set dhcpDisabled = ''no'' %}
+                      {% set dhcpDisabled = "no" %}
                     {% endif %}
 #
 # DHCP
@@ -283,7 +295,7 @@ end of HotSpot
                           {% set maxip = link.interface.ipv4.ipv4 +1  %}
                         {% endif %}
                         {% if not link.interface.mac %}
-                          {% set rmac = ''ff:ff:ff:ff:ff:ff''  %}
+                          {% set rmac = "ff:ff:ff:ff:ff:ff"  %}
                         {% else %}
                           {% set rmac = link.interface.mac  %}
                         {% endif %}
@@ -297,9 +309,7 @@ add address={{ link.interface.ipv4.ipv4 }} mac-address={{ rmac }} client-id={{ l
           {% endif  %}
       {% endif  %}
     {% endfor %}
-{% endspaceless %}
 
-#
 :delay 1
 #
   {% endfor %} {# end for radio #}
@@ -308,33 +318,33 @@ add address={{ link.interface.ipv4.ipv4 }} mac-address={{ rmac }} client-id={{ l
 {% endif %}
 # Routed device
 #
-# {{ t(''Other cable connections'') }}
+# Other cable connections
 {% if dev.interfaces %}
   {% for interface_i, interface in dev.interfaces %}
-    {% if interface.interface_type == ''vlan'' %}
-        {% set iname = ''wLan/Lan'' %}
-    {% elseif interface.interface_type == ''vlan2'' %}
-        {% set iname = ''ether2'' %}
-    {% elseif interface.interface_type == ''vlan3'' %}
-        {% set iname = ''ether3'' %}
-    {% elseif interface.interface_type == ''vlan4'' %}
-        {% set iname = ''wLan/Lan'' %}
-    {% elseif interface.interface_type == ''Wan'' %}
-        {% set iname = ''wLan/Lan'' %}
+    {% if interface.interface_type == "vlan" %}
+        {% set iname = "wLan/Lan" %}
+    {% elif interface.interface_type == "vlan2" %}
+        {% set iname = "ether2" %}
+    {% elif interface.interface_type == "vlan3" %}
+        {% set iname = "ether3" %}
+    {% elif interface.interface_type == "vlan4" %}
+        {% set iname = "wLan/Lan" %}
+    {% elif interface.interface_type == "Wan" %}
+        {% set iname = "wLan/Lan" %}
     {% else %}
         {% set iname = interface.interface_type  %}
     {% endif %}
   {% endfor %}
 {% endif  %}
 #
-# {{ t(''Internal addresses NAT'') }}
+# Internal addresses NAT
 :foreach i in [/ip firewall nat find src-address=\"172.16.0.0/12\"] do={/ip firewall nat remove $i;}
 :foreach i in [/ip firewall nat find src-address=\"192.168.0.0/16\"] do={/ip firewall nat remove $i;}
 /ip firewall nat
 add chain=srcnat src-address=\"192.168.0.0/16\" dst-address=!192.168.0.0/16 action=src-nat to-addresses={{ ospf_routerid }} comment=\"\" disabled=no
 add chain=srcnat src-address=\"172.16.0.0/12\" dst-address=!172.16.0.0/12 protocol=!ospf action=src-nat to-addresses={{ ospf_routerid }} comment=\"\" disabled=no
 #
-# {{ t(''BGP Routing'') }}
+# BGP Routing
 # BGP & OSPF Filters
 :foreach i in [/routing filter find chain=ospf-in] do={/routing filter remove $i;}
 :foreach i in [/routing filter find chain=ospf-out] do={/routing filter remove $i;}
@@ -350,28 +360,16 @@ add action=accept chain=ospf-out comment=\"6. Allow send 10.x routes to OSPF nei
 add action=accept chain=ospf-out comment=\"7. Allow send 172.x routes to OSPF neighbor\" disabled=no invert-match=no prefix=172.16.0.0/12 prefix-length=8-32
 add action=discard chain=ospf-out comment=\"8. Discard send non 10.x and 172.x to OSPF neighbor\" disabled=no invert-match=no
 #
-# {{ t(''BGP instance'') }}
+# BGP instance
 / routing bgp instance
 set default name=\"default\" as={{ dev.id }} router-id={{ ospf_routerid }} \
 redistribute-connected=no redistribute-static=no redistribute-rip=no \
 redistribute-ospf=yes redistribute-other-bgp=yes out-filter=ebgp-out \
 client-to-client-reflection=yes comment=\"\" disabled=no
 #
-# {{ t(''OSPF Routing'') }}
+# OSPF Routing
 /routing ospf instance set default name=default router-id={{ ospf_routerid }} comment=\"\" disabled=no distribute-default=never \
 redistribute-bgp=as-type-1 redistribute-connected=no redistribute-other-ospf=no redistribute-rip=no redistribute-static=no in-filter=ospf-in out-filter=ospf-out
 #
 :log info \"Unsolclic for {{ dev.id}}-{{ dev.nick }} executed.\"
 /
-{% macro bgp_peer(id, host_name, ipv4, disabled) %}
-/ routing bgp peer
-:foreach i in [find name={{ host_name }}] do={/routing bgp peer remove $i;}
-add name=\"{{ host_name }}\" instance=default remote-address={{ ipv4 }} remote-as={{ id }} \
-multihop=no route-reflect=no ttl=default in-filter=ebgp-in out-filter=ebgp-out disabled={{ disabled }}{% endmacro %}
-{% macro ospf_interface(iname, netid, maskbits, ospf_name , ospf_zone, ospf_id, disabled) %}
-/ routing ospf interface
-:foreach i in [/routing ospf interface find interface={{ iname }}] do={/routing ospf interface remove $i;}
-add interface={{ iname }}
-/ routing ospf network
-:foreach i in [/routing ospf network find network={{ netid }}/{{ maskbits }}] do={/routing ospf network remove $i;}
-add network={{ netid }}/{{ maskbits }} area={{ ospf_name }} disabled={{ disabled }}{% endmacro %}
