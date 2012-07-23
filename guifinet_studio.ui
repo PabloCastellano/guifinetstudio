@@ -115,6 +115,7 @@
                 <property name="receives_default">True</property>
                 <property name="use_action_appearance">False</property>
                 <property name="use_stock">True</property>
+                <signal name="clicked" handler="on_editdevicedialog_delete_event" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -152,9 +153,16 @@
               </packing>
             </child>
             <child>
-              <object class="GtkComboBox" id="combobox11">
+              <object class="GtkComboBox" id="editdevicenodecombobox">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="model">liststore7</property>
+                <child>
+                  <object class="GtkCellRendererText" id="cellrenderertext14"/>
+                  <attributes>
+                    <attribute name="text">1</attribute>
+                  </attributes>
+                </child>
               </object>
               <packing>
                 <property name="left_attach">1</property>
@@ -367,6 +375,7 @@
     <property name="border_width">5</property>
     <property name="title" translatable="yes">Create new Guifi.net radio</property>
     <property name="type_hint">dialog</property>
+    <signal name="delete-event" handler="on_editinterfacedialog_delete_event" swapped="no"/>
     <child internal-child="vbox">
       <object class="GtkBox" id="dialog-vbox12">
         <property name="can_focus">False</property>
@@ -401,6 +410,7 @@
                 <property name="receives_default">True</property>
                 <property name="use_action_appearance">False</property>
                 <property name="use_stock">True</property>
+                <signal name="clicked" handler="on_editinterfacedialog_delete_event" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -421,16 +431,10 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
               <object class="GtkLabel" id="label76">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">Node, device and radio:</property>
+                <property name="label" translatable="yes">Node:</property>
                 <attributes>
                   <attribute name="weight" value="bold"/>
                 </attributes>
@@ -479,6 +483,38 @@
                 <property name="height">1</property>
               </packing>
             </child>
+            <child>
+              <object class="GtkLabel" id="label89">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Device:</property>
+                <attributes>
+                  <attribute name="weight" value="bold"/>
+                </attributes>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">1</property>
+                <property name="width">1</property>
+                <property name="height">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="label90">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Radio:</property>
+                <attributes>
+                  <attribute name="weight" value="bold"/>
+                </attributes>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">2</property>
+                <property name="width">1</property>
+                <property name="height">1</property>
+              </packing>
+            </child>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -498,6 +534,7 @@
     <property name="border_width">5</property>
     <property name="title" translatable="yes">Create new Guifi.net link</property>
     <property name="type_hint">dialog</property>
+    <signal name="delete-event" handler="on_editlinkdialog_delete_event" swapped="no"/>
     <child internal-child="vbox">
       <object class="GtkBox" id="dialog-vbox15">
         <property name="can_focus">False</property>
@@ -532,6 +569,7 @@
                 <property name="receives_default">True</property>
                 <property name="use_action_appearance">False</property>
                 <property name="use_stock">True</property>
+                <signal name="clicked" handler="on_editlinkdialog_delete_event" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -611,10 +649,17 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkComboBox" id="combobox24">
+                              <object class="GtkComboBox" id="editlinknode1combobox">
                                 <property name="width_request">100</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
+                                <property name="model">liststore5</property>
+                                <child>
+                                  <object class="GtkCellRendererText" id="cellrenderertext12"/>
+                                  <attributes>
+                                    <attribute name="text">1</attribute>
+                                  </attributes>
+                                </child>
                               </object>
                               <packing>
                                 <property name="left_attach">1</property>
@@ -721,10 +766,17 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkComboBox" id="combobox27">
+                              <object class="GtkComboBox" id="editlinknode2combobox">
                                 <property name="width_request">100</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
+                                <property name="model">liststore6</property>
+                                <child>
+                                  <object class="GtkCellRendererText" id="cellrenderertext13"/>
+                                  <attributes>
+                                    <attribute name="text">1</attribute>
+                                  </attributes>
+                                </child>
                               </object>
                               <packing>
                                 <property name="left_attach">1</property>
@@ -1158,6 +1210,13 @@
                         <property name="width_request">203</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="model">liststore3</property>
+                        <child>
+                          <object class="GtkCellRendererText" id="cellrenderertext10"/>
+                          <attributes>
+                            <attribute name="text">1</attribute>
+                          </attributes>
+                        </child>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -1422,6 +1481,7 @@ I know and agree to the Legal warning concerning data protection and information
     <property name="border_width">5</property>
     <property name="title" translatable="yes">Create new Guifi.net interface</property>
     <property name="type_hint">dialog</property>
+    <signal name="delete-event" handler="on_editradiodialog_delete_event" swapped="no"/>
     <child internal-child="vbox">
       <object class="GtkBox" id="dialog-vbox14">
         <property name="can_focus">False</property>
@@ -1456,6 +1516,7 @@ I know and agree to the Legal warning concerning data protection and information
                 <property name="receives_default">True</property>
                 <property name="use_action_appearance">False</property>
                 <property name="use_stock">True</property>
+                <signal name="clicked" handler="on_editradiodialog_delete_event" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -1484,7 +1545,7 @@ I know and agree to the Legal warning concerning data protection and information
                   <object class="GtkLabel" id="label67">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">Node and device:</property>
+                    <property name="label" translatable="yes">Node:</property>
                     <attributes>
                       <attribute name="weight" value="bold"/>
                     </attributes>
@@ -1497,9 +1558,16 @@ I know and agree to the Legal warning concerning data protection and information
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkComboBox" id="combobox15">
+                  <object class="GtkComboBox" id="editradionodecombobox">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="model">liststore4</property>
+                    <child>
+                      <object class="GtkCellRendererText" id="cellrenderertext11"/>
+                      <attributes>
+                        <attribute name="text">1</attribute>
+                      </attributes>
+                    </child>
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
@@ -1553,9 +1621,6 @@ I know and agree to the Legal warning concerning data protection and information
                   </packing>
                 </child>
                 <child>
-                  <placeholder/>
-                </child>
-                <child>
                   <object class="GtkComboBox" id="combobox19">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
@@ -1576,6 +1641,22 @@ I know and agree to the Legal warning concerning data protection and information
                   <packing>
                     <property name="left_attach">1</property>
                     <property name="top_attach">3</property>
+                    <property name="width">1</property>
+                    <property name="height">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="label88">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">Device:</property>
+                    <attributes>
+                      <attribute name="weight" value="bold"/>
+                    </attributes>
+                  </object>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="top_attach">1</property>
                     <property name="width">1</property>
                     <property name="height">1</property>
                   </packing>
@@ -1843,9 +1924,16 @@ I know and agree to the Legal warning concerning data protection and information
               </packing>
             </child>
             <child>
-              <object class="GtkComboBox" id="combobox1">
+              <object class="GtkComboBox" id="parentzonecombobox">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="model">liststore2</property>
+                <child>
+                  <object class="GtkCellRendererText" id="cellrenderertext9"/>
+                  <attributes>
+                    <attribute name="text">1</attribute>
+                  </attributes>
+                </child>
               </object>
               <packing>
                 <property name="left_attach">1</property>
@@ -2300,6 +2388,54 @@ I know and agree to the Legal warning concerning data protection and information
         <col id="0" translatable="yes">I'm sorry. It will be connected just when I'm online</col>
       </row>
     </data>
+  </object>
+  <object class="GtkListStore" id="liststore2">
+    <columns>
+      <!-- column-name id -->
+      <column type="guint"/>
+      <!-- column-name title -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
+  <object class="GtkListStore" id="liststore3">
+    <columns>
+      <!-- column-name id -->
+      <column type="guint"/>
+      <!-- column-name title -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
+  <object class="GtkListStore" id="liststore4">
+    <columns>
+      <!-- column-name id -->
+      <column type="guint"/>
+      <!-- column-name title -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
+  <object class="GtkListStore" id="liststore5">
+    <columns>
+      <!-- column-name id -->
+      <column type="guint"/>
+      <!-- column-name title -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
+  <object class="GtkListStore" id="liststore6">
+    <columns>
+      <!-- column-name id -->
+      <column type="guint"/>
+      <!-- column-name title -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
+  <object class="GtkListStore" id="liststore7">
+    <columns>
+      <!-- column-name id -->
+      <column type="guint"/>
+      <!-- column-name title -->
+      <column type="gchararray"/>
+    </columns>
   </object>
   <object class="GtkWindow" id="mainWindow">
     <property name="width_request">800</property>
@@ -3939,6 +4075,21 @@ Iberian Peninsula</property>
                       <placeholder/>
                     </child>
                     <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
                       <object class="GtkLabel" id="label18">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
@@ -4441,9 +4592,6 @@ Iberian Peninsula</property>
       <column type="gint"/>
     </columns>
   </object>
-  <object class="GtkTextBuffer" id="usctextbuffer">
-    <property name="text" translatable="yes">unsolclic configuration</property>
-  </object>
   <object class="GtkDialog" id="uscdialog">
     <property name="width_request">700</property>
     <property name="height_request">600</property>
@@ -4563,5 +4711,8 @@ Iberian Peninsula</property>
       <action-widget response="0">autoloaduscbutton</action-widget>
       <action-widget response="0">uscclosebutton</action-widget>
     </action-widgets>
+  </object>
+  <object class="GtkTextBuffer" id="usctextbuffer">
+    <property name="text" translatable="yes">unsolclic configuration</property>
   </object>
 </interface>

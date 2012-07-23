@@ -120,18 +120,23 @@ class GuifinetStudio:
 		
 		# edit zone dialog
 		self.editzonedialog = self.ui.get_object('editzonedialog')
+		self.parentzonecombobox = self.ui.get_object('parentzonecombobox')
 		
 		# edit device dialog
 		self.editdevicedialog = self.ui.get_object('editdevicedialog')
+		self.editdevicenodecombobox = self.ui.get_object('editdevicenodecombobox')
 		
 		# edit radio dialog
 		self.editradiodialog = self.ui.get_object('editradiodialog')
+		self.editradionodecombobox = self.ui.get_object('editradionodecombobox')
 		
 		# edit interface dialog
 		self.editinterfacedialog = self.ui.get_object('editinterfacedialog')
 		
 		# edit link dialog
 		self.editlinkdialog = self.ui.get_object('editlinkdialog')
+		self.editlinknode1combobox = self.ui.get_object('editlinknode1combobox')
+		self.editlinknode2combobox = self.ui.get_object('editlinknode2combobox')
 		
 		# file chooser dialog
 		self.opendialog = self.ui.get_object("filechooserdialog1")
@@ -509,6 +514,7 @@ class GuifinetStudio:
 		
 	def on_createnodemenuitem_activate(self, widget, data=None):
 		self.editnodedialog.set_title('Create new Guifi.net node')
+		self.fillZonesComboBox(self.nodezonecombobox)
 		self.editnodedialog.show()
 		
 	def on_editnodedialog_delete_event(self, widget, data=None):
@@ -517,6 +523,7 @@ class GuifinetStudio:
 		
 	def on_createzonemenuitem_activate(self, widget, data=None):
 		self.editzonedialog.set_title('Create new Guifi.net zone')
+		self.fillZonesComboBox(self.parentzonecombobox)
 		self.editzonedialog.show()
 		
 	def on_editzonedialog_delete_event(self, widget, data=None):
@@ -525,6 +532,7 @@ class GuifinetStudio:
 	
 	def on_createdevicemenuitem_activate(self, widget, data=None):
 		self.editdevicedialog.set_title('Create new Guifi.net device')
+		self.fillNodesComboBox(self.editdevicenodecombobox)
 		self.editdevicedialog.show()
 		
 	def on_editdevicedialog_delete_event(self, widget, data=None):
@@ -533,6 +541,7 @@ class GuifinetStudio:
 	
 	def on_createradiomenuitem_activate(self, widget, data=None):
 		self.editradiodialog.set_title('Create new Guifi.net radio')
+		self.fillNodesComboBox(self.editradionodecombobox)
 		self.editradiodialog.show()
 		
 	def on_editradiodialog_delete_event(self, widget, data=None):
@@ -549,6 +558,8 @@ class GuifinetStudio:
 		
 	def on_createlinkmenuitem_activate(self, widget, data=None):
 		self.editlinkdialog.set_title('Create new Guifi.net link')
+		self.fillNodesComboBox(self.editlinknode1combobox)
+		self.fillNodesComboBox(self.editlinknode2combobox)
 		self.editlinkdialog.show()
 		
 	def on_editlinkdialog_delete_event(self, widget, data=None):
@@ -609,9 +620,23 @@ class GuifinetStudio:
 		#			stable=True, graph_server=None, status='Planned'):
 						
 	
-	def fillZonesComboBox(self, combobox):
+	def fillNodesComboBox(self, combobox):
+		model = combobox.get_model()
+		model.clear()
+		model.set_sort_column_id (1, Gtk.SortType.ASCENDING)
+		
 		# zoneid - title
-		pass
+		for n in self.cnmlp.getNodes():
+			model.append((n.id, n.title))
+			
+	def fillZonesComboBox(self, combobox):
+		model = combobox.get_model()
+		model.clear()
+		model.set_sort_column_id (1, Gtk.SortType.ASCENDING)
+		
+		# zoneid - title
+		for z in self.cnmlp.getZones():
+			model.append((z.id, z.title))
 		
 	def authAPI(self):
 		try:
