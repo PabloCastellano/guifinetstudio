@@ -62,7 +62,8 @@ class GuifiAPI:
 			#invalidate auth token
 			self.authToken = None
 			self.username = username
-		
+	
+	
 	def setPassword(self, password):
 		self.passwd = password
 		
@@ -150,23 +151,25 @@ class GuifiAPI:
 		#data = urllib.urlencode({'command':'guifi.auth.login', 'username':self.username, 'password':self.passwd})
 		data = urllib.urlencode({'command':'guifi.auth.login', 'username':self.username, 'password':self.passwd, 'method':'password'})
 		
-		(codenum, response) = self.sendRequest(data)
+		try:
+			(codenum, response) = self.sendRequest(data)
 		
-		print 'auth:', codenum
-		print response
-		
-		if codenum == ANSWER_GOOD:
-			self.authToken = response.get('authToken')
-			self.headers['Authorization'] = 'GuifiLogin auth='+self.authToken
-		else:
-			# Expect just one error
-			errorcode = response['code']
-			if errorcode == CODE_ERROR_INVALID_TOKEN: # Nosense (:?)
-				#{"errors":[{"code":403,"str":"Request is not valid: some input data is incorrect","extra":"Either the supplied username or password are not correct"}]}
-				raise GuifiApiError('Error during authentication: '+str(errorcode)+ ': '+response['str'])
+			print 'auth:', codenum
+			print response
+			
+			if codenum == ANSWER_GOOD:
+				self.authToken = response.get('authToken')
+				self.headers['Authorization'] = 'GuifiLogin auth='+self.authToken
 			else:
-				raise GuifiApiError('Unexpected return code: '+errorcode)
-		
+				# Expect just one error
+				errorcode = response['code']
+				if errorcode == CODE_ERROR_INVALID_TOKEN: # Nosense (:?)
+					#{"errors":[{"code":403,"str":"Request is not valid: some input data is incorrect","extra":"Either the supplied username or password are not correct"}]}
+					raise GuifiApiError('Error during authentication: '+str(errorcode)+ ': '+response['str'])
+				else:
+					raise GuifiApiError('Unexpected return code: '+errorcode)
+		except URLError: # Not connected to the Internets
+			raise
 	
 	
 	def addNode(self, title, zone_id, lat, lon, nick=None, body=None,
@@ -233,6 +236,7 @@ class GuifiAPI:
 			# [{"code":500,"str":"Request could not be completed. The object was not found","extra":"node_id = 49836"}]}
 			raise GuifiApiError('Error removing node: '+str(response['str']))
 		
+	
 	def addZone(self, title, master, minx, miny, maxx, maxy, nick=None,
 				mode='infrastructure', body=None, timezone='+01 2 2',
 				graph_server=None, proxy_server=None, dns_servers=None,
@@ -331,8 +335,8 @@ class GuifiAPI:
 			pass
 		else:
 			raise GuifiApiError('Error: '+str(response['str']))
-			
-			
+		
+		
 	def addRadio(self, mode, did, mac, angle=None, gain=None,
 					azimuth=None, amode=None):
 				
@@ -363,7 +367,8 @@ class GuifiAPI:
 			pass
 		else:
 			raise GuifiApiError('Error: '+str(response['str']))
-			
+	
+	
 	def removeRadio(self, did, radiodev):
 				
 		if not self.is_authenticated():
@@ -409,7 +414,6 @@ class GuifiAPI:
 			raise GuifiApiError('Error: '+str(response['str']))
 			
 
-
 	def addLink(self, fromdid, fromradiodev, todid, toradiodev,
 				ipv4=None, status='Working'):
 		
@@ -441,7 +445,8 @@ class GuifiAPI:
 			pass
 		else:
 			raise GuifiApiError('Error: '+str(response['str']))
-			
+	
+	
 	def removeLink(self, lid):
 				
 		if not self.is_authenticated():
@@ -476,7 +481,8 @@ class GuifiAPI:
 			pass
 		else:
 			raise GuifiApiError('Error: '+str(response['str']))
-			
+	
+	
 	def getFirmwares(self, model_id=None):
 		data = {'command':'guifi.misc.firmware'}
 		params = urllib.urlencode(data)
@@ -486,7 +492,8 @@ class GuifiAPI:
 			pass
 		else:
 			raise GuifiApiError('Error: '+str(response['str']))
-			
+	
+	
 	def getProtocols(self):
 		data = {'command':'guifi.misc.protocol'}
 		params = urllib.urlencode(data)
@@ -496,7 +503,8 @@ class GuifiAPI:
 			pass
 		else:
 			raise GuifiApiError('Error: '+str(response['str']))
-								
+	
+		
 	def getChannels(self, protocol):
 		data = {'command':'guifi.misc.channel', 'protocol':protocol}
 		params = urllib.urlencode(data)

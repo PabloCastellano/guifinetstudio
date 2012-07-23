@@ -21,3 +21,4 @@ __license__ = 'GPLv3+'
 __all__ = ['api', 'constants', 'error'] 
 
 from api import GuifiAPI
+from error import GuifiApiError
