@@ -120,7 +120,9 @@ class GuifinetStudio:
 		self.nodeelevationentry = self.ui.get_object('nodeelevationentry')
 		self.nodegraphscombobox = self.ui.get_object('nodegraphscombobox')
 		self.takefromparentscheckbutton = self.ui.get_object('takefromparentscheckbutton')
-		self.nodestablecombobox = self.ui.get_object('nodestablecombobox')
+		self.stablenodecheckbutton = self.ui.get_object('stablenodecheckbutton')
+		self.entrycompletion1 = self.ui.get_object('entrycompletion1')
+		self.nodeinfotextbuffer = self.ui.get_object('nodeinfotextbuffer')
 		
 		# edit zone dialog
 		self.editzonedialog = self.ui.get_object('editzonedialog')
@@ -167,6 +169,13 @@ class GuifinetStudio:
 			self.statusbar.push(0, "CNML file \"%s\" couldn't be loaded" %self.cnmlFile)
 			self.cnmlFile = None
 
+		# Descargar siempre?
+		self.allZones = []
+		cnmlGWfile = self.configmanager.pathForCNMLCachedFile(GUIFI_NET_WORLD_ZONE_ID, 'zones')
+		self.zonecnmlp = CNMLParser(cnmlGWfile)
+		for z in self.zonecnmlp.getZones():
+			self.allZones.append((z.id, z.title))
+		
 		self.mainWindow.show_all()
 		self.authAPI()
 
@@ -302,6 +311,14 @@ class GuifinetStudio:
 		print 'Show zones:', widget.get_active()
 		
 		
+	def on_updatezonesmenuitem_activate(self, widget, data=None):
+		fp = self.guifiAPI.downloadCNML(GUIFI_NET_WORLD_ZONE_ID, 'zones')
+		zone_filename = '%d.cnml' %GUIFI_NET_WORLD_ZONE_ID
+		filename = os.path.join(self.configmanager.CACHE_DIR, 'zones', zone_filename)
+		with open(filename, 'w') as zonefile:
+			zonefile.write(fp.read())
+		
+		
 	def on_action1_activate(self, action, data=None):
 		self.nodedialog.show()
 		self.nodedialog.set_title("Information about node XXX")
@@ -377,8 +394,9 @@ class GuifinetStudio:
 		
 	def on_copyuscbutton_clicked(self, widget, data=None):
 		print 'copy usc to clipboard'
-		cb = Gtk.Clipboard()
-		cb.set_text(self.usctextbuffer.get_text(), -1)
+		#cb = Gtk.Clipboard()
+		#cb.set_text(self.usctextbuffer.get_text(), -1)
+		self.usctextbuffer.copy_clipboard(Gtk.Clipboard.get(Gdk.Atom.intern('0', True)))
 		raise NotImplementedError
 		
 
@@ -518,7 +536,7 @@ class GuifinetStudio:
 		
 	def on_createnodemenuitem_activate(self, widget=None, data=None):
 		self.editnodedialog.set_title('Create new Guifi.net node')
-		self.fillZonesComboBox(self.nodezonecombobox)
+		self.fillZonesComboBox(self.nodezonecombobox, self.entrycompletion1)
 		self.editnodedialog.show()
 		
 	def on_editnodedialog_delete_event(self, widget, data=None):
@@ -579,6 +597,7 @@ class GuifinetStudio:
 
 	def on_action5_activate(self, action, data=None):
 		self.nodecoordinatesentry.set_text(str(self.lat) + ', ' + str(self.lon))
+		self.nodecoordinatesentry.set_sensitive(False)
 		del self.lat, self.lon
 		self.nodetitleentry.grab_focus()
 		self.on_createnodemenuitem_activate()
@@ -635,16 +654,13 @@ class GuifinetStudio:
 		
 	def on_editnodeokbutton_clicked(self, widget, data=None):
 		"""
-		nodezonecombobox
-		
-		nodestablecombobox
 		nodegraphscombobox
-		takefromparentscheckbutton
-		
+
 		status?
 		"""
-		
-		print self.editnodedialog.get_children()
+
+		(start, end) = self.nodeinfotextbuffer.get_bounds()
+		nodeinfotext = self.nodeinfotextview.get_buffer().get_text(start, end, True)
 		
 		if not self.editnodevalidation():
 			print "There's some invalid data"
@@ -653,15 +669,13 @@ class GuifinetStudio:
 		lat,lon = self.nodecoordinatesentry.get_text().split(',')
 		it = self.nodezonecombobox.get_active_iter()
 		zid = self.nodezonecombobox.get_model().get_value(it, 0)
-		it = self.nodestablecombobox.get_active_iter()
-		isStable = self.nodestablecombobox.get_model().get_value(it, 0)
 		if self.takefromparentscheckbutton.get_active():
 			graphs = None
 		else:
 			it = self.nodegraphscombobox.get_active_iter()
 			graphs = self.nodegraphscombobox.get_model().get_value(it, 0)
 		
-		print 'Node description:', self.nodeinfotextview.get_buffer()#.get_text()
+		
 		
 		messagestr = 'You are about to create the node named "%s".\nPlease choose where you want to create it' %self.nodetitleentry.get_text()
 		
@@ -678,11 +692,10 @@ class GuifinetStudio:
 			return
 		
 		try:
-			#Missing: body=nodeinfotextview.get_text(),
-			node_id = self.guifiAPI.addNode(self.nodetitleentry.get_text(),
-						zid, lat, lon, nick=self.nodenickentry.get_text(),
-						zone_desc=self.nodezonedescentry.get_text(), notification=self.nodecontactentry.get_text(),
-						elevation=self.nodeelevationentry.get_text(), stable=isStable, graph_server=graphs, status='Planned')
+			node_id = self.guifiAPI.addNode(self.nodetitleentry.get_text(), zid, lat, lon, body=nodeinfotext,
+						nick=self.nodenickentry.get_text(), zone_desc=self.nodezonedescentry.get_text(),
+						notification=self.nodecontactentry.get_text(), elevation=self.nodeelevationentry.get_text(),
+						stable=self.stablenodecheckbutton.get_active(), graph_server=graphs, status='Planned')
 		except GuifiApiError, e:
 			errormessage = 'Error %d: %s\n\nError message:\n%s' %(e.code, e.reason, e.extra)
 			g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, errormessage)
@@ -718,14 +731,25 @@ class GuifinetStudio:
 		for n in self.cnmlp.getNodes():
 			model.append((n.id, n.title))
 			
-	def fillZonesComboBox(self, combobox):
+	def fillZonesComboBox(self, combobox, entrycompletion=None):
+		# zoneid - title
 		model = combobox.get_model()
 		model.clear()
 		model.set_sort_column_id (1, Gtk.SortType.ASCENDING)
+		model.append((0, '-- Most recently used --'))
 		
-		# zoneid - title
+		n = 0
 		for z in self.cnmlp.getZones():
+			n +=1
 			model.append((z.id, z.title))
+		combobox.set_active(n)
+		
+		if entrycompletion:
+			model = entrycompletion.get_model()
+			model.clear()
+			for z in self.allZones:
+				model.append((z[0], z[1]))
+			
 		
 	def authAPI(self):
 		try:
