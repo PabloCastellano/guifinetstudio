@@ -75,6 +75,11 @@
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
+  <object class="GtkImage" id="image5">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="stock">gtk-missing-image</property>
+  </object>
   <object class="GtkDialog" id="editdevicedialog">
     <property name="can_focus">False</property>
     <property name="border_width">5</property>
@@ -1330,6 +1335,7 @@
                               <object class="GtkComboBox" id="nodegraphscombobox">
                                 <property name="width_request">149</property>
                                 <property name="visible">True</property>
+                                <property name="sensitive">False</property>
                                 <property name="can_focus">False</property>
                               </object>
                               <packing>
@@ -1347,7 +1353,9 @@
                                 <property name="receives_default">False</property>
                                 <property name="use_action_appearance">False</property>
                                 <property name="xalign">0</property>
+                                <property name="active">True</property>
                                 <property name="draw_indicator">True</property>
+                                <signal name="toggled" handler="on_takefromparentscheckbutton_toggled" swapped="no"/>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
@@ -1385,6 +1393,7 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="model">liststore1</property>
+                                <property name="active">0</property>
                                 <child>
                                   <object class="GtkCellRendererText" id="cellrenderertext8"/>
                                   <attributes>
@@ -2350,11 +2359,6 @@ I know and agree to the Legal warning concerning data protection and information
     <property name="can_focus">False</property>
     <property name="stock">gtk-missing-image</property>
   </object>
-  <object class="GtkImage" id="image5">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="stock">gtk-missing-image</property>
-  </object>
   <object class="GtkImage" id="image6">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -2379,13 +2383,17 @@ I know and agree to the Legal warning concerning data protection and information
     <columns>
       <!-- column-name option -->
       <column type="gchararray"/>
+      <!-- column-name value -->
+      <column type="gchararray"/>
     </columns>
     <data>
       <row>
         <col id="0" translatable="yes">Yes, it is intended to be kept always on, available for extending the mesh</col>
+        <col id="1" translatable="yes">Yes</col>
       </row>
       <row>
         <col id="0" translatable="yes">I'm sorry. It will be connected just when I'm online</col>
+        <col id="1" translatable="yes">No</col>
       </row>
     </data>
   </object>
@@ -4090,6 +4098,36 @@ Iberian Peninsula</property>
                       <placeholder/>
                     </child>
                     <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
                       <object class="GtkLabel" id="label18">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
@@ -4592,6 +4630,9 @@ Iberian Peninsula</property>
       <column type="gint"/>
     </columns>
   </object>
+  <object class="GtkTextBuffer" id="usctextbuffer">
+    <property name="text" translatable="yes">unsolclic configuration</property>
+  </object>
   <object class="GtkDialog" id="uscdialog">
     <property name="width_request">700</property>
     <property name="height_request">600</property>
@@ -4711,8 +4752,5 @@ Iberian Peninsula</property>
       <action-widget response="0">autoloaduscbutton</action-widget>
       <action-widget response="0">uscclosebutton</action-widget>
     </action-widgets>
-  </object>
-  <object class="GtkTextBuffer" id="usctextbuffer">
-    <property name="text" translatable="yes">unsolclic configuration</property>
   </object>
 </interface>

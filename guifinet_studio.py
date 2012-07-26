@@ -34,6 +34,7 @@ from pyGuifiAPI.error import GuifiApiError
 
 from configmanager import GuifinetStudioConfig
 from unsolclic import UnSolClic
+from utils import *
 
 from urllib2 import URLError
 
@@ -117,6 +118,9 @@ class GuifinetStudio:
 		self.nodezonecombobox = self.ui.get_object('nodezonecombobox')
 		self.nodezonedescentry = self.ui.get_object('nodezonedescentry')
 		self.nodeelevationentry = self.ui.get_object('nodeelevationentry')
+		self.nodegraphscombobox = self.ui.get_object('nodegraphscombobox')
+		self.takefromparentscheckbutton = self.ui.get_object('takefromparentscheckbutton')
+		self.nodestablecombobox = self.ui.get_object('nodestablecombobox')
 		
 		# edit zone dialog
 		self.editzonedialog = self.ui.get_object('editzonedialog')
@@ -512,7 +516,7 @@ class GuifinetStudio:
 		# TODO: Save changed preferences
 		return True
 		
-	def on_createnodemenuitem_activate(self, widget, data=None):
+	def on_createnodemenuitem_activate(self, widget=None, data=None):
 		self.editnodedialog.set_title('Create new Guifi.net node')
 		self.fillZonesComboBox(self.nodezonecombobox)
 		self.editnodedialog.show()
@@ -572,24 +576,64 @@ class GuifinetStudio:
 			X, Y = event.x, event.y
 			self.lon, self.lat = self.view.x_to_longitude(X), self.view.y_to_latitude(Y)
 			self.menu2.popup(None, None, None, None, event.button, event.time)
-		return True
 
 	def on_action5_activate(self, action, data=None):
-		# TODO: set selected coordinates
-		self.editnodedialog.set_title('Create new Guifi.net node')
 		self.nodecoordinatesentry.set_text(str(self.lat) + ', ' + str(self.lon))
-		self.nodetitleentry.grab_focus()
 		del self.lat, self.lon
-		self.editnodedialog.show()
+		self.nodetitleentry.grab_focus()
+		self.on_createnodemenuitem_activate()
 	
 	def on_acceptxolncheckbutton_toggled(self, widget, data=None):
 		isActive = widget.get_active()
 		self.editnodeokbutton.set_sensitive(isActive)
 		
-	def on_editnodeokbutton_clicked(self, widget, data=None):
-		print 'saving'
-		self.editnodedialog.hide()
+	def editnodevalidation(self):
+		# Checks: title, zone, lat, lon
+		if self.nodetitleentry.get_text() == '':
+			self.nodetitleentry.grab_focus()
+			return False
 		
+		if not valid_email_address(self.nodecontactentry.get_text()):
+			self.nodecontactentry.grab_focus()
+			return False
+			
+		if self.nodecoordinatesentry.get_text() == '':
+			self.nodecoordinatesentry.grab_focus()
+			return False
+		else:
+			try:
+				lat,lon = self.nodecoordinatesentry.get_text().split(',')
+				if lat == '' or lon == '':
+					self.nodecoordinatesentry.grab_focus()
+					return False
+				float(lat)
+				float(lon)
+			except ValueError:
+				self.nodecoordinatesentry.grab_focus()
+				return False
+				
+		if self.nodezonecombobox.get_active_iter() is None:
+			self.nodezonecombobox.grab_focus()
+			return False
+		
+		if not self.takefromparentscheckbutton.get_active() and self.nodegraphscombobox.get_active_iter() is None:
+			return False
+			
+		# rest of value types
+		try:
+			if self.nodeelevationentry.get_text() != '':
+				int(self.nodeelevationentry.get_text())
+		except ValueError, e:
+			self.nodeelevationentry.grab_focus()
+			return False
+			
+		return True
+		
+	def on_takefromparentscheckbutton_toggled(self, widget, data=None):
+		isActive = widget.get_active()
+		self.nodegraphscombobox.set_sensitive(not isActive)
+		
+	def on_editnodeokbutton_clicked(self, widget, data=None):
 		"""
 		nodezonecombobox
 		
@@ -602,23 +646,63 @@ class GuifinetStudio:
 		
 		print self.editnodedialog.get_children()
 		
+		if not self.editnodevalidation():
+			print "There's some invalid data"
+			return
+		
 		lat,lon = self.nodecoordinatesentry.get_text().split(',')
+		it = self.nodezonecombobox.get_active_iter()
+		zid = self.nodezonecombobox.get_model().get_value(it, 0)
+		it = self.nodestablecombobox.get_active_iter()
+		isStable = self.nodestablecombobox.get_model().get_value(it, 0)
+		if self.takefromparentscheckbutton.get_active():
+			graphs = None
+		else:
+			it = self.nodegraphscombobox.get_active_iter()
+			graphs = self.nodegraphscombobox.get_model().get_value(it, 0)
 		
-		print "Title:", self.nodetitleentry.get_text()
-		print "Zone:", self.nodezonecombobox
-		print "Latitude:", lat
-		print "Longitude:", lon
-		print "Nick:", self.nodenickentry.get_text()
 		print 'Node description:', self.nodeinfotextview.get_buffer()#.get_text()
-		print 'Zone description:', self.nodezonedescentry.get_text()
-		print 'Contact:', self.nodecontactentry.get_text()
-		print 'Elevation:', self.nodeelevationentry.get_text()
 		
-		#self.guifiAPI.addNode(title=self.nodetitleentry.get_text(),
-		#			zone_id, lat, lon, nick=nodenickentry.get_text(), body=nodeinfotextview.get_text(),
-		#			zone_desc=nodezonedescentry.get_text(), notification=nodecontactentry.get_text(), elevation=nodeelevationentry.get_text(),
-		#			stable=True, graph_server=None, status='Planned'):
-						
+		# Messagebox (internet / local / cancelar)
+		g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.QUESTION, Gtk.ButtonsType.YES_NO, 
+								'Are you sure you want to create the node named '+ self.nodetitleentry.get_text() +'?')
+		g.set_title('Confirmation')
+		response = g.run()
+		g.destroy()
+		
+		if response == Gtk.ResponseType.NO:
+			return
+		
+		try:
+			#Missing: body=nodeinfotextview.get_text(),
+			node_id = self.guifiAPI.addNode(self.nodetitleentry.get_text(),
+						zid, lat, lon, nick=self.nodenickentry.get_text(),
+						zone_desc=self.nodezonedescentry.get_text(), notification=self.nodecontactentry.get_text(),
+						elevation=self.nodeelevationentry.get_text(), stable=isStable, graph_server=graphs, status='Planned')
+		except GuifiApiError, e:
+			errormessage = 'Error %d: %s\n\nError message:\n%s' %(e.code, e.reason, e.extra)
+			g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, errormessage)
+			g.set_title('Response from server')
+			g.run()
+			g.destroy()
+			return
+		
+		# Messagebox status
+		
+		url = self.guifiAPI.urlForNode(node_id)
+		messagestr = 'Node succesfully created with id %d\n\nYou can view it in the following url:\n%s' %(node_id, url)
+		g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.INFO, Gtk.ButtonsType.CLOSE, messagestr)
+		g.add_button('Open in web browser', -12)
+		response = g.run()
+		g.destroy()
+		
+		if response != Gtk.ResponseType.CLOSE:
+			print 'Opening in web browser'
+			systemstr = 'xdg-open %s' %url
+			os.system(systemstr)
+			
+		self.editnodedialog.hide()
+		
 	
 	def fillNodesComboBox(self, combobox):
 		model = combobox.get_model()

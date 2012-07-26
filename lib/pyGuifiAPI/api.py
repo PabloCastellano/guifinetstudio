@@ -124,8 +124,13 @@ class GuifiAPI:
 			if len(errors) == 1:
 				errors = errors[0]
 				print 'Just one response (error)'
+				print 'Error', errors['code'], ':', errors['str']
+				print 'Extra information:', errors['extra']
 			else:
 				print 'There are several responses (errors)'
+				for e in errors:
+					print 'Error', e['code'], ':', e['str']
+					print 'Extra information:', e['extra']
 			return (codenum, errors)
 		else:
 			raise GuifiApiError('Unexpected return code: '+codenum)
@@ -174,28 +179,46 @@ class GuifiAPI:
 	
 	def addNode(self, title, zone_id, lat, lon, nick=None, body=None,
 					zone_desc=None, notification=None, elevation=None,
-					stable=True, graph_server=None, status='Planned'):
+					stable='Yes', graph_server=None, status='Planned'):
 		
 		if not self.is_authenticated():
 			raise GuifiApiError('You have to be authenticated to run this action')
 		
-		# BUG: zone_id doesn't seem to work (server side bug)	
 		data = {'command':'guifi.node.add', 'title':title, 'zone_id':zone_id, 'lat':lat, 'lon':lon}
 		
+		if nick is not None:
+			data['nick'] = nick
+		if body	is not None:
+			data['body'] = body
+		if zone_desc is not None:
+			data['zone_description'] = zone_desc
+		if notification	is not None:
+			data['notification'] = notification
+		if elevation is not None:
+			data['elevation'] = elevation
+		if stable is not 'Yes':
+			data['stable'] = stable
+		if graph_server	is not None:
+			data['graph_server'] = graph_server
+		if status is not 'Planned':
+			data['status'] = status
+			
 		params = urllib.urlencode(data)
 		(codenum, response) = self.sendRequest(params)
 		
 		if codenum == ANSWER_GOOD:
-			node_id = response.get('node_id')
+			node_id = int(response.get('node_id'))
 			print 'Node succesfully created', node_id
-			print '%s/node/%s' %(self.base_url, node_id)
+			print '%s/node/%d' %(self.base_url, node_id)
 		else:
 			# Everybody can create nodes
-			raise GuifiApiError('Error creating node: '+str(response['str']))
+			raise GuifiApiError(response['str'], response['code'], response['extra'])
 			
 		return node_id
 		
-		
+	def urlForNode(self, nid):
+		return '%s/node/%d' %(self.base_url, nid)
+	
 	def updateNode(self, nid, title=None, nick=None, body=None,
 					zone_id=None, zone_desc=None, notification=None,
 					lat=None, lon=None, elevation=None, stable=None,

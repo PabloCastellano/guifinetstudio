@@ -1,7 +1,8 @@
 class GuifiApiError(Exception):
-	def __init__(self, reason, response=None):
+	def __init__(self, reason, code=None, extra=None):
 		self.reason = reason
-		self.response = response
+		self.code = int(code)
+		self.extra = extra
 
 	def __str__(self):
 		return self.reason

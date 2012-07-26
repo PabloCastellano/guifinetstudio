@@ -28,7 +28,7 @@ class UnSolClic:
 	#"AirMaxM2 Bullet/PwBrg/AirGrd/NanoBr"
 	
 	def __init__(self):
-		self.env = jinja2.Environment(loader=jinja2.FileSystemLoader('unsolclic'))
+		self.env = jinja2.Environment(loader=jinja2.FileSystemLoader('unsolclic'), extensions=['jinja2.ext.i18n'])
 		self.test1()
 
 		print 'Supported devices:'
