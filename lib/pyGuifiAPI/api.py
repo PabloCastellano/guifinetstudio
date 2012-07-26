@@ -52,6 +52,7 @@ class GuifiAPI:
 		self.base_url += self.host
 		
 		self.base_api_url = self.base_url + '/api?'
+		self.base_cnml_url = self.base_url + '/%s/guifi/cnml/%d/%s'
 
 		user_agent = 'pyGuifiAPI/1.0'
  		self.headers = {'User-Agent':user_agent}
@@ -182,7 +183,7 @@ class GuifiAPI:
 	
 	def addNode(self, title, zone_id, lat, lon, nick=None, body=None,
 					zone_desc=None, notification=None, elevation=None,
-					stable='Yes', graph_server=None, status='Planned'):
+					stable=True, graph_server=None, status='Planned'):
 		
 		if not self.is_authenticated():
 			raise GuifiApiError('You have to be authenticated to run this action')
@@ -199,8 +200,8 @@ class GuifiAPI:
 			data['notification'] = notification
 		if elevation is not None:
 			data['elevation'] = elevation
-		if stable is not 'Yes':
-			data['stable'] = stable
+		if stable not in ['Yes', True]:
+			data['stable'] = 'No'
 		if graph_server	is not None:
 			data['graph_server'] = graph_server
 		if status is not 'Planned':
@@ -546,8 +547,22 @@ class GuifiAPI:
 		return self.authToken is not None
 		
 		
-	def downloadCNML(self):
-		pass
+	#http://test.guifi.net/es/guifi/cnml/3671/zones
+	#returns file descriptor to be read
+	# It may take some seconds depending on the server load...
+	def downloadCNML(self, zid, ctype='nodes'):
+		if ctype not in ['zones', 'nodes', 'detail']:
+			raise ValueError
+		
+		lang = 'es'
+		url = self.base_cnml_url %(lang, zid, ctype)
+		print 'Downloading CNML:', url
+		
+		req = Request(url, headers=self.headers)
+		response = urlopen(req)
+		return response
+		
+
 
 """
 guifi.zone.nearest
