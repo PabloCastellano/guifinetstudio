@@ -57,6 +57,9 @@ class GuifiAPI:
  		self.headers = {'User-Agent':user_agent}
 		
 	
+	def getHost(self):
+		return self.host
+		
 	def setUsername(self, username):
 		if username != self.username:
 			#invalidate auth token

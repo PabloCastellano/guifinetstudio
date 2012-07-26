@@ -663,14 +663,18 @@ class GuifinetStudio:
 		
 		print 'Node description:', self.nodeinfotextview.get_buffer()#.get_text()
 		
+		messagestr = 'You are about to create the node named "%s".\nPlease choose where you want to create it' %self.nodetitleentry.get_text()
+		
 		# Messagebox (internet / local / cancelar)
-		g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.QUESTION, Gtk.ButtonsType.YES_NO, 
-								'Are you sure you want to create the node named '+ self.nodetitleentry.get_text() +'?')
+		g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.QUESTION, Gtk.ButtonsType.CANCEL, messagestr)
 		g.set_title('Confirmation')
+		g.add_button('Create locally\n(CNML)', -12)
+		g.add_button('Create remotely\n(%s)' %self.guifiAPI.getHost(), -13)
 		response = g.run()
 		g.destroy()
 		
-		if response == Gtk.ResponseType.NO:
+		print response # ESC --> -4
+		if response == Gtk.ResponseType.CANCEL:
 			return
 		
 		try:
@@ -693,6 +697,7 @@ class GuifinetStudio:
 		messagestr = 'Node succesfully created with id %d\n\nYou can view it in the following url:\n%s' %(node_id, url)
 		g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.INFO, Gtk.ButtonsType.CLOSE, messagestr)
 		g.add_button('Open in web browser', -12)
+		g.set_title('Response from server')
 		response = g.run()
 		g.destroy()
 		
