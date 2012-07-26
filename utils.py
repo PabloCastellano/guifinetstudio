@@ -19,6 +19,8 @@
 
 import re
 
+GUIFI_NET_WORLD_ZONE_ID = 3671
+
 re_email = re.compile("^.+@.+\..{2,4}$")
 
 def valid_email_address(email):
