@@ -20,31 +20,39 @@
 import os
 import ConfigParser
 
-CONFIG_DIR = '~/.config/guifinetstudio'
-full_config_dir = os.path.expanduser(CONFIG_DIR)
-config_filename = os.path.join(full_config_dir, 'config')
-
-#TODO: Use different backends: config file, gnome-keyring...
 
 class GuifinetStudioConfig:
+	CONFIG_DIR = os.path.expanduser('~/.config/guifinetstudio')
+	CACHE_DIR = os.path.expanduser('~/.cache/guifinetstudio')
+	CONFIG_FILENAME = os.path.join(CONFIG_DIR, 'config')
+	#TODO: Use different backends: config file, gnome-keyring...
+	
 	def __init__(self):
-		if not os.path.exists(full_config_dir):
-			print 'No configuration found. Creating a default one in', full_config_dir
-			os.mkdir(full_config_dir)
+		#create config folder and default file if they don't exist
+		if not os.path.exists(self.CONFIG_DIR):
+			print 'No configuration found. Creating a default one in', self.CONFIG_DIR
+			os.mkdir(self.CONFIG_DIR)
 			self.createDefaultConfig()
-		elif not os.path.exists(config_filename):
+		elif not os.path.exists(self.CONFIG_FILENAME):
 			self.createDefaultConfig()
+		
+		if not os.path.exists(self.CACHE_DIR):
+			print 'No cache folder found. Creating', self.CACHE_DIR
+			os.mkdir(self.CACHE_DIR)
+			os.mkdir(os.path.join(self.CACHE_DIR, 'zones'))
+			os.mkdir(os.path.join(self.CACHE_DIR, 'nodes'))
+			os.mkdir(os.path.join(self.CACHE_DIR, 'detail'))
 			
 		self.config = ConfigParser.SafeConfigParser()
 		self.reload()
 
 	def reload(self):
 		try:
-			res = self.config.read(config_filename)
+			res = self.config.read(self.CONFIG_FILENAME)
 			if res == []:
 				raise Exception
 		except Exception:
-			print 'Error reading file:', config_filename
+			print 'Error reading file:', self.CONFIG_FILENAME
 			raise
 			
 
@@ -54,7 +62,7 @@ class GuifinetStudioConfig:
 		defaultconfig.set('api', 'username', '')
 		defaultconfig.set('api', 'password', '')
 		
-		with open(config_filename, 'wb') as configfile:
+		with open(self.CONFIG_FILENAME, 'wb') as configfile:
 			defaultconfig.write(configfile)
 
 	def getUsername(self):
@@ -62,3 +70,9 @@ class GuifinetStudioConfig:
 		
 	def getPassword(self):
 		return self.config.get('api', 'password')
+		
+	def pathForCNMLCachedFile(self, zid, ctype='nodes'):
+		if ctype not in ['zones', 'nodes', 'detail']:
+			raise ValueError
+			
+		return '%s/%s/%d.cnml' %(self.CACHE_DIR, ctype, zid)
