@@ -55,21 +55,45 @@ class GuifinetStudioConfig:
 			print 'Error reading file:', self.CONFIG_FILENAME
 			raise
 			
+	def save(self):
+		with open(self.CONFIG_FILENAME, 'w') as fp:
+			self.config.write(fp)
 
 	def createDefaultConfig(self):
 		defaultconfig = ConfigParser.SafeConfigParser()
 		defaultconfig.add_section('api')
 		defaultconfig.set('api', 'username', '')
 		defaultconfig.set('api', 'password', '')
+		defaultconfig.add_section('default')
+		defaultconfig.set('default', 'zone', '')
+		defaultconfig.set('default', 'contact', '')
 		
 		with open(self.CONFIG_FILENAME, 'wb') as configfile:
 			defaultconfig.write(configfile)
 
+	def getContact(self):
+		return self.config.get('default', 'contact')
+
+	def setContact(self, contact):
+		self.config.set('default', 'contact', contact)
+	
 	def getUsername(self):
 		return self.config.get('api', 'username')
+	
+	def setUsername(self, username):
+		self.config.set('api', 'username', username)
+			
+	def getDefaultZone(self):
+		return int(self.config.get('default', 'zone'))
 		
+	def setDefaultZone(self, zid):
+		self.config.set('default', 'zone', str(zid))
+	
 	def getPassword(self):
 		return self.config.get('api', 'password')
+		
+	def setPassword(self, password):
+		self.config.set('api', 'password', password)
 		
 	def pathForCNMLCachedFile(self, zid, ctype='nodes'):
 		if ctype not in ['zones', 'nodes', 'detail']:

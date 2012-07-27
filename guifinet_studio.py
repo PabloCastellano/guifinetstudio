@@ -105,6 +105,9 @@ class GuifinetStudio:
 		self.defaultzonecombobox = self.ui.get_object('defaultzonecombobox')
 		self.defaultzoneentry = self.ui.get_object('defaultzoneentry')
 		self.entrycompletion2 = self.ui.get_object('entrycompletion2')
+		self.usekeyringbutton = self.ui.get_object('usekeyringbutton')
+		self.entrycompletion2 = self.ui.get_object('entrycompletion2')
+		self.contactentry = self.ui.get_object('contactentry')
 		
 		# unsolclic dialog
 		self.uscdialog = self.ui.get_object("uscdialog")
@@ -549,6 +552,10 @@ class GuifinetStudio:
 		self.passwordentry.set_text(self.configmanager.getPassword())
 		self.fillZonesComboBox(self.defaultzonecombobox, self.entrycompletion2)
 		
+		defaultZoneTitle = self.zonecnmlp.getZone(self.configmanager.getDefaultZone()).title
+		self.entrycompletion2.get_entry().set_text(defaultZoneTitle)
+		
+		
 	def on_preferencesdialog_delete_event(self, widget, data=None):
 		self.preferencesdialog.hide()
 		# TODO: Save changed preferences
@@ -812,6 +819,48 @@ class GuifinetStudio:
 		self.cnmldialog.show()
 		# rellenar tabla
 		self.fillAvailableCNMLModel(self.treeview4.get_model())
+	
+	# temporary method until I find a better way to do it
+	def findZoneIdInEntryCompletion(self, entrycompletion):
+		model = self.entrycompletion2.get_model()
+		it = model.get_iter_first()
+		
+		title = self.entrycompletion2.get_entry().get_text()
+		
+		while it:
+			zone = model.get_value(it, 1)
+			if zone.lower() == title.lower():
+				break
+			it = model.iter_next(it)
+		
+		if it is None:
+			print 'ERROR: Zone title not found!'
+			return None
+		else:
+			pass
+			# - msgbox showing problem
+			# - dont change
+			# ...
+			
+		zid = model.get_value(it, 0)
+		return zid
+		
+		
+	def on_preferencesokbutton_clicked(self, widget ,data=None):
+		self.preferencesdialog.hide()
+		self.configmanager.setUsername(self.userentry.get_text())
+		self.configmanager.setPassword(self.passwordentry.get_text())
+		self.configmanager.setContact(self.contactentry.get_text())
+		
+		# How can I get the GtkTreeIter from the "active item" in GtkEntry/GtkEntryCompletion?
+		# Otherwise: loop :-S		
+		zid = self.findZoneIdInEntryCompletion(self.entrycompletion2)
+		
+		if zid:
+			self.configmanager.setDefaultZone(zid)
+			
+		self.configmanager.save()
+		
 		
 		
 if __name__ == "__main__":

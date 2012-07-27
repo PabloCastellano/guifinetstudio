@@ -1,6 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <!-- interface-requires gtk+ 3.0 -->
+  <object class="GtkAboutDialog" id="aboutdialog1">
+    <property name="can_focus">False</property>
+    <property name="border_width">5</property>
+    <property name="type_hint">dialog</property>
+    <property name="program_name">Guifi·net Studio</property>
+    <property name="version">v1.0</property>
+    <property name="copyright" translatable="yes">Copyright © 2011-2012 Pablo Castellano</property>
+    <property name="comments" translatable="yes">Explore your free network offline!</property>
+    <property name="website">http://lainconscienciadepablo.net</property>
+    <property name="website_label" translatable="yes">Blog del autor</property>
+    <property name="license" translatable="yes">GPLv3+</property>
+    <property name="authors">Pablo Castellano &lt;pablo@anche.no&gt;</property>
+    <signal name="delete-event" handler="on_aboutdialog1_close" swapped="no"/>
+    <signal name="response" handler="on_aboutdialog1_close" swapped="no"/>
+    <child internal-child="vbox">
+      <object class="GtkBox" id="dialog-vbox">
+        <property name="can_focus">False</property>
+        <child internal-child="action_area">
+          <object class="GtkButtonBox" id="dialog-action_area">
+            <property name="can_focus">False</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="pack_type">end</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
   <object class="GtkAccelGroup" id="accelgroup1"/>
   <object class="GtkActionGroup" id="actiongroup1">
     <child>
@@ -31,37 +62,6 @@
       <object class="GtkAction" id="action5">
         <property name="label" translatable="yes">Create new Guifi.net node here</property>
         <signal name="activate" handler="on_action5_activate" swapped="no"/>
-      </object>
-    </child>
-  </object>
-  <object class="GtkAboutDialog" id="aboutdialog1">
-    <property name="can_focus">False</property>
-    <property name="border_width">5</property>
-    <property name="type_hint">dialog</property>
-    <property name="program_name">Guifi·net Studio</property>
-    <property name="version">v1.0</property>
-    <property name="copyright" translatable="yes">Copyright © 2011-2012 Pablo Castellano</property>
-    <property name="comments" translatable="yes">Explore your free network offline!</property>
-    <property name="website">http://lainconscienciadepablo.net</property>
-    <property name="website_label" translatable="yes">Blog del autor</property>
-    <property name="license" translatable="yes">GPLv3+</property>
-    <property name="authors">Pablo Castellano &lt;pablo@anche.no&gt;</property>
-    <signal name="delete-event" handler="on_aboutdialog1_close" swapped="no"/>
-    <signal name="response" handler="on_aboutdialog1_close" swapped="no"/>
-    <child internal-child="vbox">
-      <object class="GtkBox" id="dialog-vbox">
-        <property name="can_focus">False</property>
-        <child internal-child="action_area">
-          <object class="GtkButtonBox" id="dialog-action_area">
-            <property name="can_focus">False</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="pack_type">end</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
       </object>
     </child>
   </object>
@@ -4583,6 +4583,36 @@ Iberian Peninsula</property>
                       <placeholder/>
                     </child>
                     <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
                       <object class="GtkLabel" id="label18">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
@@ -4634,7 +4664,7 @@ Iberian Peninsula</property>
             <property name="can_focus">False</property>
             <property name="layout_style">end</property>
             <child>
-              <object class="GtkButton" id="button8">
+              <object class="GtkButton" id="preferencesokbutton">
                 <property name="label">gtk-ok</property>
                 <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
@@ -4642,6 +4672,7 @@ Iberian Peninsula</property>
                 <property name="receives_default">True</property>
                 <property name="use_action_appearance">False</property>
                 <property name="use_stock">True</property>
+                <signal name="clicked" handler="on_preferencesokbutton_clicked" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -4696,7 +4727,7 @@ Iberian Peninsula</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkCheckButton" id="checkbutton3">
+                  <object class="GtkCheckButton" id="usekeyringbutton">
                     <property name="label" translatable="yes">Save data in gnome-keyring</property>
                     <property name="use_action_appearance">False</property>
                     <property name="visible">True</property>
@@ -4853,7 +4884,7 @@ Iberian Peninsula</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkEntry" id="entry10">
+                      <object class="GtkEntry" id="contactentry">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="invisible_char">●</property>
@@ -5077,7 +5108,7 @@ Iberian Peninsula</property>
       </object>
     </child>
     <action-widgets>
-      <action-widget response="0">button8</action-widget>
+      <action-widget response="0">preferencesokbutton</action-widget>
       <action-widget response="0">button9</action-widget>
     </action-widgets>
   </object>
