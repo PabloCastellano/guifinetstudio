@@ -102,6 +102,9 @@ class GuifinetStudio:
 		self.preferencesdialog = self.ui.get_object('preferencesdialog')
 		self.userentry = self.ui.get_object('userentry')
 		self.passwordentry = self.ui.get_object('passwordentry')
+		self.defaultzonecombobox = self.ui.get_object('defaultzonecombobox')
+		self.defaultzoneentry = self.ui.get_object('defaultzoneentry')
+		self.entrycompletion2 = self.ui.get_object('entrycompletion2')
 		
 		# unsolclic dialog
 		self.uscdialog = self.ui.get_object("uscdialog")
@@ -151,6 +154,10 @@ class GuifinetStudio:
 		# about dialog
 		self.about_ui = self.ui.get_object("aboutdialog1")
 
+		# cnml dialog
+		self.cnmldialog = self.ui.get_object('cnmldialog')
+		self.treeview4 = self.ui.get_object('treeview4')
+		
 		# configuration
 		self.configmanager = GuifinetStudioConfig()
 
@@ -312,12 +319,19 @@ class GuifinetStudio:
 		
 		
 	def on_updatezonesmenuitem_activate(self, widget, data=None):
-		fp = self.guifiAPI.downloadCNML(GUIFI_NET_WORLD_ZONE_ID, 'zones')
-		zone_filename = '%d.cnml' %GUIFI_NET_WORLD_ZONE_ID
-		filename = os.path.join(self.configmanager.CACHE_DIR, 'zones', zone_filename)
-		with open(filename, 'w') as zonefile:
-			zonefile.write(fp.read())
-		
+		try:
+			fp = self.guifiAPI.downloadCNML(GUIFI_NET_WORLD_ZONE_ID, 'zones')
+			zone_filename = '%d.cnml' %GUIFI_NET_WORLD_ZONE_ID
+			filename = os.path.join(self.configmanager.CACHE_DIR, 'zones', zone_filename)
+			with open(filename, 'w') as zonefile:
+				zonefile.write(fp.read())
+		except URLError, e:
+			g = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, 
+								"Error accessing to the Internets:\n" + str(e.reason))
+			g.set_title('Error downloading CNML')
+			g.run()
+			g.destroy()
+
 		
 	def on_action1_activate(self, action, data=None):
 		self.nodedialog.show()
@@ -361,12 +375,14 @@ class GuifinetStudio:
 		if devices == {}:
 			g = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, 
 								"Couldn't generate unsolclick.\nThe node doesn't have any device defined.")
+			g.set_title('Error generating unsolclic')
 			g.run()
 			g.destroy()
 			return
 		elif len(devices) > 1:
-			g = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, 
+			g = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.WARNING, Gtk.ButtonsType.CLOSE, 
 								"Several devices in this node. Generating just the first one.")
+			g.set_title('Warning generating unsolclic')
 			g.run()
 			g.destroy()
 		
@@ -383,7 +399,10 @@ class GuifinetStudio:
 		self.nodedialog.hide()
 		return True
 
-	
+	def on_cnmldialog_delete_event(self, widget, data=None):
+		self.cnmldialog.hide()
+		return True
+		
 	def on_autoloaduscbutton_clicked(self, widget, data=None):
 		print 'Autoload configuration'
 		raise NotImplementedError
@@ -528,6 +547,7 @@ class GuifinetStudio:
 		self.preferencesdialog.show()
 		self.userentry.set_text(self.configmanager.getUsername())
 		self.passwordentry.set_text(self.configmanager.getPassword())
+		self.fillZonesComboBox(self.defaultzonecombobox, self.entrycompletion2)
 		
 	def on_preferencesdialog_delete_event(self, widget, data=None):
 		self.preferencesdialog.hide()
@@ -731,18 +751,19 @@ class GuifinetStudio:
 		for n in self.cnmlp.getNodes():
 			model.append((n.id, n.title))
 			
-	def fillZonesComboBox(self, combobox, entrycompletion=None):
+	def fillZonesComboBox(self, combobox=None, entrycompletion=None):
 		# zoneid - title
-		model = combobox.get_model()
-		model.clear()
-		model.set_sort_column_id (1, Gtk.SortType.ASCENDING)
-		model.append((0, '-- Most recently used --'))
-		
-		n = 0
-		for z in self.cnmlp.getZones():
-			n +=1
-			model.append((z.id, z.title))
-		combobox.set_active(n)
+		if combobox:
+			model = combobox.get_model()
+			model.clear()
+			model.set_sort_column_id (1, Gtk.SortType.ASCENDING)
+			model.append((0, '-- Most recently used --'))
+			
+			n = 0
+			for z in self.cnmlp.getZones():
+				n +=1
+				model.append((z.id, z.title))
+			combobox.set_active(n)
 		
 		if entrycompletion:
 			model = entrycompletion.get_model()
@@ -765,6 +786,32 @@ class GuifinetStudio:
 			g.run()
 			g.destroy()
 			self.authenticated = False
+		
+	def fillAvailableCNMLModel(self, model):
+		cnmls = dict()
+		
+		for d in ['nodes', 'zones', 'detail']:
+			directory = os.path.join(self.configmanager.CACHE_DIR, d)
+			filelist = os.listdir(directory)
+			for f in filelist:
+				zid, ext = f.split('.')
+				zid = int(zid)
+				if ext == 'cnml':
+					if not cnmls.has_key('zid'):
+						cnmls[zid] = dict()
+						cnmls[zid]['nodes'] = False
+						cnmls[zid]['zones'] = False
+						cnmls[zid]['detail'] = False
+					cnmls[zid][d] = True
+		
+		for zid in cnmls:			
+			model.append((zid, self.zonecnmlp.getZone(zid).title, cnmls[zid]['nodes'], cnmls[zid]['zones'], cnmls[zid]['detail']))
+				
+		
+	def on_downloadcnmlmenuitem_activate(self, widget, data=None):
+		self.cnmldialog.show()
+		# rellenar tabla
+		self.fillAvailableCNMLModel(self.treeview4.get_model())
 		
 		
 if __name__ == "__main__":
