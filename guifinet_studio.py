@@ -158,6 +158,15 @@ class GuifinetStudio:
 		self.devstatuscombobox = self.ui.get_object('devstatuscombobox')
 		self.devgraphscombobox = self.ui.get_object('devgraphscombobox')
 		self.editdeviceokbutton = self.ui.get_object('editdeviceokbutton')
+		self.devmodelcombobox = self.ui.get_object('devmodelcombobox')
+		self.devfirmwarecombobox = self.ui.get_object('devfirmwarecombobox')
+		self.devdownloadcombobox = self.ui.get_object('devdownloadcombobox')
+		self.devuploadcombobox = self.ui.get_object('devuploadcombobox')
+		self.devmrtgcombobox = self.ui.get_object('devmrtgcombobox')
+		self.devmrtg2combobox = self.ui.get_object('devmrtg2combobox')
+		
+		self.notebook3 = self.ui.get_object("notebook3")
+		self.notebook3.set_show_tabs(False)
 		
 		# edit radio dialog
 		self.editradiodialog = self.ui.get_object('editradiodialog')
@@ -771,7 +780,7 @@ class GuifinetStudio:
 		
 		# Messagebox status
 		
-		url = self.guifiAPI.urlForZone(zode_id)
+		url = self.guifiAPI.urlForZone(zone_id)
 		messagestr = 'Zone succesfully created with id %d\n\nYou can view it in the following url:\n%s' %(zone_id, url)
 		g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.INFO, Gtk.ButtonsType.CLOSE, messagestr)
 		g.add_button('Open in web browser', -12)
@@ -859,51 +868,18 @@ class GuifinetStudio:
 
 	def editdevicevalidation(self):
 		# Checks: title, zone, lat, lon
-		if self.nodetitleentry.get_text() == '':
-			self.nodetitleentry.grab_focus()
+		if self.devmacentry.get_text() == '':
+			self.devmacentry.grab_focus()
 			return False
 		
-		if not valid_email_address(self.nodecontactentry.get_text()):
-			self.nodecontactentry.grab_focus()
-			return False
-			
-		if self.nodecoordinatesentry.get_text() == '':
-			self.nodecoordinatesentry.grab_focus()
-			return False
-		else:
-			try:
-				lat,lon = self.nodecoordinatesentry.get_text().split(',')
-				if lat == '' or lon == '':
-					self.nodecoordinatesentry.grab_focus()
-					return False
-				float(lat)
-				float(lon)
-			except ValueError:
-				self.nodecoordinatesentry.grab_focus()
-				return False
-				
-		if self.nodezonecombobox.get_active_iter() is None:
-			self.nodezonecombobox.grab_focus()
+		if not valid_email_address(self.devcontactentry.get_text()):
+			self.devcontactentry.grab_focus()
 			return False
 		
-		if not self.takefromparentscheckbutton.get_active() and self.nodegraphscombobox.get_active_iter() is None:
-			return False
-			
-		# rest of value types
-		try:
-			if self.nodeelevationentry.get_text() != '':
-				int(self.nodeelevationentry.get_text())
-		except ValueError, e:
-			self.nodeelevationentry.grab_focus()
-			return False
-			
 		return True
 		
 	def on_editdeviceokbutton_clicked(self, widget, data=None):
 		"""
-		self.editdevicenodecombobox
-		self.devtypecombobox
-		self.devstatuscombobox
 		self.devgraphscombobox
 		"""
 		
@@ -911,6 +887,55 @@ class GuifinetStudio:
 			print "There's some invalid data"
 			return
 		
+		it = self.editdevicenodecombobox.get_active_iter()
+		nid = self.editdevicenodecombobox.get_model().get_value(it, 0)
+		
+		it = self.devtypecombobox.get_active_iter()
+		rtype = self.devtypecombobox.get_model().get_value(it, 0)
+		
+		it = self.devstatuscombobox.get_active_iter()
+		rstatus = self.devstatuscombobox.get_model().get_value(it, 0)
+		
+		if rtype == 'radio':
+			it = self.devmodelcombobox.get_active_iter()
+			model = self.devmodelcombobox.get_model().get_value(it, 0)
+		
+			it = self.devfirmwarecombobox.get_active_iter()
+			firmware = self.devfirmwarecombobox.get_model().get_value(it, 0)
+			
+			download = None
+			upload = None
+			mrtg = None
+			
+		elif rtype == 'adsl':
+			model = None
+			firmware = None
+			
+			it = self.devdownloadcombobox.get_active_iter()
+			download = self.devdownloadcombobox.get_model().get_value(it, 0)
+		
+			it = self.devuploadcombobox.get_active_iter()
+			upload = self.devuploadcombobox.get_model().get_value(it, 0)
+		
+			it = self.devmrtgcombobox.get_active_iter()
+			mrtg = self.devmrtgcombobox.get_model().get_value(it, 0)
+		
+		elif rtype == 'generic':
+			model = None
+			firmware = None
+			download = None
+			upload = None
+			
+			it = self.devmrtg2combobox.get_active_iter()
+			mrtg = self.devmrtg2combobox.get_model().get_value(it, 0)
+			
+		else:
+			model = None
+			firmware = None
+			download = None
+			upload = None
+			mrtg = None
+			
 		messagestr = 'You are about to create a device named "%s".\nPlease choose where you want to create it' %self.nodetitleentry.get_text()
 		
 		# Messagebox (internet / local / cancelar)
@@ -928,7 +953,8 @@ class GuifinetStudio:
 		try:
 			device_id = self.guifiAPI.addDevice(nid, rtype, self.devmacentry.get_text(), 
 							nick=self.devnickentry.get_text(), notification=self.devcontactentry.get_text(),
-							comment=self.devcommententry.get_text(), status=None, graph_server=None)
+							comment=self.devcommententry.get_text(), status=rstatus, graph_server=None,
+							model_id=model, firmware=firmware, download=download, upload=upload, mrtg_index=mrtg)
 
 		except GuifiApiError, e:
 			errormessage = 'Error %d: %s\n\nError message:\n%s' %(e.code, e.reason, e.extra)
@@ -1068,6 +1094,19 @@ class GuifinetStudio:
 			
 		self.configmanager.save()
 		
+		
+	def on_devtypecombobox_changed(self, widget, data=None):
+		it = self.devtypecombobox.get_active_iter()
+		rtype = self.devtypecombobox.get_model().get_value(it, 0)
+		
+		if rtype == 'radio':
+			self.notebook3.set_current_page(0)
+		elif rtype == 'adsl':
+			self.notebook3.set_current_page(1)
+		elif rtype == 'generic':
+			self.notebook3.set_current_page(2)
+		else:
+			self.notebook3.set_current_page(3)
 		
 		
 if __name__ == "__main__":

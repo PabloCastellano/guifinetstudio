@@ -53,6 +53,7 @@ class GuifiAPI:
 		
 		self.base_api_url = self.base_url + '/api?'
 		self.base_cnml_url = self.base_url + '/%s/guifi/cnml/%d/%s'
+		self.base_device_url = self.base_url + '/%s/guifi/device/%d/view'
 
 		user_agent = 'pyGuifiAPI/1.0'
  		self.headers = {'User-Agent':user_agent}
@@ -221,14 +222,17 @@ class GuifiAPI:
 		return node_id
 		
 	def urlForNode(self, nid):
-		return '%s/node/%d' %(self.base_url, nid)
-
+		lang = 'es'
+		return '%s/%s/node/%d' %(self.base_url, lang, nid)
+	
 	def urlForZone(self, zid):
-		return '%s/node/%d' %(self.base_url, zid)
-		
+		lang = 'es'
+		return '%s/%s/node/%d' %(self.base_url, lang, zid)
+	
 	def urlForDevice(self, did):
-		return '%s/node/%d' %(self.base_url, did)
-		
+		lang = 'es'
+		return self.base_device_url %(lang, did)
+	
 	def updateNode(self, nid, title=None, nick=None, body=None,
 					zone_id=None, zone_desc=None, notification=None,
 					lat=None, lon=None, elevation=None, stable=None,
@@ -352,7 +356,8 @@ class GuifiAPI:
 			
 
 	def addDevice(self, nid, rtype, mac, nick=None, notification=None,
-					comment=None, status=None, graph_server=None):
+					comment=None, status=None, graph_server=None,
+					model_id=None, firmware=None, download=None, upload=None, mrtg_index=None):
 				
 		if not self.is_authenticated():
 			raise GuifiApiError('You have to be authenticated to run this action')
@@ -370,15 +375,35 @@ class GuifiAPI:
 		if graph_server is not None:
 			data['graph_server'] = graph_server
 			
+		if rtype == 'radio':
+			if model_id is None or firmware is None:
+				raise ValueError
+			data['model_id'] = model_id
+			data['firmware'] = firmware
+		elif rtype == 'adsl':
+			if download is None or upload is None or mrtg_index is None:
+				raise ValueError
+			data['download'] = download
+			data['upload'] = upload
+			data['mrtg_index'] = mrtg_index
+		elif rtype == 'generic':
+			if mrtg_index is None:
+				raise ValueError
+			data['mrtg_index'] = mrtg_index
+
 		params = urllib.urlencode(data)
 		(codenum, response) = self.sendRequest(params)
 
 		if codenum == ANSWER_GOOD:
-			pass
+			device_id = int(response.get('device_id'))
+			print 'Device succesfully created', device_id
+			print self.urlForDevice(device_id)
 		else:
 			raise GuifiApiError(response['str'], response['code'], response['extra'])
 			
-
+		return device_id
+		
+		
 	def updateDevice(self, did, nid=None, nick=None, notification=None,
 					mac=None, comment=None, status=None, graph_server=None):
 				
