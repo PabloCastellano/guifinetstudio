@@ -22,6 +22,7 @@ import re
 GUIFI_NET_WORLD_ZONE_ID = 3671
 
 re_email = re.compile("^.+@.+\..{2,4}$")
+re_mac = re.compile("[0-9a-f]{2}([-:][0-9a-f]{2}){5}$")
 
 def valid_email_address(email):
 	if isinstance(email, str):
@@ -35,3 +36,6 @@ def valid_email_address(email):
 			if valid_email_address(em) is False:
 				return False
 		return True
+
+def valid_mac_address(mac):
+	return re_mac.match(mac.lower()) is not None
