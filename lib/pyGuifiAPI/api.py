@@ -558,13 +558,14 @@ class GuifiAPI:
 		else:
 			raise GuifiApiError(response['str'], response['code'], response['extra'])
 	
+	
 	def getModels(self, type=None, fid=None, supported=None):
 		data = {'command':'guifi.misc.model'}
 		params = urllib.urlencode(data)
 		(codenum, response) = self.sendRequest(params)
-
+		
 		if codenum == ANSWER_GOOD:
-			pass
+			return response['models']
 		else:
 			raise GuifiApiError(response['str'], response['code'], response['extra'])
 			
@@ -584,9 +585,9 @@ class GuifiAPI:
 		data = {'command':'guifi.misc.firmware'}
 		params = urllib.urlencode(data)
 		(codenum, response) = self.sendRequest(params)
-
+		
 		if codenum == ANSWER_GOOD:
-			pass
+			return response['firmwares']
 		else:
 			raise GuifiApiError(response['str'], response['code'], response['extra'])
 	
