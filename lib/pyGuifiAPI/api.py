@@ -576,7 +576,7 @@ class GuifiAPI:
 		(codenum, response) = self.sendRequest(params)
 
 		if codenum == ANSWER_GOOD:
-			pass
+			return response['manufacturers']
 		else:
 			raise GuifiApiError('Error: '+str(response['str']))
 	
@@ -598,7 +598,7 @@ class GuifiAPI:
 		(codenum, response) = self.sendRequest(params)
 
 		if codenum == ANSWER_GOOD:
-			pass
+			return response['protocols']
 		else:
 			raise GuifiApiError(response['str'], response['code'], response['extra'])
 	
@@ -609,7 +609,7 @@ class GuifiAPI:
 		(codenum, response) = self.sendRequest(params)
 
 		if codenum == ANSWER_GOOD:
-			pass
+			return response['channels']
 		else:
 			raise GuifiApiError(response['str'], response['code'], response['extra'])
 			
