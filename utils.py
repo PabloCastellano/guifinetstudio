@@ -39,3 +39,8 @@ def valid_email_address(email):
 
 def valid_mac_address(mac):
 	return re_mac.match(mac.lower()) is not None
+
+def openUrl(url):
+	print 'Opening in web browser'
+	systemstr = 'xdg-open %s' %url
+	os.system(systemstr)

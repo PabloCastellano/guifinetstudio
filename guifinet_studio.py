@@ -40,7 +40,6 @@ from urllib2 import URLError
 
 class GuifinetStudio:
 	def __init__(self, cnmlFile="tests/detail.3"):
-		self.currentView = 0
 		self.cnmlFile = cnmlFile
 		self.points_layer = None
 		self.labels_layer = None
@@ -345,10 +344,12 @@ class GuifinetStudio:
 	
 	def on_showLinksButton_toggled(self, widget, data=None):
 		print 'Show links:', widget.get_active()
+		raise NotImplementedError
 	
 
 	def on_showZonesButton_toggled(self, widget, data=None):
 		print 'Show zones:', widget.get_active()
+		raise NotImplementedError
 		
 		
 	def on_updatezonesmenuitem_activate(self, widget, data=None):
@@ -426,35 +427,6 @@ class GuifinetStudio:
 		#self.uscdialog.set_title("Unsolclic for device "+model.get_value(it, 5))
 		self.uscdialog.set_title("Unsolclic for node "+node.title)
 		self.usctextbuffer.set_text(conf)
-		
-		
-	def on_nodeDialog_delete_event(self, widget, data=None):
-		self.nodedialog.hide()
-		return True
-
-	def on_cnmldialog_delete_event(self, widget, data=None):
-		self.cnmldialog.hide()
-		return True
-		
-	def on_autoloaduscbutton_clicked(self, widget, data=None):
-		print 'Autoload configuration'
-		raise NotImplementedError
-		
-
-	def on_uscsave_clicked(self, widget, data=None):
-		raise NotImplementedError
-		
-	def on_copyuscbutton_clicked(self, widget, data=None):
-		print 'copy usc to clipboard'
-		#cb = Gtk.Clipboard()
-		#cb.set_text(self.usctextbuffer.get_text(), -1)
-		self.usctextbuffer.copy_clipboard(Gtk.Clipboard.get(Gdk.Atom.intern('0', True)))
-		raise NotImplementedError
-		
-
-	def on_uscdialog_delete_event(self, widget, data=None):
-		self.uscdialog.hide()
-		return True
 
 
 	def on_menuitem5_toggled(self, widget, data=None):
@@ -473,7 +445,6 @@ class GuifinetStudio:
 			self.box1.show()
 		else:
 			self.box1.hide()
-		
 		
 		
 	def on_button5_clicked(self, widget, data=None):
@@ -526,6 +497,7 @@ class GuifinetStudio:
 	def on_imagemenuitem2_activate(self, widget, data=None):
 		self.opendialog.run()
 
+
 	def on_imagemenuitem3_activate(self, widget, data=None):
 		self.treestore.clear()
 		self.treestore2.clear()
@@ -533,6 +505,7 @@ class GuifinetStudio:
 		self.labels_layer.remove_all()
 		self.statusbar.push(0, "Closed CNML file")
 		self.cnmlFile = None
+		
 		
 	def on_button3_clicked(self, widget, data=None):
 		self.cnmlFile = self.opendialog.get_filename()
@@ -557,12 +530,11 @@ class GuifinetStudio:
 		self.about_ui.show()
 
 
-	def on_changeViewButton_toggled(self, widget, data=None):		
-		if self.currentView == 0:
-			self.currentView = 1
+	def on_changeViewButton_toggled(self, widget, data=None):
+		if self.notebook1.get_current_page() == 0:
+			self.notebook1.set_current_page(1)
 		else:
-			self.currentView = 0
-		self.notebook1.set_current_page(self.currentView)
+			self.notebook1.set_current_page(0)
 		
 		
 	def zoom_in(self, widget, data=None):
@@ -585,65 +557,319 @@ class GuifinetStudio:
 		defaultZoneTitle = self.zonecnmlp.getZone(self.configmanager.getDefaultZone()).title
 		self.entrycompletion2.get_entry().set_text(defaultZoneTitle)
 		
-		
-	def on_preferencesdialog_delete_event(self, widget, data=None):
-		self.preferencesdialog.hide()
-		# TODO: Save changed preferences
-		return True
-		
+				
 	def on_createnodemenuitem_activate(self, widget=None, data=None):
 		self.editnodedialog.set_title('Create new Guifi.net node')
 		self.fillZonesComboBox(self.nodezonecombobox, self.entrycompletion1)
 		self.editnodedialog.show()
+	
+	
+	def on_cnmldialog_response(self, widget, response):
+		self.cnmldialog.destroy()
 		
-	def on_editnodedialog_delete_event(self, widget, data=None):
-		self.editnodedialog.hide()
-		return True
+		
+	def on_uscdialog_response(self, widget, response):
+		if response == -12: #Auto-load to device
+			print 'Autoload configuration'
+			raise NotImplementedError
+		elif response == -13: #Copy to clipboard
+			print 'copy usc to clipboard'
+			#cb = Gtk.Clipboard()
+			#cb.set_text(self.usctextbuffer.get_text(), -1)
+			self.usctextbuffer.copy_clipboard(Gtk.Clipboard.get(Gdk.Atom.intern('0', True)))
+			raise NotImplementedError
+		elif response == -14: #Save to file
+			raise NotImplementedError
+		else:
+			self.uscdialog.destroy()
+		
+		
+	def on_editdevicedialog_response(self, widget, response):
+		if response == Gtk.ResponseType.ACCEPT:
+			"""
+			self.devgraphscombobox
+			"""
+			
+			if not self.editdevicevalidation():
+				print "There's some invalid data"
+				return
+			
+			it = self.editdevicenodecombobox.get_active_iter()
+			nid = self.editdevicenodecombobox.get_model().get_value(it, 0)
+			
+			it = self.devtypecombobox.get_active_iter()
+			rtype = self.devtypecombobox.get_model().get_value(it, 0)
+			
+			it = self.devstatuscombobox.get_active_iter()
+			rstatus = self.devstatuscombobox.get_model().get_value(it, 0)
+			
+			if rtype == 'radio':
+				it = self.devmodelcombobox.get_active_iter()
+				model = self.devmodelcombobox.get_model().get_value(it, 0)
+			
+				it = self.devfirmwarecombobox.get_active_iter()
+				firmware = self.devfirmwarecombobox.get_model().get_value(it, 0)
+				
+				download = None
+				upload = None
+				mrtg = None
+				
+			elif rtype == 'adsl':
+				model = None
+				firmware = None
+				
+				it = self.devdownloadcombobox.get_active_iter()
+				download = self.devdownloadcombobox.get_model().get_value(it, 0)
+			
+				it = self.devuploadcombobox.get_active_iter()
+				upload = self.devuploadcombobox.get_model().get_value(it, 0)
+			
+				it = self.devmrtgcombobox.get_active_iter()
+				mrtg = self.devmrtgcombobox.get_model().get_value(it, 0)
+			
+			elif rtype == 'generic':
+				model = None
+				firmware = None
+				download = None
+				upload = None
+				
+				it = self.devmrtg2combobox.get_active_iter()
+				mrtg = self.devmrtg2combobox.get_model().get_value(it, 0)
+				
+			else:
+				model = None
+				firmware = None
+				download = None
+				upload = None
+				mrtg = None
+				
+			messagestr = 'You are about to create a device named "%s".\nPlease choose where you want to create it' %self.nodetitleentry.get_text()
+			
+			# Messagebox (internet / local / cancelar)
+			g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.QUESTION, Gtk.ButtonsType.CANCEL, messagestr)
+			g.set_title('Confirmation')
+			g.add_button('Create locally\n(CNML)', -12)
+			g.add_button('Create remotely\n(%s)' %self.guifiAPI.getHost(), -13)
+			res = g.run()
+			g.destroy()
+			
+			if res in (Gtk.ResponseType.CANCEL, Gtk.ResponseType.DELETE_EVENT):
+				return
+				
+			try:
+				device_id = self.guifiAPI.addDevice(nid, rtype, self.devmacentry.get_text(), 
+								nick=self.devnickentry.get_text(), notification=self.devcontactentry.get_text(),
+								comment=self.devcommententry.get_text(), status=rstatus, graph_server=None,
+								model_id=model, firmware=firmware, download=download, upload=upload, mrtg_index=mrtg)
+
+			except GuifiApiError, e:
+				errormessage = 'Error %d: %s\n\nError message:\n%s' %(e.code, e.reason, e.extra)
+				g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, errormessage)
+				g.set_title('Response from server')
+				g.run()
+				g.destroy()
+				return
+			
+			# Messagebox status
+			
+			url = self.guifiAPI.urlForDevice(device_id)
+			messagestr = 'Device succesfully created with id %d\n\nYou can view it in the following url:\n%s' %(device_id, url)
+			g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.INFO, Gtk.ButtonsType.CLOSE, messagestr)
+			g.add_button('Open in web browser', -12)
+			g.set_title('Response from server')
+			res = g.run()
+			g.destroy()
+			
+			if res != Gtk.ResponseType.CLOSE:
+				openUrl(url)
+		
+		self.editdevicedialog.destroy()
+
+
+	def on_editlinkdialog_response(self, widget, response):
+		if response == Gtk.ResponseType.ACCEPT:
+			pass
+		self.editlinkdialog.destroy()
+	
+	
+	def on_editradiodialog_response(self, widget, response):
+		if response == Gtk.ResponseType.ACCEPT:
+			pass
+		self.editradiodialog.destroy()
+		
+		
+	def on_editzonedialog_response(self, widget, response):
+		if response == Gtk.ResponseType.ACCEPT:
+			"""
+			self.zonegraphscombobox
+			self.zoneproxyscombobox
+			self.zonednsscombobox
+			self.zonentpscombobox
+			"""
+			
+			(start, end) = self.zoneinfotextbuffer.get_bounds()
+			zoneinfotext = self.zoneinfotextview.get_buffer().get_text(start, end, True)
+			
+			if not self.editzonevalidation():
+				print "There's some invalid data"
+				return
+			
+			it = self.parentzonecombobox.get_active_iter()
+			zid = self.parentzonecombobox.get_model().get_value(it, 0)
+			
+			it = self.zonemodecombobox.get_active_iter()
+			zonemode = self.zonemodecombobox.get_model().get_value(it, 0)
+					
+			messagestr = 'You are about to create the zone named "%s".\nPlease choose where you want to create it' %self.nodetitleentry.get_text()
+			
+			# Messagebox (internet / local / cancelar)
+			g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.QUESTION, Gtk.ButtonsType.CANCEL, messagestr)
+			g.set_title('Confirmation')
+			g.add_button('Create locally\n(CNML)', -12)
+			g.add_button('Create remotely\n(%s)' %self.guifiAPI.getHost(), -13)
+			res = g.run()
+			g.destroy()
+			
+			if res in (Gtk.ResponseType.CANCEL, Gtk.ResponseType.DELETE_EVENT):
+				return
+				
+			try:
+				zone_id = self.guifiAPI.addZone(self.zonetitleentry.get_text(), zid, 0, 0, 0, 0,
+							nick=self.zonenickentry.get_text(), mode=zonemode, body=zoneinfotext, timezone='+01 2 2',
+							graph_server=None, proxy_server=None, dns_servers=None,
+							ntp_servers=None, ospf_zone=self.ospfidentry.get_text(), homepage=self.zonewebentry.get_text(),
+							notification=self.zonecontactentry.get_text())
+						
+			except GuifiApiError, e:
+				errormessage = 'Error %d: %s\n\nError message:\n%s' %(e.code, e.reason, e.extra)
+				g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, errormessage)
+				g.set_title('Response from server')
+				g.run()
+				g.destroy()
+				return
+			
+			# Messagebox status
+			
+			url = self.guifiAPI.urlForZone(zone_id)
+			messagestr = 'Zone succesfully created with id %d\n\nYou can view it in the following url:\n%s' %(zone_id, url)
+			g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.INFO, Gtk.ButtonsType.CLOSE, messagestr)
+			g.add_button('Open in web browser', -12)
+			g.set_title('Response from server')
+			res = g.run()
+			g.destroy()
+			
+			if res != Gtk.ResponseType.CLOSE:
+				openUrl(url)
+				
+		self.editzonedialog.destroy()
+		
+		
+	def on_preferencesdialog_response(self, widget, response):
+		if response == Gtk.ResponseType.ACCEPT:
+			self.configmanager.setUsername(self.userentry.get_text())
+			self.configmanager.setPassword(self.passwordentry.get_text())
+			self.configmanager.setContact(self.contactentry.get_text())
+			
+			# How can I get the GtkTreeIter from the "active item" in GtkEntry/GtkEntryCompletion?
+			# Otherwise: loop :-S		
+			zid = self.findZoneIdInEntryCompletion(self.entrycompletion2)
+			
+			if zid:
+				self.configmanager.setDefaultZone(zid)
+				
+			self.configmanager.save()
+			
+		self.preferencesdialog.destroy()
+		
+		
+	def on_editnodedialog_response(self, widget, response):
+		if response == Gtk.ResponseType.ACCEPT:
+			(start, end) = self.nodeinfotextbuffer.get_bounds()
+			nodeinfotext = self.nodeinfotextview.get_buffer().get_text(start, end, True)
+			
+			if not self.editnodevalidation():
+				print "There's some invalid data"
+				return
+			
+			lat,lon = self.nodecoordinatesentry.get_text().split(',')
+			it = self.nodezonecombobox.get_active_iter()
+			zid = self.nodezonecombobox.get_model().get_value(it, 0)
+			if self.takefromparentscheckbutton.get_active():
+				graphs = None
+			else:
+				it = self.nodegraphscombobox.get_active_iter()
+				graphs = self.nodegraphscombobox.get_model().get_value(it, 0)
+			
+			messagestr = 'You are about to create the node named "%s".\nPlease choose where you want to create it' %self.nodetitleentry.get_text()
+			
+			# Messagebox (internet / local / cancelar)
+			g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.QUESTION, Gtk.ButtonsType.CANCEL, messagestr)
+			g.set_title('Confirmation')
+			g.add_button('Create locally\n(CNML)', -12)
+			g.add_button('Create remotely\n(%s)' %self.guifiAPI.getHost(), -13)
+			res = g.run()
+			g.destroy()
+			
+			if res in (Gtk.ResponseType.CANCEL, Gtk.ResponseType.DELETE_EVENT):
+				return
+			
+			try:
+				node_id = self.guifiAPI.addNode(self.nodetitleentry.get_text(), zid, lat, lon, body=nodeinfotext,
+							nick=self.nodenickentry.get_text(), zone_desc=self.nodezonedescentry.get_text(),
+							notification=self.nodecontactentry.get_text(), elevation=self.nodeelevationentry.get_text(),
+							stable=self.stablenodecheckbutton.get_active(), graph_server=graphs, status='Planned')
+			except GuifiApiError, e:
+				errormessage = 'Error %d: %s\n\nError message:\n%s' %(e.code, e.reason, e.extra)
+				g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, errormessage)
+				g.set_title('Response from server')
+				g.run()
+				g.destroy()
+				return
+			
+			# Messagebox status
+			url = self.guifiAPI.urlForNode(node_id)
+			messagestr = 'Node succesfully created with id %d\n\nYou can view it in the following url:\n%s' %(node_id, url)
+			g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.INFO, Gtk.ButtonsType.CLOSE, messagestr)
+			g.add_button('Open in web browser', -12)
+			g.set_title('Response from server')
+			res = g.run()
+			g.destroy()
+			
+			if res != Gtk.ResponseType.CLOSE:
+				openUrl(url)
+				
+		self.editnodedialog.destroy()
+		
 		
 	def on_createzonemenuitem_activate(self, widget, data=None):
 		self.editzonedialog.set_title('Create new Guifi.net zone')
 		self.fillZonesComboBox(self.parentzonecombobox)
 		self.editzonedialog.show()
 		
-	def on_editzonedialog_delete_event(self, widget, data=None):
-		self.editzonedialog.hide()
-		return True
-	
+		
 	def on_createdevicemenuitem_activate(self, widget, data=None):
 		self.editdevicedialog.set_title('Create new Guifi.net device')
 		self.fillNodesComboBox(self.editdevicenodecombobox)
 		self.editdevicedialog.show()
 		
-	def on_editdevicedialog_delete_event(self, widget, data=None):
-		self.editdevicedialog.hide()
-		return True
-	
+		
 	def on_createradiomenuitem_activate(self, widget, data=None):
 		self.editradiodialog.set_title('Create new Guifi.net radio')
 		self.fillNodesComboBox(self.editradionodecombobox)
 		self.editradiodialog.show()
 		
-	def on_editradiodialog_delete_event(self, widget, data=None):
-		self.editradiodialog.hide()
-		return True
 		
 	def on_createinterfacemenuitem_activate(self, widget, data=None):
 		self.editinterfacedialog.set_title('Create new Guifi.net interface')
 		self.editinterfacedialog.show()
 	
-	def on_editinterfacedialog_delete_event(self, widget, data=None):
-		self.editinterfacedialog.hide()
-		return True
-		
+	
 	def on_createlinkmenuitem_activate(self, widget, data=None):
 		self.editlinkdialog.set_title('Create new Guifi.net link')
 		self.fillNodesComboBox(self.editlinknode1combobox)
 		self.fillNodesComboBox(self.editlinknode2combobox)
 		self.editlinkdialog.show()
 		
-	def on_editlinkdialog_delete_event(self, widget, data=None):
-		self.editlinkdialog.hide()
-		return True
 		
 	def mouse_click_cb(self, widget, event):
 		# event == void (GdkEventButton?)
@@ -652,6 +878,7 @@ class GuifinetStudio:
 			self.lon, self.lat = self.view.x_to_longitude(X), self.view.y_to_latitude(Y)
 			self.menu2.popup(None, None, None, None, event.button, event.time)
 
+
 	def on_action5_activate(self, action, data=None):
 		self.nodecoordinatesentry.set_text(str(self.lat) + ', ' + str(self.lon))
 		self.nodecoordinatesentry.set_sensitive(False)
@@ -659,9 +886,11 @@ class GuifinetStudio:
 		self.nodetitleentry.grab_focus()
 		self.on_createnodemenuitem_activate()
 	
+	
 	def on_acceptxolncheckbutton_toggled(self, widget, data=None):
 		isActive = widget.get_active()
 		self.editnodeokbutton.set_sensitive(isActive)
+		
 		
 	def editnodevalidation(self):
 		# Checks: title, zone, lat, lon
@@ -705,6 +934,7 @@ class GuifinetStudio:
 			
 		return True
 		
+		
 	def on_takefromparentscheckbutton_toggled(self, widget, data=None):
 		isActive = widget.get_active()
 		self.nodegraphscombobox.set_sensitive(not isActive)
@@ -728,144 +958,6 @@ class GuifinetStudio:
 		return True
 		
 		
-	def on_editzoneokbutton_clicked(self, widget, data=None):
-		"""
-		self.zonegraphscombobox
-		self.zoneproxyscombobox
-		self.zonednsscombobox
-		self.zonentpscombobox
-		"""
-		
-		(start, end) = self.zoneinfotextbuffer.get_bounds()
-		zoneinfotext = self.zoneinfotextview.get_buffer().get_text(start, end, True)
-		
-		if not self.editzonevalidation():
-			print "There's some invalid data"
-			return
-		
-		it = self.parentzonecombobox.get_active_iter()
-		zid = self.parentzonecombobox.get_model().get_value(it, 0)
-		
-		it = self.zonemodecombobox.get_active_iter()
-		zonemode = self.zonemodecombobox.get_model().get_value(it, 0)
-				
-		messagestr = 'You are about to create the zone named "%s".\nPlease choose where you want to create it' %self.nodetitleentry.get_text()
-		
-		# Messagebox (internet / local / cancelar)
-		g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.QUESTION, Gtk.ButtonsType.CANCEL, messagestr)
-		g.set_title('Confirmation')
-		g.add_button('Create locally\n(CNML)', -12)
-		g.add_button('Create remotely\n(%s)' %self.guifiAPI.getHost(), -13)
-		response = g.run()
-		g.destroy()
-		
-		print response # ESC --> -4
-		if response == Gtk.ResponseType.CANCEL:
-			return
-		
-		try:
-			zone_id = self.guifiAPI.addZone(self.zonetitleentry.get_text(), zid, 0, 0, 0, 0,
-						nick=self.zonenickentry.get_text(), mode=zonemode, body=zoneinfotext, timezone='+01 2 2',
-						graph_server=None, proxy_server=None, dns_servers=None,
-						ntp_servers=None, ospf_zone=self.ospfidentry.get_text(), homepage=self.zonewebentry.get_text(),
-						notification=self.zonecontactentry.get_text())
-					
-		except GuifiApiError, e:
-			errormessage = 'Error %d: %s\n\nError message:\n%s' %(e.code, e.reason, e.extra)
-			g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, errormessage)
-			g.set_title('Response from server')
-			g.run()
-			g.destroy()
-			return
-		
-		# Messagebox status
-		
-		url = self.guifiAPI.urlForZone(zone_id)
-		messagestr = 'Zone succesfully created with id %d\n\nYou can view it in the following url:\n%s' %(zone_id, url)
-		g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.INFO, Gtk.ButtonsType.CLOSE, messagestr)
-		g.add_button('Open in web browser', -12)
-		g.set_title('Response from server')
-		response = g.run()
-		g.destroy()
-		
-		if response != Gtk.ResponseType.CLOSE:
-			print 'Opening in web browser'
-			systemstr = 'xdg-open %s' %url
-			os.system(systemstr)
-			
-		self.editzonedialog.hide()
-		
-		
-	def on_editnodeokbutton_clicked(self, widget, data=None):
-		"""
-		nodegraphscombobox
-
-		status?
-		"""
-
-		(start, end) = self.nodeinfotextbuffer.get_bounds()
-		nodeinfotext = self.nodeinfotextview.get_buffer().get_text(start, end, True)
-		
-		if not self.editnodevalidation():
-			print "There's some invalid data"
-			return
-		
-		lat,lon = self.nodecoordinatesentry.get_text().split(',')
-		it = self.nodezonecombobox.get_active_iter()
-		zid = self.nodezonecombobox.get_model().get_value(it, 0)
-		if self.takefromparentscheckbutton.get_active():
-			graphs = None
-		else:
-			it = self.nodegraphscombobox.get_active_iter()
-			graphs = self.nodegraphscombobox.get_model().get_value(it, 0)
-		
-		
-		
-		messagestr = 'You are about to create the node named "%s".\nPlease choose where you want to create it' %self.nodetitleentry.get_text()
-		
-		# Messagebox (internet / local / cancelar)
-		g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.QUESTION, Gtk.ButtonsType.CANCEL, messagestr)
-		g.set_title('Confirmation')
-		g.add_button('Create locally\n(CNML)', -12)
-		g.add_button('Create remotely\n(%s)' %self.guifiAPI.getHost(), -13)
-		response = g.run()
-		g.destroy()
-		
-		print response # ESC --> -4
-		if response == Gtk.ResponseType.CANCEL:
-			return
-		
-		try:
-			node_id = self.guifiAPI.addNode(self.nodetitleentry.get_text(), zid, lat, lon, body=nodeinfotext,
-						nick=self.nodenickentry.get_text(), zone_desc=self.nodezonedescentry.get_text(),
-						notification=self.nodecontactentry.get_text(), elevation=self.nodeelevationentry.get_text(),
-						stable=self.stablenodecheckbutton.get_active(), graph_server=graphs, status='Planned')
-		except GuifiApiError, e:
-			errormessage = 'Error %d: %s\n\nError message:\n%s' %(e.code, e.reason, e.extra)
-			g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, errormessage)
-			g.set_title('Response from server')
-			g.run()
-			g.destroy()
-			return
-		
-		# Messagebox status
-		
-		url = self.guifiAPI.urlForNode(node_id)
-		messagestr = 'Node succesfully created with id %d\n\nYou can view it in the following url:\n%s' %(node_id, url)
-		g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.INFO, Gtk.ButtonsType.CLOSE, messagestr)
-		g.add_button('Open in web browser', -12)
-		g.set_title('Response from server')
-		response = g.run()
-		g.destroy()
-		
-		if response != Gtk.ResponseType.CLOSE:
-			print 'Opening in web browser'
-			systemstr = 'xdg-open %s' %url
-			os.system(systemstr)
-			
-		self.editnodedialog.hide()
-		
-
 	def editdevicevalidation(self):
 		# Checks: title, zone, lat, lon
 		if self.devmacentry.get_text() == '':
@@ -878,110 +970,7 @@ class GuifinetStudio:
 		
 		return True
 		
-	def on_editdeviceokbutton_clicked(self, widget, data=None):
-		"""
-		self.devgraphscombobox
-		"""
-		
-		if not self.editdevicevalidation():
-			print "There's some invalid data"
-			return
-		
-		it = self.editdevicenodecombobox.get_active_iter()
-		nid = self.editdevicenodecombobox.get_model().get_value(it, 0)
-		
-		it = self.devtypecombobox.get_active_iter()
-		rtype = self.devtypecombobox.get_model().get_value(it, 0)
-		
-		it = self.devstatuscombobox.get_active_iter()
-		rstatus = self.devstatuscombobox.get_model().get_value(it, 0)
-		
-		if rtype == 'radio':
-			it = self.devmodelcombobox.get_active_iter()
-			model = self.devmodelcombobox.get_model().get_value(it, 0)
-		
-			it = self.devfirmwarecombobox.get_active_iter()
-			firmware = self.devfirmwarecombobox.get_model().get_value(it, 0)
-			
-			download = None
-			upload = None
-			mrtg = None
-			
-		elif rtype == 'adsl':
-			model = None
-			firmware = None
-			
-			it = self.devdownloadcombobox.get_active_iter()
-			download = self.devdownloadcombobox.get_model().get_value(it, 0)
-		
-			it = self.devuploadcombobox.get_active_iter()
-			upload = self.devuploadcombobox.get_model().get_value(it, 0)
-		
-			it = self.devmrtgcombobox.get_active_iter()
-			mrtg = self.devmrtgcombobox.get_model().get_value(it, 0)
-		
-		elif rtype == 'generic':
-			model = None
-			firmware = None
-			download = None
-			upload = None
-			
-			it = self.devmrtg2combobox.get_active_iter()
-			mrtg = self.devmrtg2combobox.get_model().get_value(it, 0)
-			
-		else:
-			model = None
-			firmware = None
-			download = None
-			upload = None
-			mrtg = None
-			
-		messagestr = 'You are about to create a device named "%s".\nPlease choose where you want to create it' %self.nodetitleentry.get_text()
-		
-		# Messagebox (internet / local / cancelar)
-		g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.QUESTION, Gtk.ButtonsType.CANCEL, messagestr)
-		g.set_title('Confirmation')
-		g.add_button('Create locally\n(CNML)', -12)
-		g.add_button('Create remotely\n(%s)' %self.guifiAPI.getHost(), -13)
-		response = g.run()
-		g.destroy()
-		
-		print response # ESC --> -4
-		if response == Gtk.ResponseType.CANCEL:
-			return
-		
-		try:
-			device_id = self.guifiAPI.addDevice(nid, rtype, self.devmacentry.get_text(), 
-							nick=self.devnickentry.get_text(), notification=self.devcontactentry.get_text(),
-							comment=self.devcommententry.get_text(), status=rstatus, graph_server=None,
-							model_id=model, firmware=firmware, download=download, upload=upload, mrtg_index=mrtg)
 
-		except GuifiApiError, e:
-			errormessage = 'Error %d: %s\n\nError message:\n%s' %(e.code, e.reason, e.extra)
-			g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, errormessage)
-			g.set_title('Response from server')
-			g.run()
-			g.destroy()
-			return
-		
-		# Messagebox status
-		
-		url = self.guifiAPI.urlForDevice(device_id)
-		messagestr = 'Device succesfully created with id %d\n\nYou can view it in the following url:\n%s' %(device_id, url)
-		g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.INFO, Gtk.ButtonsType.CLOSE, messagestr)
-		g.add_button('Open in web browser', -12)
-		g.set_title('Response from server')
-		response = g.run()
-		g.destroy()
-		
-		if response != Gtk.ResponseType.CLOSE:
-			print 'Opening in web browser'
-			systemstr = 'xdg-open %s' %url
-			os.system(systemstr)
-			
-		self.editdevicedialog.hide()
-	
-	
 	def fillNodesComboBox(self, combobox):
 		model = combobox.get_model()
 		model.clear()
@@ -1050,8 +1039,8 @@ class GuifinetStudio:
 		
 	def on_downloadcnmlmenuitem_activate(self, widget, data=None):
 		self.cnmldialog.show()
-		# rellenar tabla
 		self.fillAvailableCNMLModel(self.treeview4.get_model())
+	
 	
 	# temporary method until I find a better way to do it
 	def findZoneIdInEntryCompletion(self, entrycompletion):
@@ -1079,34 +1068,16 @@ class GuifinetStudio:
 		return zid
 		
 		
-	def on_preferencesokbutton_clicked(self, widget ,data=None):
-		self.preferencesdialog.hide()
-		self.configmanager.setUsername(self.userentry.get_text())
-		self.configmanager.setPassword(self.passwordentry.get_text())
-		self.configmanager.setContact(self.contactentry.get_text())
-		
-		# How can I get the GtkTreeIter from the "active item" in GtkEntry/GtkEntryCompletion?
-		# Otherwise: loop :-S		
-		zid = self.findZoneIdInEntryCompletion(self.entrycompletion2)
-		
-		if zid:
-			self.configmanager.setDefaultZone(zid)
-			
-		self.configmanager.save()
-		
-		
 	def on_devtypecombobox_changed(self, widget, data=None):
 		it = self.devtypecombobox.get_active_iter()
 		rtype = self.devtypecombobox.get_model().get_value(it, 0)
 		
-		if rtype == 'radio':
-			self.notebook3.set_current_page(0)
-		elif rtype == 'adsl':
-			self.notebook3.set_current_page(1)
-		elif rtype == 'generic':
-			self.notebook3.set_current_page(2)
+		pages = {'radio':0, 'adsl':1, 'generic':2}
+		if pages.has_key(rtype):
+			self.notebook3.set_current_page(pages[rtype])
 		else:
 			self.notebook3.set_current_page(3)
+
 		
 		
 if __name__ == "__main__":
