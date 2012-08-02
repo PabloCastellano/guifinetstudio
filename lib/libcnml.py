@@ -747,7 +747,11 @@ class CNMLParser():
 
 		return [n.title for n in self.getNodes()]
 
-
+	# Filename loaded
+	def getFilename(self):
+		return self.filename
+		
+		
 # <interface> cuelga de <device> WTF?!:
 #	<device created="20101105 0125" firmware="AirOsv52" id="25621" name="AirMaxM2 Bullet/PwBrg/AirGrd/NanoBr" status="Working" title="MLGInvisibleRd1" type="radio" updated="20110724 0113">
 #		<radio antenna_gain="8" device_id="25621" id="0" mode="client" protocol="802.11b" snmp_name="ath0" ssid="MlagaMLGnvsbltmpRd1CPE0">

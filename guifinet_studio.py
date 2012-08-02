@@ -33,23 +33,19 @@ import pyGuifiAPI
 from pyGuifiAPI.error import GuifiApiError
 
 from configmanager import GuifinetStudioConfig
-from unsolclic import UnSolClic
+
 from utils import *
 
 from urllib2 import URLError
 
+from ui import *
+
+
+
 class GuifinetStudio:
 	def __init__(self, cnmlFile="tests/detail.3"):
-		self.cnmlFile = cnmlFile
-		self.points_layer = None
-		self.labels_layer = None
-		
-		# Unsolclic instance
-		self.usc = UnSolClic()
-
-		# UI Widgets
 		self.ui = Gtk.Builder()
-		self.ui.add_from_file('guifinet_studio.ui')
+		self.ui.add_from_file('ui/mainwindow.ui')
 		self.ui.connect_signals(self)
 
 		self.mainWindow = self.ui.get_object('mainWindow')
@@ -57,9 +53,9 @@ class GuifinetStudio:
 		
 		self.nodesList = self.ui.get_object("scrolledwindow1")
 		self.treestore = self.ui.get_object("treestore1")
+		self.treestore2 = self.ui.get_object("treestore2")
 		self.treeview = self.ui.get_object("treeview1")
 		self.treeview2 = self.ui.get_object("treeview2")
-		self.treestore2 = self.ui.get_object("treestore2")
 		self.statusbar = self.ui.get_object("statusbar1")
 		self.actiongroup1 = self.ui.get_object("actiongroup1")
 		self.menuitem6 = self.ui.get_object("menuitem6")
@@ -85,8 +81,6 @@ class GuifinetStudio:
 		self.box1 = self.ui.get_object('box1')
 		self.paned = self.ui.get_object("paned1")
 		self.paned.pack2(self.embed, True, True)
-#		self.embedBox.pack_start(self.embed, True, True, 0)
-#		self.embedBox.reorder_child(self.embed, 0)
 		
 		self.uimanager = Gtk.UIManager()
 		self.uimanager.add_ui_from_file("guifinet_studio_menu.ui")
@@ -95,119 +89,32 @@ class GuifinetStudio:
 		self.menu2 = self.uimanager.get_widget("/KeyPopup2")
 
 		self.t6 = self.ui.get_object("treeviewcolumn6")
-		self.nodedialog = self.ui.get_object("nodeDialog")
 
-		# preferences dialog
-		self.preferencesdialog = self.ui.get_object('preferencesdialog')
-		self.userentry = self.ui.get_object('userentry')
-		self.passwordentry = self.ui.get_object('passwordentry')
-		self.defaultzonecombobox = self.ui.get_object('defaultzonecombobox')
-		self.defaultzoneentry = self.ui.get_object('defaultzoneentry')
-		self.entrycompletion2 = self.ui.get_object('entrycompletion2')
-		self.usekeyringbutton = self.ui.get_object('usekeyringbutton')
-		self.entrycompletion2 = self.ui.get_object('entrycompletion2')
-		self.contactentry = self.ui.get_object('contactentry')
+		self.points_layer = None
+		self.labels_layer = None
+			
+		self.mainWindow.show_all()
 		
-		# unsolclic dialog
-		self.uscdialog = self.ui.get_object("uscdialog")
-		self.usctextbuffer = self.ui.get_object("usctextbuffer")
+		# CNMLParser
+		try:
+			self.cnmlp = CNMLParser(cnmlFile)
+			self.cnmlFile = cnmlFile
+		except IOError:
+			print 'Error loading cnml'
+			self.statusbar.push(0, "CNML file \"%s\" couldn't be loaded" %self.cnmlFile)
+			self.cnmlp = None
+			self.cnmlFile = None
 		
-		# edit node dialog
-		self.editnodeokbutton = self.ui.get_object("editnodeokbutton")
-		self.editnodedialog = self.ui.get_object("editnodedialog")
-		self.nodecoordinatesentry = self.ui.get_object('nodecoordinatesentry')
-		self.nodetitleentry = self.ui.get_object('nodetitleentry')		
-		self.nodeinfotextview = self.ui.get_object('nodeinfotextview')
-		self.nodenickentry = self.ui.get_object('nodenickentry')
-		self.nodecontactentry = self.ui.get_object('nodecontactentry')
-		self.nodezonecombobox = self.ui.get_object('nodezonecombobox')
-		self.nodezonedescentry = self.ui.get_object('nodezonedescentry')
-		self.nodeelevationentry = self.ui.get_object('nodeelevationentry')
-		self.nodegraphscombobox = self.ui.get_object('nodegraphscombobox')
-		self.takefromparentscheckbutton = self.ui.get_object('takefromparentscheckbutton')
-		self.stablenodecheckbutton = self.ui.get_object('stablenodecheckbutton')
-		self.entrycompletion1 = self.ui.get_object('entrycompletion1')
-		self.nodeinfotextbuffer = self.ui.get_object('nodeinfotextbuffer')
-		
-		# edit zone dialog
-		self.editzonedialog = self.ui.get_object('editzonedialog')
-		self.zonetitleentry = self.ui.get_object('zonetitleentry')
-		self.parentzonecombobox = self.ui.get_object('parentzonecombobox')
-		self.zonenickentry = self.ui.get_object('zonenickentry')
-		self.zonemodecombobox = self.ui.get_object('zonemodecombobox')
-		self.zoneinfotextview = self.ui.get_object('zoneinfotextview')
-		self.zoneinfotextbuffer = self.ui.get_object('zoneinfotextbuffer')
-		self.ospfidentry = self.ui.get_object('ospfidentry')
-		self.zonewebentry = self.ui.get_object('zonewebentry')
-		self.zonecontactentry = self.ui.get_object('zonecontactentry')
-		self.zonegraphscombobox = self.ui.get_object('zonegraphscombobox')
-		self.zoneproxyscombobox = self.ui.get_object('zoneproxyscombobox')
-		self.zonednsscombobox = self.ui.get_object('zonednsscombobox')
-		self.zonentpscombobox = self.ui.get_object('zonentpscombobox')
-		self.editzoneokbutton = self.ui.get_object('editzoneokbutton')
-		
-		# edit device dialog
-		self.editdevicedialog = self.ui.get_object('editdevicedialog')
-		self.editdevicenodecombobox = self.ui.get_object('editdevicenodecombobox')
-		self.devtypecombobox = self.ui.get_object('devtypecombobox')
-		self.devmacentry = self.ui.get_object('devmacentry')
-		self.devnickentry = self.ui.get_object('devnickentry')
-		self.devcontactentry = self.ui.get_object('devcontactentry')
-		self.devcommententry = self.ui.get_object('devcommententry')
-		self.devstatuscombobox = self.ui.get_object('devstatuscombobox')
-		self.devgraphscombobox = self.ui.get_object('devgraphscombobox')
-		self.editdeviceokbutton = self.ui.get_object('editdeviceokbutton')
-		self.devmodelcombobox = self.ui.get_object('devmodelcombobox')
-		self.devfirmwarecombobox = self.ui.get_object('devfirmwarecombobox')
-		self.devdownloadcombobox = self.ui.get_object('devdownloadcombobox')
-		self.devuploadcombobox = self.ui.get_object('devuploadcombobox')
-		self.devmrtgcombobox = self.ui.get_object('devmrtgcombobox')
-		self.devmrtg2combobox = self.ui.get_object('devmrtg2combobox')
-		
-		self.notebook3 = self.ui.get_object("notebook3")
-		self.notebook3.set_show_tabs(False)
-		
-		# edit radio dialog
-		self.editradiodialog = self.ui.get_object('editradiodialog')
-		self.editradionodecombobox = self.ui.get_object('editradionodecombobox')
-		
-		# edit interface dialog
-		self.editinterfacedialog = self.ui.get_object('editinterfacedialog')
-		
-		# edit link dialog
-		self.editlinkdialog = self.ui.get_object('editlinkdialog')
-		self.editlinknode1combobox = self.ui.get_object('editlinknode1combobox')
-		self.editlinknode2combobox = self.ui.get_object('editlinknode2combobox')
-		
-		# file chooser dialog
-		self.opendialog = self.ui.get_object("filechooserdialog1")
-		self.opendialog.set_action(Gtk.FileChooserAction.OPEN)
-		
-		# about dialog
-		self.about_ui = self.ui.get_object("aboutdialog1")
-
-		# cnml dialog
-		self.cnmldialog = self.ui.get_object('cnmldialog')
-		self.treeview4 = self.ui.get_object('treeview4')
+		self.completaArbol()
+		self.paintMap()
 		
 		# configuration
 		self.configmanager = GuifinetStudioConfig()
-
+		
 		# Guifi.net API
 		self.guifiAPI = pyGuifiAPI.GuifiAPI(self.configmanager.getUsername(), self.configmanager.getPassword())
 		self.authenticated = False
 		
-		with open("COPYING") as f:
-			self.about_ui.set_license(f.read())
-
-		try:
-			self.cnmlp = CNMLParser(self.cnmlFile)
-			self.completaArbol()
-			self.paintMap()
-		except IOError:
-			self.statusbar.push(0, "CNML file \"%s\" couldn't be loaded" %self.cnmlFile)
-			self.cnmlFile = None
-
 		# Descargar siempre?
 		self.allZones = []
 		cnmlGWfile = self.configmanager.pathForCNMLCachedFile(GUIFI_NET_WORLD_ZONE_ID, 'zones')
@@ -215,8 +122,24 @@ class GuifinetStudio:
 		for z in self.zonecnmlp.getZones():
 			self.allZones.append((z.id, z.title))
 		
-		self.mainWindow.show_all()
-		self.authAPI()
+		#self.authAPI()
+
+
+	def completaArbol(self):
+		self.treestore.clear()
+		self.treestore2.clear()
+		# Add root zone
+		parenttree = self.__addZoneToTree(self.cnmlp.rootzone, None)
+		self.__addNodesFromZoneToTree(self.cnmlp.rootzone, parenttree)
+		
+		# Iter for every zone (except root) and adds them with nodes to the TreeView
+		self.__completaArbol_recursive(self.cnmlp.rootzone, parenttree)
+										
+		self.treeview.expand_all()
+		
+		self.treestore.set_sort_column_id (5, Gtk.SortType.ASCENDING)
+		self.treestore2.set_sort_column_id (0, Gtk.SortType.ASCENDING)
+		self.statusbar.push(0, "Loaded CNML succesfully")
 
 
 	def add_node_point(self, layer, lat, lon, size=12):
@@ -234,44 +157,6 @@ class GuifinetStudio:
 		p.set_location(lat, lon)
 		p.set_draw_background(False)
 		layer.add_marker(p)
-
-	
-	# Two layers:
-	#  1) Points only
-	#  2) Labels only
-	def paintMap(self):
-		self.points_layer = Champlain.MarkerLayer()
-		self.points_layer.set_selection_mode(Champlain.SelectionMode.SINGLE)
-		self.labels_layer = Champlain.MarkerLayer()
-
-		nodes = self.cnmlp.getNodes()
-
-		for n in nodes:
-			self.add_node_point(self.points_layer, n.latitude, n.longitude)
-			self.add_node_label(self.labels_layer, n.latitude, n.longitude, n.title)
-		
-		# It's important to add points the last. Points are selectable while labels are not
-		# If labels is added later, then you click on some point and it doesn't get selected
-		# because you are really clicking on the label. Looks like an usability bug?
-		self.view.add_layer(self.labels_layer)
-		self.view.add_layer(self.points_layer)
-		
-
-	def completaArbol(self):
-		self.treestore.clear()
-		self.treestore2.clear()
-		# Add root zone
-		parenttree = self.__addZoneToTree(self.cnmlp.rootzone, None)
-		self.__addNodesFromZoneToTree(self.cnmlp.rootzone, parenttree)
-		
-		# Iter for every zone (except root) and adds them with nodes to the TreeView
-		self.__completaArbol_recursive(self.cnmlp.rootzone, parenttree)
-										
-		self.treeview.expand_all()
-		
-		self.treestore.set_sort_column_id (5, Gtk.SortType.ASCENDING)
-		self.treestore2.set_sort_column_id (0, Gtk.SortType.ASCENDING)
-		self.statusbar.push(0, "Loaded CNML succesfully")
 
 
 	# Recursive
@@ -326,74 +211,44 @@ class GuifinetStudio:
 			self.treestore2.append(None, (n.title, n.id))
 		
 
-	def on_showPointsButton_toggled(self, widget, data=None):
-		print 'Show points:', widget.get_active()	
-		if widget.get_active():
-			self.points_layer.show_all_markers()
-		else:
-			self.points_layer.hide_all_markers()
+	# Two layers:
+	#  1) Points only
+	#  2) Labels only
+	def paintMap(self):
+		self.points_layer = Champlain.MarkerLayer()
+		self.points_layer.set_selection_mode(Champlain.SelectionMode.SINGLE)
+		self.labels_layer = Champlain.MarkerLayer()
 
-	
-	def on_showLabelsButton_toggled(self, widget, data=None):
-		print 'Show labels:', widget.get_active()
-		if widget.get_active():
-			self.labels_layer.show_all_markers()
-		else:
-			self.labels_layer.hide_all_markers()
-	
-	
-	def on_showLinksButton_toggled(self, widget, data=None):
-		print 'Show links:', widget.get_active()
-		raise NotImplementedError
-	
+		nodes = self.cnmlp.getNodes()
 
-	def on_showZonesButton_toggled(self, widget, data=None):
-		print 'Show zones:', widget.get_active()
-		raise NotImplementedError
+		for n in nodes:
+			self.add_node_point(self.points_layer, n.latitude, n.longitude)
+			self.add_node_label(self.labels_layer, n.latitude, n.longitude, n.title)
 		
-		
-	def on_updatezonesmenuitem_activate(self, widget, data=None):
-		try:
-			fp = self.guifiAPI.downloadCNML(GUIFI_NET_WORLD_ZONE_ID, 'zones')
-			zone_filename = '%d.cnml' %GUIFI_NET_WORLD_ZONE_ID
-			filename = os.path.join(self.configmanager.CACHE_DIR, 'zones', zone_filename)
-			with open(filename, 'w') as zonefile:
-				zonefile.write(fp.read())
-		except URLError, e:
-			g = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, 
-								"Error accessing to the Internets:\n" + str(e.reason))
-			g.set_title('Error downloading CNML')
-			g.run()
-			g.destroy()
+		# It's important to add points the last. Points are selectable while labels are not
+		# If labels is added later, then you click on some point and it doesn't get selected
+		# because you are really clicking on the label. Looks like an usability bug?
+		self.view.add_layer(self.labels_layer)
+		self.view.add_layer(self.points_layer)
 
-		
+	def mouse_click_cb(self, widget, event):
+		# event == void (GdkEventButton?)
+		if event.button == 3: # Right button
+			X, Y = event.x, event.y
+			self.lon, self.lat = self.view.x_to_longitude(X), self.view.y_to_latitude(Y)
+			self.menu2.popup(None, None, None, None, event.button, event.time)
+
+
 	def on_action1_activate(self, action, data=None):
-		self.nodedialog.show()
-		self.nodedialog.set_title("Information about node XXX")
-
-
+		NodeDialog()
+	
+	
 	def on_action2_activate(self, action, data=None):
 		Gtk.show_uri(None, "http://guifi.net/node/", Gtk.get_current_event_time())
-		
+
 
 	def on_action3_activate(self, action, data=None):
 		print 'View in map'
-
-
-	def on_treeviewcolumn6_clicked(self, action, data=None):
-		#print action.get_sort_column_id()
-		(column_id, sorttype) = self.treestore.get_sort_column_id()
-		name = action.get_name()
-		
-		if sorttype == Gtk.SortType.ASCENDING:
-			sorttype = Gtk.SortType.DESCENDING
-		else:
-			sorttype = Gtk.SortType.ASCENDING
-			
-		# 'treeview1, treeview2, treeview3, ..., treeview6
-		column_id = int(name[-1]) -1
-		
-		self.treestore.set_sort_column_id (column_id, sorttype)
 	
 	
 	def on_action4_activate(self, action, data=None):
@@ -421,14 +276,92 @@ class GuifinetStudio:
 			g.destroy()
 		
 		node = self.cnmlp.nodes[nid]
-		conf = self.usc.generate(node)
 		
-		self.uscdialog.show()
-		#self.uscdialog.set_title("Unsolclic for device "+model.get_value(it, 5))
-		self.uscdialog.set_title("Unsolclic for node "+node.title)
-		self.usctextbuffer.set_text(conf)
+		UnsolclicDialog(node)
+		########
+		
+		
+	def on_action5_activate(self, action, data=None):
+		self.nodecoordinatesentry.set_text(str(self.lat) + ', ' + str(self.lon))
+		self.nodecoordinatesentry.set_sensitive(False)
+		del self.lat, self.lon
+		self.nodetitleentry.grab_focus()
+		self.on_createnodemenuitem_activate()
+	
+	
+	def on_imagemenuitem2_activate(self, widget, data=None):
+		dialog = Gtk.FileChooserDialog('Open CNML file', self.mainWindow,
+				Gtk.FileChooserAction.OPEN,
+				(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.ACCEPT))
+
+		if dialog.run() == Gtk.ResponseType.ACCEPT:
+			filename = dialog.get_filename()
+			print filename
+			# TODO: Reload file
+		
+		dialog.destroy()
+				
+		
+	def on_filechooserdialog_file_activated(self, widget, data=None):
+		self.cnmlFile = self.opendialog.get_filename()
+		print self.cnmlFile
+		
+
+		try:
+			self.cnmlp = CNMLParser(self.cnmlFile)
+			self.completaArbol()
+			self.paintMap()
+		except IOError:
+			self.statusbar.push(0, "CNML file \"%s\" couldn't be loaded" %self.cnmlFile)
+			self.cnmlFile = None
+		
+		
+	def on_filechooserdialog_response(self, widget, response):
+		print 'response:', response
+		self.opendialog.destroy()
 
 
+		
+	def on_imagemenuitem3_activate(self, widget, data=None):
+		self.treestore.clear()
+		self.treestore2.clear()
+		self.points_layer.remove_all()
+		self.labels_layer.remove_all()
+		self.statusbar.push(0, "Closed CNML file")
+		self.cnmlFile = None
+		
+		
+	def gtk_main_quit(self, widget, data=None):
+		Gtk.main_quit()
+	
+	
+	def on_createnodemenuitem_activate(self, widget=None, data=None):
+		EditNodeDialog(self.cnmlp.getZones(), self.zonecnmlp, self.allZones)
+	
+	
+	def on_createzonemenuitem_activate(self, widget, data=None):
+		EditZoneDialog(self.cnmlp.getZones())
+		
+	def on_createdevicemenuitem_activate(self, widget, data=None):
+		EditDeviceDialog(self.cnmlp.getNodes())
+		
+		
+	def on_createradiomenuitem_activate(self, widget, data=None):
+		EditRadioDialog(self.cnmlp.getNodes())
+		
+		
+	def on_createinterfacemenuitem_activate(self, widget, data=None):
+		EditInterfaceDialog()
+	
+	
+	def on_createlinkmenuitem_activate(self, widget, data=None):
+		EditLinkDialog(self.cnmlp.getNodes())
+
+	
+	def on_preferencesmenuitem_activate(self, widget, data=None):
+		PreferencesDialog(self.configmanager, self.cnmlp.getZones(), self.zonecnmlp, self.allZones)
+		
+				
 	def on_menuitem5_toggled(self, widget, data=None):
 		isActive = widget.get_active()
 		
@@ -445,13 +378,68 @@ class GuifinetStudio:
 			self.box1.show()
 		else:
 			self.box1.hide()
+
+		
+	def zoom_in(self, widget, data=None):
+		self.view.zoom_in()
+		
+		
+	def zoom_out(self, widget, data=None):
+		self.view.zoom_out()
+		
+
+	def on_downloadcnmlmenuitem_activate(self, widget, data=None):
+		CNMLDialog(self.configmanager, self.zonecnmlp)
+	
+	
+	def on_updatezonesmenuitem_activate(self, widget, data=None):
+		try:
+			fp = self.guifiAPI.downloadCNML(GUIFI_NET_WORLD_ZONE_ID, 'zones')
+			zone_filename = '%d.cnml' %GUIFI_NET_WORLD_ZONE_ID
+			filename = os.path.join(self.configmanager.CACHE_DIR, 'zones', zone_filename)
+			with open(filename, 'w') as zonefile:
+				zonefile.write(fp.read())
+		except URLError, e:
+			g = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, 
+								"Error accessing to the Internets:\n" + str(e.reason))
+			g.set_title('Error downloading CNML')
+			g.run()
+			g.destroy()
+		
+
+	def on_imagemenuitem10_activate(self, widget, data=None):
+		dialog = Gtk.AboutDialog()
+		dialog.set_program_name('Guifi·net Studio')
+		dialog.set_version('v1.0')
+		dialog.set_copyright('Copyright © 2011-2012 Pablo Castellano')
+		dialog.set_comments('Explore your free network offline!')
+		dialog.set_website('http://lainconscienciadepablo.net')
+		dialog.set_website_label("Author's blog")
+		dialog.set_license_type(Gtk.License.GPL_3_0)
+		dialog.set_authors(['Pablo Castellano <pablo@anche.no>'])
+		
+		with open("COPYING") as f:
+			dialog.set_license(f.read())
+		
+		dialog.run()
+		dialog.destroy()
+		
+	def on_aboutdialog1_close(self, widget, data=None):
+		self.about_ui.hide()
+		return True
+
+	def on_changeViewButton_toggled(self, widget, data=None):
+		if self.notebook1.get_current_page() == 0:
+			self.notebook1.set_current_page(1)
+		else:
+			self.notebook1.set_current_page(0)
 		
 		
 	def on_button5_clicked(self, widget, data=None):
 		self.box1.hide()
 		self.menuitem6.set_active(False)
-		
 
+			
 	def on_treeview1_button_release_event(self, widget, data=None):
 		sel = widget.get_selection()
 		(model, it) = sel.get_selected()
@@ -492,515 +480,50 @@ class GuifinetStudio:
 			lon = float(self.cnmlp.getNode(nid).longitude)
 			self.view.center_on(lat, lon)
 			#self.view.go_to(lat, lon)
-		
-
-	def on_imagemenuitem2_activate(self, widget, data=None):
-		self.opendialog.run()
-
-
-	def on_imagemenuitem3_activate(self, widget, data=None):
-		self.treestore.clear()
-		self.treestore2.clear()
-		self.points_layer.remove_all()
-		self.labels_layer.remove_all()
-		self.statusbar.push(0, "Closed CNML file")
-		self.cnmlFile = None
-		
-		
-	def on_button3_clicked(self, widget, data=None):
-		self.cnmlFile = self.opendialog.get_filename()
-		print self.cnmlFile
-		self.opendialog.hide()
-
-		try:
-			self.cnmlp = CNMLParser(self.cnmlFile)
-			self.completaArbol()
-			self.paintMap()
-		except IOError:
-			self.statusbar.push(0, "CNML file \"%s\" couldn't be loaded" %self.cnmlFile)
-			self.cnmlFile = None
 			
-
-	def on_aboutdialog1_close(self, widget, data=None):
-		self.about_ui.hide()
-		return True
-
-
-	def on_imagemenuitem10_activate(self, widget, data=None):
-		self.about_ui.show()
-
-
-	def on_changeViewButton_toggled(self, widget, data=None):
-		if self.notebook1.get_current_page() == 0:
-			self.notebook1.set_current_page(1)
+			
+	def on_showPointsButton_toggled(self, widget, data=None):
+		print 'Show points:', widget.get_active()	
+		if widget.get_active():
+			self.points_layer.show_all_markers()
 		else:
-			self.notebook1.set_current_page(0)
-		
-		
-	def zoom_in(self, widget, data=None):
-		self.view.zoom_in()
-		
-		
-	def zoom_out(self, widget, data=None):
-		self.view.zoom_out()
-		
-		
-	def gtk_main_quit(self, widget, data=None):
-		Gtk.main_quit()
+			self.points_layer.hide_all_markers()
+
 	
-	def on_preferencesmenuitem_activate(self, widget ,data=None):
-		self.preferencesdialog.show()
-		self.userentry.set_text(self.configmanager.getUsername())
-		self.passwordentry.set_text(self.configmanager.getPassword())
-		self.fillZonesComboBox(self.defaultzonecombobox, self.entrycompletion2)
-		
-		defaultZoneTitle = self.zonecnmlp.getZone(self.configmanager.getDefaultZone()).title
-		self.entrycompletion2.get_entry().set_text(defaultZoneTitle)
-		
-				
-	def on_createnodemenuitem_activate(self, widget=None, data=None):
-		self.editnodedialog.set_title('Create new Guifi.net node')
-		self.fillZonesComboBox(self.nodezonecombobox, self.entrycompletion1)
-		self.editnodedialog.show()
-	
-	
-	def on_cnmldialog_response(self, widget, response):
-		self.cnmldialog.destroy()
-		
-		
-	def on_uscdialog_response(self, widget, response):
-		if response == -12: #Auto-load to device
-			print 'Autoload configuration'
-			raise NotImplementedError
-		elif response == -13: #Copy to clipboard
-			print 'copy usc to clipboard'
-			#cb = Gtk.Clipboard()
-			#cb.set_text(self.usctextbuffer.get_text(), -1)
-			self.usctextbuffer.copy_clipboard(Gtk.Clipboard.get(Gdk.Atom.intern('0', True)))
-			raise NotImplementedError
-		elif response == -14: #Save to file
-			raise NotImplementedError
+	def on_showLabelsButton_toggled(self, widget, data=None):
+		print 'Show labels:', widget.get_active()
+		if widget.get_active():
+			self.labels_layer.show_all_markers()
 		else:
-			self.uscdialog.destroy()
-		
-		
-	def on_editdevicedialog_response(self, widget, response):
-		if response == Gtk.ResponseType.ACCEPT:
-			"""
-			self.devgraphscombobox
-			"""
-			
-			if not self.editdevicevalidation():
-				print "There's some invalid data"
-				return
-			
-			it = self.editdevicenodecombobox.get_active_iter()
-			nid = self.editdevicenodecombobox.get_model().get_value(it, 0)
-			
-			it = self.devtypecombobox.get_active_iter()
-			rtype = self.devtypecombobox.get_model().get_value(it, 0)
-			
-			it = self.devstatuscombobox.get_active_iter()
-			rstatus = self.devstatuscombobox.get_model().get_value(it, 0)
-			
-			if rtype == 'radio':
-				it = self.devmodelcombobox.get_active_iter()
-				model = self.devmodelcombobox.get_model().get_value(it, 0)
-			
-				it = self.devfirmwarecombobox.get_active_iter()
-				firmware = self.devfirmwarecombobox.get_model().get_value(it, 0)
-				
-				download = None
-				upload = None
-				mrtg = None
-				
-			elif rtype == 'adsl':
-				model = None
-				firmware = None
-				
-				it = self.devdownloadcombobox.get_active_iter()
-				download = self.devdownloadcombobox.get_model().get_value(it, 0)
-			
-				it = self.devuploadcombobox.get_active_iter()
-				upload = self.devuploadcombobox.get_model().get_value(it, 0)
-			
-				it = self.devmrtgcombobox.get_active_iter()
-				mrtg = self.devmrtgcombobox.get_model().get_value(it, 0)
-			
-			elif rtype == 'generic':
-				model = None
-				firmware = None
-				download = None
-				upload = None
-				
-				it = self.devmrtg2combobox.get_active_iter()
-				mrtg = self.devmrtg2combobox.get_model().get_value(it, 0)
-				
-			else:
-				model = None
-				firmware = None
-				download = None
-				upload = None
-				mrtg = None
-				
-			messagestr = 'You are about to create a device named "%s".\nPlease choose where you want to create it' %self.nodetitleentry.get_text()
-			
-			# Messagebox (internet / local / cancelar)
-			g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.QUESTION, Gtk.ButtonsType.CANCEL, messagestr)
-			g.set_title('Confirmation')
-			g.add_button('Create locally\n(CNML)', -12)
-			g.add_button('Create remotely\n(%s)' %self.guifiAPI.getHost(), -13)
-			res = g.run()
-			g.destroy()
-			
-			if res in (Gtk.ResponseType.CANCEL, Gtk.ResponseType.DELETE_EVENT):
-				return
-				
-			try:
-				device_id = self.guifiAPI.addDevice(nid, rtype, self.devmacentry.get_text(), 
-								nick=self.devnickentry.get_text(), notification=self.devcontactentry.get_text(),
-								comment=self.devcommententry.get_text(), status=rstatus, graph_server=None,
-								model_id=model, firmware=firmware, download=download, upload=upload, mrtg_index=mrtg)
+			self.labels_layer.hide_all_markers()
+	
+	
+	def on_showLinksButton_toggled(self, widget, data=None):
+		print 'Show links:', widget.get_active()
+		raise NotImplementedError
+	
 
-			except GuifiApiError, e:
-				errormessage = 'Error %d: %s\n\nError message:\n%s' %(e.code, e.reason, e.extra)
-				g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, errormessage)
-				g.set_title('Response from server')
-				g.run()
-				g.destroy()
-				return
-			
-			# Messagebox status
-			
-			url = self.guifiAPI.urlForDevice(device_id)
-			messagestr = 'Device succesfully created with id %d\n\nYou can view it in the following url:\n%s' %(device_id, url)
-			g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.INFO, Gtk.ButtonsType.CLOSE, messagestr)
-			g.add_button('Open in web browser', -12)
-			g.set_title('Response from server')
-			res = g.run()
-			g.destroy()
-			
-			if res != Gtk.ResponseType.CLOSE:
-				openUrl(url)
-		
-		self.editdevicedialog.destroy()
-
-
-	def on_editlinkdialog_response(self, widget, response):
-		if response == Gtk.ResponseType.ACCEPT:
-			pass
-		self.editlinkdialog.destroy()
-	
-	
-	def on_editradiodialog_response(self, widget, response):
-		if response == Gtk.ResponseType.ACCEPT:
-			pass
-		self.editradiodialog.destroy()
+	def on_showZonesButton_toggled(self, widget, data=None):
+		print 'Show zones:', widget.get_active()
+		raise NotImplementedError
 		
 		
-	def on_editzonedialog_response(self, widget, response):
-		if response == Gtk.ResponseType.ACCEPT:
-			"""
-			self.zonegraphscombobox
-			self.zoneproxyscombobox
-			self.zonednsscombobox
-			self.zonentpscombobox
-			"""
-			
-			(start, end) = self.zoneinfotextbuffer.get_bounds()
-			zoneinfotext = self.zoneinfotextview.get_buffer().get_text(start, end, True)
-			
-			if not self.editzonevalidation():
-				print "There's some invalid data"
-				return
-			
-			it = self.parentzonecombobox.get_active_iter()
-			zid = self.parentzonecombobox.get_model().get_value(it, 0)
-			
-			it = self.zonemodecombobox.get_active_iter()
-			zonemode = self.zonemodecombobox.get_model().get_value(it, 0)
-					
-			messagestr = 'You are about to create the zone named "%s".\nPlease choose where you want to create it' %self.nodetitleentry.get_text()
-			
-			# Messagebox (internet / local / cancelar)
-			g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.QUESTION, Gtk.ButtonsType.CANCEL, messagestr)
-			g.set_title('Confirmation')
-			g.add_button('Create locally\n(CNML)', -12)
-			g.add_button('Create remotely\n(%s)' %self.guifiAPI.getHost(), -13)
-			res = g.run()
-			g.destroy()
-			
-			if res in (Gtk.ResponseType.CANCEL, Gtk.ResponseType.DELETE_EVENT):
-				return
-				
-			try:
-				zone_id = self.guifiAPI.addZone(self.zonetitleentry.get_text(), zid, 0, 0, 0, 0,
-							nick=self.zonenickentry.get_text(), mode=zonemode, body=zoneinfotext, timezone='+01 2 2',
-							graph_server=None, proxy_server=None, dns_servers=None,
-							ntp_servers=None, ospf_zone=self.ospfidentry.get_text(), homepage=self.zonewebentry.get_text(),
-							notification=self.zonecontactentry.get_text())
-						
-			except GuifiApiError, e:
-				errormessage = 'Error %d: %s\n\nError message:\n%s' %(e.code, e.reason, e.extra)
-				g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, errormessage)
-				g.set_title('Response from server')
-				g.run()
-				g.destroy()
-				return
-			
-			# Messagebox status
-			
-			url = self.guifiAPI.urlForZone(zone_id)
-			messagestr = 'Zone succesfully created with id %d\n\nYou can view it in the following url:\n%s' %(zone_id, url)
-			g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.INFO, Gtk.ButtonsType.CLOSE, messagestr)
-			g.add_button('Open in web browser', -12)
-			g.set_title('Response from server')
-			res = g.run()
-			g.destroy()
-			
-			if res != Gtk.ResponseType.CLOSE:
-				openUrl(url)
-				
-		self.editzonedialog.destroy()
+	def on_treeviewcolumn6_clicked(self, action, data=None):
+		#print action.get_sort_column_id()
+		(column_id, sorttype) = self.treestore.get_sort_column_id()
+		name = action.get_name()
 		
-		
-	def on_preferencesdialog_response(self, widget, response):
-		if response == Gtk.ResponseType.ACCEPT:
-			self.configmanager.setUsername(self.userentry.get_text())
-			self.configmanager.setPassword(self.passwordentry.get_text())
-			self.configmanager.setContact(self.contactentry.get_text())
-			
-			# How can I get the GtkTreeIter from the "active item" in GtkEntry/GtkEntryCompletion?
-			# Otherwise: loop :-S		
-			zid = self.findZoneIdInEntryCompletion(self.entrycompletion2)
-			
-			if zid:
-				self.configmanager.setDefaultZone(zid)
-				
-			self.configmanager.save()
-			
-		self.preferencesdialog.destroy()
-		
-		
-	def on_editnodedialog_response(self, widget, response):
-		if response == Gtk.ResponseType.ACCEPT:
-			(start, end) = self.nodeinfotextbuffer.get_bounds()
-			nodeinfotext = self.nodeinfotextview.get_buffer().get_text(start, end, True)
-			
-			if not self.editnodevalidation():
-				print "There's some invalid data"
-				return
-			
-			lat,lon = self.nodecoordinatesentry.get_text().split(',')
-			it = self.nodezonecombobox.get_active_iter()
-			zid = self.nodezonecombobox.get_model().get_value(it, 0)
-			if self.takefromparentscheckbutton.get_active():
-				graphs = None
-			else:
-				it = self.nodegraphscombobox.get_active_iter()
-				graphs = self.nodegraphscombobox.get_model().get_value(it, 0)
-			
-			messagestr = 'You are about to create the node named "%s".\nPlease choose where you want to create it' %self.nodetitleentry.get_text()
-			
-			# Messagebox (internet / local / cancelar)
-			g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.QUESTION, Gtk.ButtonsType.CANCEL, messagestr)
-			g.set_title('Confirmation')
-			g.add_button('Create locally\n(CNML)', -12)
-			g.add_button('Create remotely\n(%s)' %self.guifiAPI.getHost(), -13)
-			res = g.run()
-			g.destroy()
-			
-			if res in (Gtk.ResponseType.CANCEL, Gtk.ResponseType.DELETE_EVENT):
-				return
-			
-			try:
-				node_id = self.guifiAPI.addNode(self.nodetitleentry.get_text(), zid, lat, lon, body=nodeinfotext,
-							nick=self.nodenickentry.get_text(), zone_desc=self.nodezonedescentry.get_text(),
-							notification=self.nodecontactentry.get_text(), elevation=self.nodeelevationentry.get_text(),
-							stable=self.stablenodecheckbutton.get_active(), graph_server=graphs, status='Planned')
-			except GuifiApiError, e:
-				errormessage = 'Error %d: %s\n\nError message:\n%s' %(e.code, e.reason, e.extra)
-				g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, errormessage)
-				g.set_title('Response from server')
-				g.run()
-				g.destroy()
-				return
-			
-			# Messagebox status
-			url = self.guifiAPI.urlForNode(node_id)
-			messagestr = 'Node succesfully created with id %d\n\nYou can view it in the following url:\n%s' %(node_id, url)
-			g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.INFO, Gtk.ButtonsType.CLOSE, messagestr)
-			g.add_button('Open in web browser', -12)
-			g.set_title('Response from server')
-			res = g.run()
-			g.destroy()
-			
-			if res != Gtk.ResponseType.CLOSE:
-				openUrl(url)
-				
-		self.editnodedialog.destroy()
-		
-		
-	def on_createzonemenuitem_activate(self, widget, data=None):
-		self.editzonedialog.set_title('Create new Guifi.net zone')
-		self.fillZonesComboBox(self.parentzonecombobox)
-		self.editzonedialog.show()
-		
-		
-	def on_createdevicemenuitem_activate(self, widget, data=None):
-		self.editdevicedialog.set_title('Create new Guifi.net device')
-		self.fillNodesComboBox(self.editdevicenodecombobox)
-		self.editdevicedialog.show()
-		
-		
-	def on_createradiomenuitem_activate(self, widget, data=None):
-		self.editradiodialog.set_title('Create new Guifi.net radio')
-		self.fillNodesComboBox(self.editradionodecombobox)
-		self.editradiodialog.show()
-		
-		
-	def on_createinterfacemenuitem_activate(self, widget, data=None):
-		self.editinterfacedialog.set_title('Create new Guifi.net interface')
-		self.editinterfacedialog.show()
-	
-	
-	def on_createlinkmenuitem_activate(self, widget, data=None):
-		self.editlinkdialog.set_title('Create new Guifi.net link')
-		self.fillNodesComboBox(self.editlinknode1combobox)
-		self.fillNodesComboBox(self.editlinknode2combobox)
-		self.editlinkdialog.show()
-		
-		
-	def mouse_click_cb(self, widget, event):
-		# event == void (GdkEventButton?)
-		if event.button == 3: # Right button
-			X, Y = event.x, event.y
-			self.lon, self.lat = self.view.x_to_longitude(X), self.view.y_to_latitude(Y)
-			self.menu2.popup(None, None, None, None, event.button, event.time)
-
-
-	def on_action5_activate(self, action, data=None):
-		self.nodecoordinatesentry.set_text(str(self.lat) + ', ' + str(self.lon))
-		self.nodecoordinatesentry.set_sensitive(False)
-		del self.lat, self.lon
-		self.nodetitleentry.grab_focus()
-		self.on_createnodemenuitem_activate()
-	
-	
-	def on_acceptxolncheckbutton_toggled(self, widget, data=None):
-		isActive = widget.get_active()
-		self.editnodeokbutton.set_sensitive(isActive)
-		
-		
-	def editnodevalidation(self):
-		# Checks: title, zone, lat, lon
-		if self.nodetitleentry.get_text() == '':
-			self.nodetitleentry.grab_focus()
-			return False
-		
-		if not valid_email_address(self.nodecontactentry.get_text()):
-			self.nodecontactentry.grab_focus()
-			return False
-			
-		if self.nodecoordinatesentry.get_text() == '':
-			self.nodecoordinatesentry.grab_focus()
-			return False
+		if sorttype == Gtk.SortType.ASCENDING:
+			sorttype = Gtk.SortType.DESCENDING
 		else:
-			try:
-				lat,lon = self.nodecoordinatesentry.get_text().split(',')
-				if lat == '' or lon == '':
-					self.nodecoordinatesentry.grab_focus()
-					return False
-				float(lat)
-				float(lon)
-			except ValueError:
-				self.nodecoordinatesentry.grab_focus()
-				return False
-				
-		if self.nodezonecombobox.get_active_iter() is None:
-			self.nodezonecombobox.grab_focus()
-			return False
-		
-		if not self.takefromparentscheckbutton.get_active() and self.nodegraphscombobox.get_active_iter() is None:
-			return False
+			sorttype = Gtk.SortType.ASCENDING
 			
-		# rest of value types
-		try:
-			if self.nodeelevationentry.get_text() != '':
-				int(self.nodeelevationentry.get_text())
-		except ValueError, e:
-			self.nodeelevationentry.grab_focus()
-			return False
-			
-		return True
+		# 'treeview1, treeview2, treeview3, ..., treeview6
+		column_id = int(name[-1]) -1
 		
-		
-	def on_takefromparentscheckbutton_toggled(self, widget, data=None):
-		isActive = widget.get_active()
-		self.nodegraphscombobox.set_sensitive(not isActive)
-		
-		
-	def editzonevalidation(self):
-		# Checks: title, master, minx, miny, maxx, maxy
-		if self.zonetitleentry.get_text() == '':
-			self.zonetitleentry.grab_focus()
-			return False
-		
-		if not valid_email_address(self.zonecontactentry.get_text()):
-			self.zonecontactentry.grab_focus()
-			return False
-							
-		if self.parentzonecombobox.get_active_iter() is None:
-			self.parentzonecombobox.grab_focus()
-			return False
-			
-		# ...
-		return True
-		
-		
-	def editdevicevalidation(self):
-		# Checks: title, zone, lat, lon
-		if self.devmacentry.get_text() == '':
-			self.devmacentry.grab_focus()
-			return False
-		
-		if not valid_email_address(self.devcontactentry.get_text()):
-			self.devcontactentry.grab_focus()
-			return False
-		
-		return True
-		
+		self.treestore.set_sort_column_id (column_id, sorttype)
 
-	def fillNodesComboBox(self, combobox):
-		model = combobox.get_model()
-		model.clear()
-		model.set_sort_column_id (1, Gtk.SortType.ASCENDING)
-		
-		# zoneid - title
-		for n in self.cnmlp.getNodes():
-			model.append((n.id, n.title))
-			
-	def fillZonesComboBox(self, combobox=None, entrycompletion=None):
-		# zoneid - title
-		if combobox:
-			model = combobox.get_model()
-			model.clear()
-			model.set_sort_column_id (1, Gtk.SortType.ASCENDING)
-			model.append((0, '-- Most recently used --'))
-			
-			n = 0
-			for z in self.cnmlp.getZones():
-				n +=1
-				model.append((z.id, z.title))
-			combobox.set_active(n)
-		
-		if entrycompletion:
-			model = entrycompletion.get_model()
-			model.clear()
-			for z in self.allZones:
-				model.append((z[0], z[1]))
-			
-		
+				
 	def authAPI(self):
 		try:
 			self.guifiAPI.auth()
@@ -1016,76 +539,13 @@ class GuifinetStudio:
 			g.destroy()
 			self.authenticated = False
 		
-	def fillAvailableCNMLModel(self, model):
-		cnmls = dict()
-		
-		for d in ['nodes', 'zones', 'detail']:
-			directory = os.path.join(self.configmanager.CACHE_DIR, d)
-			filelist = os.listdir(directory)
-			for f in filelist:
-				zid, ext = f.split('.')
-				zid = int(zid)
-				if ext == 'cnml':
-					if not cnmls.has_key('zid'):
-						cnmls[zid] = dict()
-						cnmls[zid]['nodes'] = False
-						cnmls[zid]['zones'] = False
-						cnmls[zid]['detail'] = False
-					cnmls[zid][d] = True
-		
-		for zid in cnmls:			
-			model.append((zid, self.zonecnmlp.getZone(zid).title, cnmls[zid]['nodes'], cnmls[zid]['zones'], cnmls[zid]['detail']))
-				
-		
-	def on_downloadcnmlmenuitem_activate(self, widget, data=None):
-		self.cnmldialog.show()
-		self.fillAvailableCNMLModel(self.treeview4.get_model())
-	
-	
-	# temporary method until I find a better way to do it
-	def findZoneIdInEntryCompletion(self, entrycompletion):
-		model = self.entrycompletion2.get_model()
-		it = model.get_iter_first()
-		
-		title = self.entrycompletion2.get_entry().get_text()
-		
-		while it:
-			zone = model.get_value(it, 1)
-			if zone.lower() == title.lower():
-				break
-			it = model.iter_next(it)
-		
-		if it is None:
-			print 'ERROR: Zone title not found!'
-			return None
-		else:
-			pass
-			# - msgbox showing problem
-			# - dont change
-			# ...
-			
-		zid = model.get_value(it, 0)
-		return zid
-		
-		
-	def on_devtypecombobox_changed(self, widget, data=None):
-		it = self.devtypecombobox.get_active_iter()
-		rtype = self.devtypecombobox.get_model().get_value(it, 0)
-		
-		pages = {'radio':0, 'adsl':1, 'generic':2}
-		if pages.has_key(rtype):
-			self.notebook3.set_current_page(pages[rtype])
-		else:
-			self.notebook3.set_current_page(3)
 
-		
 		
 if __name__ == "__main__":
 
 	if len(sys.argv) > 1:
-		ui = GuifinetStudio(sys.argv[1])
+		main = GuifinetStudio(sys.argv[1])
 	else:
-		ui = GuifinetStudio()
+		main = GuifinetStudio()
 
-	ui.mainWindow.show()
 	Gtk.main()

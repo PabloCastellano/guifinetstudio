@@ -44,3 +44,4 @@ def openUrl(url):
 	print 'Opening in web browser'
 	systemstr = 'xdg-open %s' %url
 	os.system(systemstr)
+
