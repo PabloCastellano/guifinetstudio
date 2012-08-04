@@ -41,9 +41,8 @@ from urllib2 import URLError
 from ui import *
 
 
-
 class GuifinetStudio:
-	def __init__(self, cnmlFile="tests/detail.3"):
+	def __init__(self, cnmlFile=None):
 		self.ui = Gtk.Builder()
 		self.ui.add_from_file('ui/mainwindow.ui')
 		self.ui.connect_signals(self)
@@ -94,22 +93,39 @@ class GuifinetStudio:
 		self.labels_layer = None
 			
 		self.mainWindow.show_all()
-		
-		# CNMLParser
-		try:
-			self.cnmlp = CNMLParser(cnmlFile)
-			self.cnmlFile = cnmlFile
-		except IOError:
-			print 'Error loading cnml'
-			self.statusbar.push(0, "CNML file \"%s\" couldn't be loaded" %self.cnmlFile)
-			self.cnmlp = None
-			self.cnmlFile = None
-		
-		self.completaArbol()
-		self.paintMap()
-		
+
 		# configuration
 		self.configmanager = GuifinetStudioConfig()
+
+		if not cnmlFile:
+			# Load default zone cnml
+			defaultzone = self.configmanager.getDefaultZone()
+			if defaultzone is not None:
+				ztype = self.configmanager.getDefaultZoneType()
+				cnmlFile = self.configmanager.pathForCNMLCachedFile(defaultzone, ztype)
+			else:
+				# no default zone
+				self.cnmlp = None
+				print 'No default zone. Please choose one'
+				self.statusbar.push(0, 'No default zone. Please choose one')
+				self.cnmlp = None
+				self.cnmlFile = None
+		
+		if cnmlFile:
+			# CNMLParser
+			try:
+				self.cnmlp = CNMLParser(cnmlFile)
+				self.cnmlFile = cnmlFile
+				print 'Loaded "%s" successfully' %self.cnmlFile
+				self.statusbar.push(0, 'Loaded "%s" successfully' %self.cnmlFile)
+				self.completaArbol()
+				self.paintMap()
+			except IOError:
+				print 'Error loading cnml'
+				self.statusbar.push(0, 'CNML file "%s" couldn\'t be loaded' %cnmlFile)
+				self.cnmlp = None
+				self.cnmlFile = None
+		
 		
 		# Guifi.net API
 		self.guifiAPI = pyGuifiAPI.GuifiAPI(self.configmanager.getUsername(), self.configmanager.getPassword())
@@ -122,7 +138,7 @@ class GuifinetStudio:
 		for z in self.zonecnmlp.getZones():
 			self.allZones.append((z.id, z.title))
 		
-		#self.authAPI()
+		self.authAPI()
 
 
 	def completaArbol(self):
@@ -336,18 +352,18 @@ class GuifinetStudio:
 	
 	
 	def on_createnodemenuitem_activate(self, widget=None, data=None):
-		EditNodeDialog(self.cnmlp.getZones(), self.zonecnmlp, self.allZones)
+		EditNodeDialog(self.guifiAPI, self.cnmlp.getZones(), self.zonecnmlp, self.allZones)
 	
 	
 	def on_createzonemenuitem_activate(self, widget, data=None):
-		EditZoneDialog(self.cnmlp.getZones())
+		EditZoneDialog(self.guifiAPI, self.cnmlp.getZones())
 		
 	def on_createdevicemenuitem_activate(self, widget, data=None):
-		EditDeviceDialog(self.cnmlp.getNodes())
+		EditDeviceDialog(self.guifiAPI, self.cnmlp.getNodes())
 		
 		
 	def on_createradiomenuitem_activate(self, widget, data=None):
-		EditRadioDialog(self.cnmlp.getNodes())
+		EditRadioDialog(self.guifiAPI, self.cnmlp)
 		
 		
 	def on_createinterfacemenuitem_activate(self, widget, data=None):
@@ -416,7 +432,12 @@ class GuifinetStudio:
 		dialog.set_website('http://lainconscienciadepablo.net')
 		dialog.set_website_label("Author's blog")
 		dialog.set_license_type(Gtk.License.GPL_3_0)
-		dialog.set_authors(['Pablo Castellano <pablo@anche.no>'])
+	
+		with open("AUTHORS") as f:
+			authors_list = []
+			for line in f.readlines():
+				authors_list.append(line.strip())
+			dialog.set_authors(authors_list)
 		
 		with open("COPYING") as f:
 			dialog.set_license(f.read())
@@ -424,9 +445,6 @@ class GuifinetStudio:
 		dialog.run()
 		dialog.destroy()
 		
-	def on_aboutdialog1_close(self, widget, data=None):
-		self.about_ui.hide()
-		return True
 
 	def on_changeViewButton_toggled(self, widget, data=None):
 		if self.notebook1.get_current_page() == 0:
