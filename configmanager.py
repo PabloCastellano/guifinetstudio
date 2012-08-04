@@ -66,6 +66,7 @@ class GuifinetStudioConfig:
 		defaultconfig.set('api', 'password', '')
 		defaultconfig.add_section('default')
 		defaultconfig.set('default', 'zone', '')
+		defaultconfig.set('default', 'zone_type', '')
 		defaultconfig.set('default', 'contact', '')
 		
 		with open(self.CONFIG_FILENAME, 'wb') as configfile:
@@ -84,10 +85,22 @@ class GuifinetStudioConfig:
 		self.config.set('api', 'username', username)
 			
 	def getDefaultZone(self):
-		return int(self.config.get('default', 'zone'))
+		zone = self.config.get('default', 'zone')
+		if zone == '':
+			return None
+		else:
+			return int(zone)
 		
 	def setDefaultZone(self, zid):
 		self.config.set('default', 'zone', str(zid))
+	
+	def getDefaultZoneType(self):
+		return self.config.get('default', 'zone_type')
+		
+	def setDefaultZoneType(self, ztype):
+		if ztype not in ['zones', 'nodes', 'detail']:
+			raise ValueError
+		self.config.set('default', 'zone_type', ztype)
 	
 	def getPassword(self):
 		return self.config.get('api', 'password')
