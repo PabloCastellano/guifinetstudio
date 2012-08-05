@@ -114,6 +114,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="model">liststore11</property>
+                        <property name="active">0</property>
                         <signal name="changed" handler="on_devtypecombobox_changed" swapped="no"/>
                         <child>
                           <object class="GtkCellRendererText" id="cellrenderertext17"/>
@@ -365,6 +366,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="model">liststore13</property>
+                            <property name="active">0</property>
                             <child>
                               <object class="GtkCellRendererText" id="cellrenderertext19"/>
                               <attributes>
@@ -384,6 +386,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="model">liststore14</property>
+                            <property name="active">0</property>
                             <child>
                               <object class="GtkCellRendererText" id="cellrenderertext20"/>
                               <attributes>
@@ -586,7 +589,7 @@
                           <object class="GtkLabel" id="label110">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">-- No specific settings --</property>
+                            <property name="label" translatable="yes">-- No specific settings for this device type --</property>
                           </object>
                           <packing>
                             <property name="left_attach">0</property>

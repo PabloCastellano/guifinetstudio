@@ -35,9 +35,9 @@ import json
 
 class GuifiAPI:
 		
-	def __init__(self, username=None, passwd=None, 
-				host='test.guifi.net', secure=False,
-				retry_count=0, retry_delay=0, retry_errors=None):
+	def __init__(self, username=None, passwd=None, host='test.guifi.net', 
+				secure=True, retry_count=0, retry_delay=0, retry_errors=None,
+				authToken=None):
 					
 		self.setHost(host)
 		self.secure = secure
@@ -46,7 +46,7 @@ class GuifiAPI:
 		self.retry_count = retry_count
 		self.retry_delay = retry_delay
 		self.retry_errors = retry_errors
-		self.authToken = None
+		
 		
 		self.base_url = 'https://' if self.secure else 'http://'
 		self.base_url += self.host
@@ -58,7 +58,10 @@ class GuifiAPI:
 		user_agent = 'pyGuifiAPI/1.0'
  		self.headers = {'User-Agent':user_agent}
 		
-	
+		if authToken:
+			self.headers['Authorization'] = 'GuifiLogin auth='+authToken
+		self.authToken = authToken
+		
 	def getHost(self):
 		return self.host
 		
@@ -72,6 +75,12 @@ class GuifiAPI:
 	def setPassword(self, password):
 		self.passwd = password
 		
+		
+	def getAuthToken(self):
+		return self.authToken
+		
+	def setAuthToken(self, authToken):
+		self.authToken = authToken
 		
 	def setHost(self, host):
 		"""Checks for a valid host and set it as attribute"""
@@ -101,7 +110,7 @@ class GuifiAPI:
 		except ValueError, e:
 			print e.reason
 			raise
-	
+		
 		return self._parseResponse(j)
 	
 	
@@ -130,12 +139,14 @@ class GuifiAPI:
 				errors = errors[0]
 				print 'Just one response (error)'
 				print 'Error', errors['code'], ':', errors['str']
-				print 'Extra information:', errors['extra']
+				if errors.has_key('extra'):
+					print 'Extra information:', errors['extra']
 			else:
 				print 'There are several responses (errors)'
 				for e in errors:
 					print 'Error', e['code'], ':', e['str']
-					print 'Extra information:', e['extra']
+					if e.has_key('extra'):
+						print 'Extra information:', e['extra']
 			return (codenum, errors)
 		else:
 			raise GuifiApiError('Unexpected return code: '+codenum)
@@ -184,7 +195,7 @@ class GuifiAPI:
 	
 	def addNode(self, title, zone_id, lat, lon, nick=None, body=None,
 					zone_desc=None, notification=None, elevation=None,
-					stable=True, graph_server=None, status='Planned'):
+					stable='Yes', graph_server=None, status='Planned'):
 		
 		if not self.is_authenticated():
 			raise GuifiApiError('You have to be authenticated to run this action')
@@ -201,7 +212,7 @@ class GuifiAPI:
 			data['notification'] = notification
 		if elevation is not None:
 			data['elevation'] = elevation
-		if stable not in ['Yes', True]:
+		if stable != 'Yes':
 			data['stable'] = 'No'
 		if graph_server	is not None:
 			data['graph_server'] = graph_server
@@ -217,7 +228,8 @@ class GuifiAPI:
 			print self.urlForNode(node_id)
 		else:
 			# Everybody can create nodes
-			raise GuifiApiError(response['str'], response['code'], response['extra'])
+			extra = response['extra'] if response.has_key('extra') else None
+			raise GuifiApiError(response['str'], response['code'], extra)
 			
 		return node_id
 		
@@ -232,7 +244,8 @@ class GuifiAPI:
 	def urlForDevice(self, did):
 		lang = 'es'
 		return self.base_device_url %(lang, did)
-	
+
+		
 	def updateNode(self, nid, title=None, nick=None, body=None,
 					zone_id=None, zone_desc=None, notification=None,
 					lat=None, lon=None, elevation=None, stable=None,
@@ -254,7 +267,8 @@ class GuifiAPI:
 			print '%s/node/%s' %(self.base_url, node_id)
 		else:
 			# [{"code":500,"str":"Request could not be completed. The object was not found","extra":"zone_id =  is not a guifi node"}]}
-			raise GuifiApiError(response['str'], response['code'], response['extra'])
+			extra = response['extra'] if response.has_key('extra') else None
+			raise GuifiApiError(response['str'], response['code'], extra)
 			
 		return node_id
 		
@@ -271,7 +285,8 @@ class GuifiAPI:
 			print 'Node %s succesfully removed' %nid
 		else:
 			# [{"code":500,"str":"Request could not be completed. The object was not found","extra":"node_id = 49836"}]}
-			raise GuifiApiError(response['str'], response['code'], response['extra'])
+			extra = response['extra'] if response.has_key('extra') else None
+			raise GuifiApiError(response['str'], response['code'], extra)
 		
 	
 	def addZone(self, title, master, minx, miny, maxx, maxy, nick=None,
@@ -317,7 +332,8 @@ class GuifiAPI:
 			print 'Zone succesfully created', zone_id
 			print self.urlForZone(zone_id)
 		else:
-			raise GuifiApiError(response['str'], response['code'], response['extra'])
+			extra = response['extra'] if response.has_key('extra') else None
+			raise GuifiApiError(response['str'], response['code'], extra)
 		
 		return zone_id
 	
@@ -337,7 +353,8 @@ class GuifiAPI:
 		if codenum == ANSWER_GOOD:
 			pass
 		else:
-			raise GuifiApiError(response['str'], response['code'], response['extra'])
+			extra = response['extra'] if response.has_key('extra') else None
+			raise GuifiApiError(response['str'], response['code'], extra)
 			
 	
 	def removeZone(self, zid):
@@ -352,7 +369,8 @@ class GuifiAPI:
 		if codenum == ANSWER_GOOD:
 			pass
 		else:
-			raise GuifiApiError(response['str'], response['code'], response['extra'])
+			extra = response['extra'] if response.has_key('extra') else None
+			raise GuifiApiError(response['str'], response['code'], extra)
 			
 
 	def addDevice(self, nid, rtype, mac, nick=None, notification=None,
@@ -399,7 +417,8 @@ class GuifiAPI:
 			print 'Device succesfully created', device_id
 			print self.urlForDevice(device_id)
 		else:
-			raise GuifiApiError(response['str'], response['code'], response['extra'])
+			extra = response['extra'] if response.has_key('extra') else None
+			raise GuifiApiError(response['str'], response['code'], extra)
 			
 		return device_id
 		
@@ -417,7 +436,8 @@ class GuifiAPI:
 		if codenum == ANSWER_GOOD:
 			pass
 		else:
-			raise GuifiApiError(response['str'], response['code'], response['extra'])
+			extra = response['extra'] if response.has_key('extra') else None
+			raise GuifiApiError(response['str'], response['code'], extra)
 			
 	def removeDevice(self, did):
 				
@@ -429,26 +449,78 @@ class GuifiAPI:
 		(codenum, response) = self.sendRequest(params)
 
 		if codenum == ANSWER_GOOD:
-			pass
+			print 'Device %s succesfully removed' %did
 		else:
-			raise GuifiApiError(response['str'], response['code'], response['extra'])
+			extra = response['extra'] if response.has_key('extra') else None
+			raise GuifiApiError(response['str'], response['code'], extra)
 		
 		
-	def addRadio(self, mode, did, mac, angle=None, gain=None,
-					azimuth=None, amode=None):
+	def addRadio(self, mode, did, mac, angle=None, gain=None, azimuth=None, 
+				amode=None, ssid=None, protocol=None, channel=None, clients='Yes'):
 				
 		if not self.is_authenticated():
 			raise GuifiApiError('You have to be authenticated to run this action')
 			
 		data = {'command':'guifi.radio.add', 'mode':mode, 'device_id':did, 'mac':mac}
+		
+		if angle is not None:
+			data['antenna_angle'] = angle
+		if gain is not None:
+			data['antenna_gain'] = gain
+		if azimuth is not None:
+			data['antenna_azimuth'] = azimuth
+		if amode is not None:
+			data['antenna_mode'] = amode
+
+		if mode == 'ap':
+			if ssid is None or protocol is None or channel is None or clients is None:
+				raise ValueError
+			data['ssid'] = ssid
+			data['protocol'] = protocol
+			data['channel'] = channel
+			data['clients_accepted'] = clients
+		elif mode == 'ad-hoc':
+			if ssid is None or protocol is None or channel is None:
+				raise ValueError
+			data['ssid'] = ssid
+			data['protocol'] = protocol
+			data['channel'] = channel
+		else:
+			print mode
+			raise NotImplementedError
+
 		params = urllib.urlencode(data)
 		(codenum, response) = self.sendRequest(params)
 
 		if codenum == ANSWER_GOOD:
-			pass
-		else:
-			raise GuifiApiError(response['str'], response['code'], response['extra'])
+			# TODO: qué devolver? array tb?
+			radiodev_counter = int(response.get('radiodev_counter'))
+			interfaces = response.get('interfaces')
+			print 'Radio succesfully created', radiodev_counter
+			print self.urlForDevice(int(did))
+			# TODO: self.urlForRadio() ???
 			
+			"""
+{"command":"guifi.radio.add",
+ "code":{"code":200,
+         "str":"Request completed successfully"},
+ "responses":{"radiodev_counter":0,
+              "interfaces":[{"interface_type":"wds\/p2p"},
+                            {"interface_type":"wLan\/Lan","ipv4":[{"ipv4_type":1,
+                                                                   "ipv4":"10.64.2.225",
+                                                                   "netmask":"255.255.255.224"
+                                                                   }
+                                                                  ]
+                            }
+                           ]
+             }
+}
+"""
+		else:
+			extra = response['extra'] if response.has_key('extra') else None
+			raise GuifiApiError(response['str'], response['code'], extra)
+			
+		return radiodev_counter
 
 	def updateRadio(self, did, radiodev, angle=None, gain=None,
 					azimuth=None, amode=None):
@@ -463,7 +535,8 @@ class GuifiAPI:
 		if codenum == ANSWER_GOOD:
 			pass
 		else:
-			raise GuifiApiError(response['str'], response['code'], response['extra'])
+			extra = response['extra'] if response.has_key('extra') else None
+			raise GuifiApiError(response['str'], response['code'], extra)
 	
 	
 	def removeRadio(self, did, radiodev):
@@ -476,9 +549,10 @@ class GuifiAPI:
 		(codenum, response) = self.sendRequest(params)
 
 		if codenum == ANSWER_GOOD:
-			pass
+			print 'Radio %s from device %s succesfully removed' %(radiodev, did)
 		else:
-			raise GuifiApiError(response['str'], response['code'], response['extra'])
+			extra = response['extra'] if response.has_key('extra') else None
+			raise GuifiApiError(response['str'], response['code'], extra)
 			
 
 	def addInterface(self, did, radiodev):
@@ -493,7 +567,8 @@ class GuifiAPI:
 		if codenum == ANSWER_GOOD:
 			pass
 		else:
-			raise GuifiApiError(response['str'], response['code'], response['extra'])
+			extra = response['extra'] if response.has_key('extra') else None
+			raise GuifiApiError(response['str'], response['code'], extra)
 			
 			
 	def removeInterface(self, iid):
@@ -508,7 +583,8 @@ class GuifiAPI:
 		if codenum == ANSWER_GOOD:
 			pass
 		else:
-			raise GuifiApiError(response['str'], response['code'], response['extra'])
+			extra = response['extra'] if response.has_key('extra') else None
+			raise GuifiApiError(response['str'], response['code'], extra)
 			
 
 	def addLink(self, fromdid, fromradiodev, todid, toradiodev,
@@ -526,7 +602,8 @@ class GuifiAPI:
 		if codenum == ANSWER_GOOD:
 			pass
 		else:
-			raise GuifiApiError(response['str'], response['code'], response['extra'])
+			extra = response['extra'] if response.has_key('extra') else None
+			raise GuifiApiError(response['str'], response['code'], extra)
 
 
 	def updateLink(self, lid, ipv4=None, status=None):
@@ -541,7 +618,8 @@ class GuifiAPI:
 		if codenum == ANSWER_GOOD:
 			pass
 		else:
-			raise GuifiApiError(response['str'], response['code'], response['extra'])
+			extra = response['extra'] if response.has_key('extra') else None
+			raise GuifiApiError(response['str'], response['code'], extra)
 	
 	
 	def removeLink(self, lid):
@@ -556,7 +634,8 @@ class GuifiAPI:
 		if codenum == ANSWER_GOOD:
 			pass
 		else:
-			raise GuifiApiError(response['str'], response['code'], response['extra'])
+			extra = response['extra'] if response.has_key('extra') else None
+			raise GuifiApiError(response['str'], response['code'], extra)
 	
 	
 	def getModels(self, type=None, fid=None, supported=None):
@@ -578,7 +657,8 @@ class GuifiAPI:
 		if codenum == ANSWER_GOOD:
 			return response['manufacturers']
 		else:
-			raise GuifiApiError('Error: '+str(response['str']))
+			extra = response['extra'] if response.has_key('extra') else None
+			raise GuifiApiError(response['str'], response['code'], extra)
 	
 	
 	def getFirmwares(self, model_id=None):
@@ -589,7 +669,8 @@ class GuifiAPI:
 		if codenum == ANSWER_GOOD:
 			return response['firmwares']
 		else:
-			raise GuifiApiError(response['str'], response['code'], response['extra'])
+			extra = response['extra'] if response.has_key('extra') else None
+			raise GuifiApiError(response['str'], response['code'], extra)
 	
 	
 	def getProtocols(self):
@@ -600,7 +681,8 @@ class GuifiAPI:
 		if codenum == ANSWER_GOOD:
 			return response['protocols']
 		else:
-			raise GuifiApiError(response['str'], response['code'], response['extra'])
+			extra = response['extra'] if response.has_key('extra') else None
+			raise GuifiApiError(response['str'], response['code'], extra)
 	
 		
 	def getChannels(self, protocol):
@@ -611,7 +693,8 @@ class GuifiAPI:
 		if codenum == ANSWER_GOOD:
 			return response['channels']
 		else:
-			raise GuifiApiError(response['str'], response['code'], response['extra'])
+			extra = response['extra'] if response.has_key('extra') else None
+			raise GuifiApiError(response['str'], response['code'], extra)
 			
 		
 	def is_authenticated(self):

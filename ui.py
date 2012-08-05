@@ -23,9 +23,12 @@ GtkClutter.init([]) # Must be initialized before importing those:
 from gi.repository import Gdk, Gtk
 from gi.repository import GtkChamplain, Champlain
 
+from pyGuifiAPI.error import GuifiApiError
+
 from libcnml import CNMLParser, Status
 from unsolclic import UnSolClic
 
+from utils import *
 	
 class UnsolclicDialog:
 	def __init__(self, node):
@@ -64,11 +67,13 @@ class UnsolclicDialog:
 	
 
 class EditNodeDialog:
-	def __init__(self, zones, zonecnmlp, allZones):
+	def __init__(self, api, zones, zonecnmlp, allZones, coords=None):
 		self.ui = Gtk.Builder()
 		self.ui.add_from_file('ui/editnodedialog.ui')
 		self.ui.connect_signals(self)
 
+		self.guifiAPI = api
+		
 		self.editnodedialog = self.ui.get_object("editnodedialog")
 		self.editnodeokbutton = self.ui.get_object("editnodeokbutton")
 		self.nodecoordinatesentry = self.ui.get_object('nodecoordinatesentry')
@@ -91,6 +96,10 @@ class EditNodeDialog:
 		fillZonesComboBox(self.nodezonecombobox, zones)
 		fillZonesEntryCompletion(self.entrycompletion1, allZones)
 
+		if coords:
+			self.nodecoordinatesentry.set_text(str(coords[0]) + ', ' + str(coords[1]))
+			self.nodecoordinatesentry.set_sensitive(False)
+			self.nodetitleentry.grab_focus()
 
 	def on_takefromparentscheckbutton_toggled(self, widget, data=None):
 		isActive = widget.get_active()
@@ -160,6 +169,7 @@ class EditNodeDialog:
 				it = self.nodegraphscombobox.get_active_iter()
 				graphs = self.nodegraphscombobox.get_model().get_value(it, 0)
 			
+			stable = 'Yes' if self.stablenodecheckbutton.get_active() else 'No'
 			messagestr = 'You are about to create the node named "%s".\nPlease choose where you want to create it' %self.nodetitleentry.get_text()
 			
 			# Messagebox (internet / local / cancelar)
@@ -177,13 +187,9 @@ class EditNodeDialog:
 				node_id = self.guifiAPI.addNode(self.nodetitleentry.get_text(), zid, lat, lon, body=nodeinfotext,
 							nick=self.nodenickentry.get_text(), zone_desc=self.nodezonedescentry.get_text(),
 							notification=self.nodecontactentry.get_text(), elevation=self.nodeelevationentry.get_text(),
-							stable=self.stablenodecheckbutton.get_active(), graph_server=graphs, status='Planned')
+							stable=stable, graph_server=graphs, status='Planned')
 			except GuifiApiError, e:
-				errormessage = 'Error %d: %s\n\nError message:\n%s' %(e.code, e.reason, e.extra)
-				g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, errormessage)
-				g.set_title('Response from server')
-				g.run()
-				g.destroy()
+				ErrorResponseFromServerMessageDialog(e)
 				return
 			
 			# Messagebox status
@@ -202,11 +208,13 @@ class EditNodeDialog:
 
 
 class EditZoneDialog:
-	def __init__(self, zones):
+	def __init__(self, api, zones):
 		self.ui = Gtk.Builder()
 		self.ui.add_from_file('ui/editzonedialog.ui')
 		self.ui.connect_signals(self)
 
+		self.guifiAPI = api
+		
 		self.editzonedialog = self.ui.get_object('editzonedialog')
 		self.zonetitleentry = self.ui.get_object('zonetitleentry')
 		self.parentzonecombobox = self.ui.get_object('parentzonecombobox')
@@ -269,7 +277,7 @@ class EditZoneDialog:
 			it = self.zonemodecombobox.get_active_iter()
 			zonemode = self.zonemodecombobox.get_model().get_value(it, 0)
 					
-			messagestr = 'You are about to create the zone named "%s".\nPlease choose where you want to create it' %self.nodetitleentry.get_text()
+			messagestr = 'You are about to create the zone named "%s".\nPlease choose where you want to create it' %self.zonetitleentry.get_text()
 			
 			# Messagebox (internet / local / cancelar)
 			g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.QUESTION, Gtk.ButtonsType.CANCEL, messagestr)
@@ -290,11 +298,7 @@ class EditZoneDialog:
 							notification=self.zonecontactentry.get_text())
 						
 			except GuifiApiError, e:
-				errormessage = 'Error %d: %s\n\nError message:\n%s' %(e.code, e.reason, e.extra)
-				g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, errormessage)
-				g.set_title('Response from server')
-				g.run()
-				g.destroy()
+				ErrorResponseFromServerMessageDialog(e)
 				return
 			
 			# Messagebox status
@@ -314,10 +318,12 @@ class EditZoneDialog:
 
 
 class EditDeviceDialog:
-	def __init__(self, nodes):
+	def __init__(self, api, nodes):
 		self.ui = Gtk.Builder()
 		self.ui.add_from_file('ui/editdevicedialog.ui')
 		self.ui.connect_signals(self)
+		
+		self.guifiAPI = api
 		
 		self.editdevicedialog = self.ui.get_object('editdevicedialog')
 		self.editdevicenodecombobox = self.ui.get_object('editdevicenodecombobox')
@@ -365,6 +371,7 @@ class EditDeviceDialog:
 			self.notebook3.set_current_page(pages[rtype])
 		else:
 			self.notebook3.set_current_page(3)
+
 
 	def on_editdevicedialog_response(self, widget, response):
 		if response == Gtk.ResponseType.ACCEPT:
@@ -425,7 +432,7 @@ class EditDeviceDialog:
 				upload = None
 				mrtg = None
 				
-			messagestr = 'You are about to create a device named "%s".\nPlease choose where you want to create it' %self.nodetitleentry.get_text()
+			messagestr = 'You are about to create a device named "%s".\nPlease choose where you want to create it' %self.devnickentry.get_text()
 			
 			# Messagebox (internet / local / cancelar)
 			g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.QUESTION, Gtk.ButtonsType.CANCEL, messagestr)
@@ -445,11 +452,7 @@ class EditDeviceDialog:
 								model_id=model, firmware=firmware, download=download, upload=upload, mrtg_index=mrtg)
 
 			except GuifiApiError, e:
-				errormessage = 'Error %d: %s\n\nError message:\n%s' %(e.code, e.reason, e.extra)
-				g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, errormessage)
-				g.set_title('Response from server')
-				g.run()
-				g.destroy()
+				ErrorResponseFromServerMessageDialog(e)
 				return
 			
 			# Messagebox status
@@ -469,25 +472,145 @@ class EditDeviceDialog:
 
 
 class EditRadioDialog:
-	def __init__(self, nodes):
+	def __init__(self, api, cnmlp):
 		self.ui = Gtk.Builder()
 		self.ui.add_from_file('ui/editradiodialog.ui')
 		self.ui.connect_signals(self)
 
+		self.guifiAPI = api
 		self.editradiodialog = self.ui.get_object('editradiodialog')
 		self.editradionodecombobox = self.ui.get_object('editradionodecombobox')
+		self.editradiodevicecombobox = self.ui.get_object('editradiodevicecombobox')
+		self.radiomacentry = self.ui.get_object('radiomacentry')
+		self.radioanglecombobox = self.ui.get_object('radioanglecombobox')
+		self.radiomodecombobox = self.ui.get_object('radiomodecombobox')
+		self.antennamodecombobox = self.ui.get_object('antennamodecombobox')
+		self.radiossidentry = self.ui.get_object('radiossidentry')
+		self.radioprotocolcombobox = self.ui.get_object('radioprotocolcombobox')
+		self.radiochannelcombobox = self.ui.get_object('radiochannelcombobox')
+		self.clientscheckbutton = self.ui.get_object('clientscheckbutton')
+		self.gainspinbutton = self.ui.get_object('gainspinbutton')
+		self.azimuthspinbutton = self.ui.get_object('azimuthspinbutton')
+		self.notebook1 = self.ui.get_object('notebook1')
+		self.notebook1.set_show_tabs(False)
+				
+		self.cnmlp = cnmlp
 		
 		self.editradiodialog.show_all()
 		
 		self.editradiodialog.set_title('Create new Guifi.net radio')
-		fillNodesComboBox(self.editradionodecombobox, nodes)
+		fillNodesComboBox(self.editradionodecombobox, cnmlp.getNodes())
 		
+	def editradiovalidation(self):
+		if not valid_mac_address(self.radiomacentry.get_text()):
+			self.radiomacentry.grab_focus()
+			return False
+		
+		return True
 		
 	def on_editradiodialog_response(self, widget, response):
 		if response == Gtk.ResponseType.ACCEPT:
-			raise NotImplementedError
+			
+			if not self.editradiovalidation():
+				print "There's some invalid data"
+				return
+			
+			it = self.radiomodecombobox.get_active_iter()
+			rmode = self.radiomodecombobox.get_model().get_value(it, 0)
+			
+			it = self.editradiodevicecombobox.get_active_iter()
+			did = self.editradiodevicecombobox.get_model().get_value(it, 0)
+			
+			it = self.radioanglecombobox.get_active_iter()
+			rangle = self.radioanglecombobox.get_model().get_value(it, 0)
+			
+			it = self.antennamodecombobox.get_active_iter()
+			antenna_mode = self.antennamodecombobox.get_model().get_value(it, 0)
+			
+			rgain = self.gainspinbutton.get_value_as_int()
+			razimuth = self.azimuthspinbutton.get_value_as_int()
+		
+			# ap, ad-hoc, faltarian clientrouted, wirelessclient... :?
+			if rmode == 'ap':
+				ssid = self.radiossidentry.get_text()
+				
+				it = self.radioprotocolcombobox.get_active_iter()
+				protocol = self.radioprotocolcombobox.get_model().get_value(it, 0)
+				
+				it = self.radiochannelcombobox.get_active_iter()
+				channel = self.radiochannelcombobox.get_model().get_value(it, 0)
+				
+				clients = 'Yes' if self.clientscheckbutton.get_active() else 'No'
+			elif rmode == 'ad-hoc':
+				ssid = self.radiossidentry.get_text()
+				
+				it = self.radioprotocolcombobox.get_active_iter()
+				protocol = self.radioprotocolcombobox.get_model().get_value(it, 0)
+				
+				it = self.radiochannelcombobox.get_active_iter()
+				channel = self.radiochannelcombobox.get_model().get_value(it, 0)
+				
+				clients = None
+			else:
+				print rmode
+				raise NotImplementedError
+			
+				
+			messagestr = 'You are about to create a new radio.\nPlease choose where you want to create it'
+			
+			# Messagebox (internet / local / cancelar)
+			g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.QUESTION, Gtk.ButtonsType.CANCEL, messagestr)
+			g.set_title('Confirmation')
+			g.add_button('Create locally\n(CNML)', -12)
+			g.add_button('Create remotely\n(%s)' %self.guifiAPI.getHost(), -13)
+			res = g.run()
+			g.destroy()
+			
+			if res in (Gtk.ResponseType.CANCEL, Gtk.ResponseType.DELETE_EVENT):
+				return
+				
+			try:
+				radiodev_counter = self.guifiAPI.addRadio(rmode, did, self.radiomacentry.get_text(), angle=rangle, gain=rgain, azimuth=razimuth, 
+				amode=None, ssid=ssid, protocol=protocol, channel=channel, clients=clients)
+				#amode=antenna_mode when the bug is fixed
+			except GuifiApiError, e:
+				ErrorResponseFromServerMessageDialog(e)
+				return
+			
+			# Messagebox status
+			
+			url = self.guifiAPI.urlForRadio(did, radiodev_counter)
+			messagestr = 'Radio succesfully created with id %d\n\nYou can view it in the following url:\n%s' %(radiodev_counter, url)
+			g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.INFO, Gtk.ButtonsType.CLOSE, messagestr)
+			g.add_button('Open in web browser', -12)
+			g.set_title('Response from server')
+			res = g.run()
+			g.destroy()
+			
+			if res != Gtk.ResponseType.CLOSE:
+				openUrl(url)
 			
 		self.editradiodialog.destroy()
+
+	def on_editradionodecombobox_changed(self, widget, data=None):
+		it = self.editradionodecombobox.get_active_iter()
+		nid = self.editradionodecombobox.get_model().get_value(it, 0)
+
+		fillDevicesComboBox(self.editradiodevicecombobox, self.cnmlp.getNode(nid).getDevices())
+
+
+	def on_radiomodecombobox_changed(self, widget, data=None):
+		it = self.radiomodecombobox.get_active_iter()
+		mode = self.radiomodecombobox.get_model().get_value(it, 0)
+		
+		if mode == 'ap':
+			self.notebook1.set_current_page(0)
+			self.clientscheckbutton.show()
+		elif mode == 'ad-hoc':
+			self.notebook1.set_current_page(0)
+			self.clientscheckbutton.hide()
+		else:
+			self.notebook1.set_current_page(1)
 
 
 class EditInterfaceDialog:
@@ -555,18 +678,20 @@ class PreferencesDialog:
 		self.preferencesdialog = self.ui.get_object('preferencesdialog')
 		self.userentry = self.ui.get_object('userentry')
 		self.passwordentry = self.ui.get_object('passwordentry')
-		self.defaultzonecombobox = self.ui.get_object('defaultzonecombobox')
 		self.defaultzoneentry = self.ui.get_object('defaultzoneentry')
 		self.entrycompletion2 = self.ui.get_object('entrycompletion2')
 		self.usekeyringbutton = self.ui.get_object('usekeyringbutton')
 		self.entrycompletion2 = self.ui.get_object('entrycompletion2')
 		self.contactentry = self.ui.get_object('contactentry')
+		self.hostentry = self.ui.get_object('hostentry')
 		
 		self.preferencesdialog.show_all()
 
 		self.userentry.set_text(self.configmanager.getUsername())
 		self.passwordentry.set_text(self.configmanager.getPassword())
-		fillZonesComboBox(self.defaultzonecombobox, zones)
+		self.contactentry.set_text(self.configmanager.getContact())
+		self.hostentry.set_text(self.configmanager.getHost())
+		
 		fillZonesEntryCompletion(self.entrycompletion2, allZones)
 		
 		defaultZoneTitle = zonecnmlp.getZone(self.configmanager.getDefaultZone()).title
@@ -630,7 +755,8 @@ class NodeDialog:
 	def on_nodedialog_response(self, widget, response):
 		self.nodedialog.destroy()
 		
-		
+
+###################################################
 #self.cnmlp.getNodes()
 def fillNodesComboBox(combobox, nodes):
 	model = combobox.get_model()
@@ -645,27 +771,39 @@ def fillNodesComboBox(combobox, nodes):
 # self.cnmlp.getZones()
 def fillZonesComboBox(combobox, zones):
 	# zoneid - title
-	if combobox:
-		model = combobox.get_model()
-		model.clear()
-		model.set_sort_column_id (1, Gtk.SortType.ASCENDING)
-		model.append((0, '-- Most recently used --'))
+	model = combobox.get_model()
+	model.clear()
+	model.set_sort_column_id (1, Gtk.SortType.ASCENDING)
+	model.append((0, '-- Most recently used --'))
 		
-		n = 0
-		for z in zones:
-			n +=1
-			model.append((z.id, z.title))
-		combobox.set_active(n)
+	n = 0
+	for z in zones:
+		n +=1
+		model.append((z.id, z.title))
+	combobox.set_active(n)
 
+
+# node.getDevices()
+def fillDevicesComboBox(combobox, devices):
+	# We only want radios
+	model = combobox.get_model()
+	model.clear()
+	model.set_sort_column_id (1, Gtk.SortType.ASCENDING)
+	
+	for dev in devices:
+		print dev.title, dev.type
+		if dev.type == 'radio':
+			model.append((dev.id, dev.title))
+		
+		
 #self.cnmlp.getZones()
 # allZones
 def fillZonesEntryCompletion(entrycompletion, allZones):
-	if entrycompletion:
-		model = entrycompletion.get_model()
-		model.clear()
+	model = entrycompletion.get_model()
+	model.clear()
 		
-		for z in allZones:
-			model.append((z[0], z[1]))
+	for z in allZones:
+		model.append((z[0], z[1]))
 
 
 def fillAvailableCNMLModel(configmanager, model, zonecnmlp):
@@ -687,3 +825,12 @@ def fillAvailableCNMLModel(configmanager, model, zonecnmlp):
 	
 	for zid in cnmls:			
 		model.append((zid, zonecnmlp.getZone(zid).title, cnmls[zid]['nodes'], cnmls[zid]['zones'], cnmls[zid]['detail']))
+
+
+def	ErrorResponseFromServerMessageDialog(e):
+	errormessage = 'Error %d: %s\n\nError message:\n%s' %(e.code, e.reason, e.extra)
+	g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, errormessage)
+	g.set_title('Response from server')
+	g.run()
+	g.destroy()
+	
