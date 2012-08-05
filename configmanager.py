@@ -64,6 +64,7 @@ class GuifinetStudioConfig:
 		defaultconfig.add_section('api')
 		defaultconfig.set('api', 'username', '')
 		defaultconfig.set('api', 'password', '')
+		defaultconfig.set('api', 'host', 'test.guifi.net')
 		defaultconfig.add_section('default')
 		defaultconfig.set('default', 'zone', '')
 		defaultconfig.set('default', 'zone_type', '')
@@ -107,6 +108,12 @@ class GuifinetStudioConfig:
 		
 	def setPassword(self, password):
 		self.config.set('api', 'password', password)
+		
+	def getHost(self):
+		return self.config.get('api', 'host')
+		
+	def setHost(self, host):
+		self.config.set('api', 'host', host)
 		
 	def pathForCNMLCachedFile(self, zid, ctype='nodes'):
 		if ctype not in ['zones', 'nodes', 'detail']:

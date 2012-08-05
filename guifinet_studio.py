@@ -128,7 +128,7 @@ class GuifinetStudio:
 		
 		
 		# Guifi.net API
-		self.guifiAPI = pyGuifiAPI.GuifiAPI(self.configmanager.getUsername(), self.configmanager.getPassword())
+		self.guifiAPI = pyGuifiAPI.GuifiAPI(self.configmanager.getUsername(), self.configmanager.getPassword(), self.configmanager.getHost(), False)
 		self.authenticated = False
 		
 		# Descargar siempre?
