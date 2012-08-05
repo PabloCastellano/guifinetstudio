@@ -170,16 +170,9 @@ class EditNodeDialog:
 				graphs = self.nodegraphscombobox.get_model().get_value(it, 0)
 			
 			stable = 'Yes' if self.stablenodecheckbutton.get_active() else 'No'
-			messagestr = 'You are about to create the node named "%s".\nPlease choose where you want to create it' %self.nodetitleentry.get_text()
-			
-			# Messagebox (internet / local / cancelar)
-			g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.QUESTION, Gtk.ButtonsType.CANCEL, messagestr)
-			g.set_title('Confirmation')
-			g.add_button('Create locally\n(CNML)', -12)
-			g.add_button('Create remotely\n(%s)' %self.guifiAPI.getHost(), -13)
-			res = g.run()
-			g.destroy()
-			
+
+			res = CreateLocalOrRemoteMessageDialog(self.guifiAPI.getHost(), 'node', self.nodetitleentry.get_text())
+				
 			if res in (Gtk.ResponseType.CANCEL, Gtk.ResponseType.DELETE_EVENT):
 				return
 			
@@ -276,16 +269,8 @@ class EditZoneDialog:
 			
 			it = self.zonemodecombobox.get_active_iter()
 			zonemode = self.zonemodecombobox.get_model().get_value(it, 0)
-					
-			messagestr = 'You are about to create the zone named "%s".\nPlease choose where you want to create it' %self.zonetitleentry.get_text()
 			
-			# Messagebox (internet / local / cancelar)
-			g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.QUESTION, Gtk.ButtonsType.CANCEL, messagestr)
-			g.set_title('Confirmation')
-			g.add_button('Create locally\n(CNML)', -12)
-			g.add_button('Create remotely\n(%s)' %self.guifiAPI.getHost(), -13)
-			res = g.run()
-			g.destroy()
+			res = CreateLocalOrRemoteMessageDialog(self.guifiAPI.getHost(), 'zone', self.zonetitleentry.get_text())
 			
 			if res in (Gtk.ResponseType.CANCEL, Gtk.ResponseType.DELETE_EVENT):
 				return
@@ -432,15 +417,7 @@ class EditDeviceDialog:
 				upload = None
 				mrtg = None
 				
-			messagestr = 'You are about to create a device named "%s".\nPlease choose where you want to create it' %self.devnickentry.get_text()
-			
-			# Messagebox (internet / local / cancelar)
-			g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.QUESTION, Gtk.ButtonsType.CANCEL, messagestr)
-			g.set_title('Confirmation')
-			g.add_button('Create locally\n(CNML)', -12)
-			g.add_button('Create remotely\n(%s)' %self.guifiAPI.getHost(), -13)
-			res = g.run()
-			g.destroy()
+			res = CreateLocalOrRemoteMessageDialog(self.guifiAPI.getHost(), 'device', self.devnickentry.get_text())
 			
 			if res in (Gtk.ResponseType.CANCEL, Gtk.ResponseType.DELETE_EVENT):
 				return
@@ -554,17 +531,9 @@ class EditRadioDialog:
 			else:
 				print rmode
 				raise NotImplementedError
+		
 			
-				
-			messagestr = 'You are about to create a new radio.\nPlease choose where you want to create it'
-			
-			# Messagebox (internet / local / cancelar)
-			g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.QUESTION, Gtk.ButtonsType.CANCEL, messagestr)
-			g.set_title('Confirmation')
-			g.add_button('Create locally\n(CNML)', -12)
-			g.add_button('Create remotely\n(%s)' %self.guifiAPI.getHost(), -13)
-			res = g.run()
-			g.destroy()
+			res = CreateLocalOrRemoteMessageDialog(self.guifiAPI.getHost(), 'radio')
 			
 			if res in (Gtk.ResponseType.CANCEL, Gtk.ResponseType.DELETE_EVENT):
 				return
@@ -834,3 +803,18 @@ def	ErrorResponseFromServerMessageDialog(e):
 	g.run()
 	g.destroy()
 	
+
+def CreateLocalOrRemoteMessageDialog(host, what, title=None):
+	# Messagebox (internet / local / cancelar)
+	if what == 'radio':
+		message = 'You are about to create a new radio.\nPlease choose where you want to create it'
+	else:
+		message = 'You are about to create the %s named "%s".\nPlease choose where you want to create it' %(what, title)
+		
+	g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.QUESTION, Gtk.ButtonsType.CANCEL, message)
+	g.set_title('Confirmation')
+	g.add_button('Create locally\n(CNML)', -12)
+	g.add_button('Create remotely\n(%s)' %host, -13)
+	res = g.run()
+	g.destroy()
+	return res
