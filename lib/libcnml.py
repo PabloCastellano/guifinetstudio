@@ -694,7 +694,7 @@ class CNMLParser():
 		else:
 			self.loadMinidom()
 
-		print 'Loaded OK'
+		print 'Loaded "%s" successfully' %self.filename
 		self.loaded = True
 
 

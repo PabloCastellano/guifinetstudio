@@ -19,7 +19,7 @@
 
 import os
 import ConfigParser
-
+from datetime import datetime
 
 class GuifinetStudioConfig:
 	CONFIG_DIR = os.path.expanduser('~/.config/guifinetstudio')
@@ -65,6 +65,8 @@ class GuifinetStudioConfig:
 		defaultconfig.set('api', 'username', '')
 		defaultconfig.set('api', 'password', '')
 		defaultconfig.set('api', 'host', 'test.guifi.net')
+		defaultconfig.set('api', 'token', '')
+		defaultconfig.set('api', 'token_date', '')
 		defaultconfig.add_section('default')
 		defaultconfig.set('default', 'zone', '')
 		defaultconfig.set('default', 'zone_type', '')
@@ -114,6 +116,28 @@ class GuifinetStudioConfig:
 		
 	def setHost(self, host):
 		self.config.set('api', 'host', host)
+		
+	def getAuthToken(self):
+		return self.config.get('api', 'token')
+		
+	def setAuthToken(self, token):
+		print '<<<setAuthToken>>>', token
+		self.config.set('api', 'token', token)
+		
+	def getAuthTokenDate(self):
+		tokendate = self.config.get('api', 'token_date')
+		
+		if tokendate == '':
+			return None
+		else:
+			return datetime.strptime(tokendate, '%Y-%m-%d %H:%M:%S.%f')
+		
+	def setAuthTokenDate(self, tokendate=None):
+		print '<<<setAuthTokenDate>>>', tokendate
+		if not tokendate:
+			tokendate = str(datetime.now())
+			
+		self.config.set('api', 'token_date', tokendate)
 		
 	def pathForCNMLCachedFile(self, zid, ctype='nodes'):
 		if ctype not in ['zones', 'nodes', 'detail']:

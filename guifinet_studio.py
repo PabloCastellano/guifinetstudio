@@ -40,6 +40,7 @@ from urllib2 import URLError
 
 from ui import *
 
+from datetime import datetime, timedelta
 
 class GuifinetStudio:
 	def __init__(self, cnmlFile=None):
@@ -116,7 +117,7 @@ class GuifinetStudio:
 			try:
 				self.cnmlp = CNMLParser(cnmlFile)
 				self.cnmlFile = cnmlFile
-				print 'Loaded "%s" successfully' %self.cnmlFile
+				#print 'Loaded "%s" successfully' %self.cnmlFile
 				self.statusbar.push(0, 'Loaded "%s" successfully' %self.cnmlFile)
 				self.completaArbol()
 				self.paintMap()
@@ -127,8 +128,21 @@ class GuifinetStudio:
 				self.cnmlFile = None
 		
 		
+		tokendate = self.configmanager.getAuthTokenDate()
+		
+		now = datetime.now()
+		yesterday = now - timedelta(1)
+		
+		if now-yesterday <= timedelta(1):
+			# auth token is still valid (if it hasn't been requested by another application)
+			authToken = self.configmanager.getAuthToken()
+		else:
+			authToken = None
+		
+		print 'authToken:', authToken
+		
 		# Guifi.net API
-		self.guifiAPI = pyGuifiAPI.GuifiAPI(self.configmanager.getUsername(), self.configmanager.getPassword(), self.configmanager.getHost(), False)
+		self.guifiAPI = pyGuifiAPI.GuifiAPI(self.configmanager.getUsername(), self.configmanager.getPassword(), self.configmanager.getHost(), False, authToken=authToken)
 		self.authenticated = False
 		
 		# Descargar siempre?
@@ -138,7 +152,9 @@ class GuifinetStudio:
 		for z in self.zonecnmlp.getZones():
 			self.allZones.append((z.id, z.title))
 		
-		self.authAPI()
+		if not authToken:
+			print 'not valid token -> authenticating...'
+			self.authAPI()
 
 
 	def completaArbol(self):
@@ -542,6 +558,9 @@ class GuifinetStudio:
 	def authAPI(self):
 		try:
 			self.guifiAPI.auth()
+			self.configmanager.setAuthToken(self.guifiAPI.getAuthToken())
+			self.configmanager.setAuthTokenDate() #update with now()
+			self.configmanager.save()
 			self.authenticated = True
 			self.statusbar.push(0, "Logged into Guifi.net")
 		except URLError, e: # Not connected to the Internets
