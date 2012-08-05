@@ -298,11 +298,8 @@ class GuifinetStudio:
 		
 		
 	def on_action5_activate(self, action, data=None):
-		self.nodecoordinatesentry.set_text(str(self.lat) + ', ' + str(self.lon))
-		self.nodecoordinatesentry.set_sensitive(False)
+		EditNodeDialog(self.guifiAPI, self.cnmlp.getZones(), self.zonecnmlp, self.allZones, (self.lat, self.lon))
 		del self.lat, self.lon
-		self.nodetitleentry.grab_focus()
-		self.on_createnodemenuitem_activate()
 	
 	
 	def on_imagemenuitem2_activate(self, widget, data=None):
