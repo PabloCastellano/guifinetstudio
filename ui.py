@@ -185,17 +185,7 @@ class EditNodeDialog:
 				ErrorResponseFromServerMessageDialog(e)
 				return
 			
-			# Messagebox status
-			url = self.guifiAPI.urlForNode(node_id)
-			messagestr = 'Node succesfully created with id %d\n\nYou can view it in the following url:\n%s' %(node_id, url)
-			g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.INFO, Gtk.ButtonsType.CLOSE, messagestr)
-			g.add_button('Open in web browser', -12)
-			g.set_title('Response from server')
-			res = g.run()
-			g.destroy()
-			
-			if res != Gtk.ResponseType.CLOSE:
-				openUrl(url)
+			CreatedSuccessfullyOpenUrlMessageDialog('Node', self.guifiAPI.urlForNode(node_id), node_id)
 				
 		self.editnodedialog.destroy()
 
@@ -286,18 +276,7 @@ class EditZoneDialog:
 				ErrorResponseFromServerMessageDialog(e)
 				return
 			
-			# Messagebox status
-			
-			url = self.guifiAPI.urlForZone(zone_id)
-			messagestr = 'Zone succesfully created with id %d\n\nYou can view it in the following url:\n%s' %(zone_id, url)
-			g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.INFO, Gtk.ButtonsType.CLOSE, messagestr)
-			g.add_button('Open in web browser', -12)
-			g.set_title('Response from server')
-			res = g.run()
-			g.destroy()
-			
-			if res != Gtk.ResponseType.CLOSE:
-				openUrl(url)
+			CreatedSuccessfullyOpenUrlMessageDialog('Zone', self.guifiAPI.urlForZone(zone_id), zone_id)
 				
 		self.editzonedialog.destroy()
 
@@ -432,19 +411,8 @@ class EditDeviceDialog:
 				ErrorResponseFromServerMessageDialog(e)
 				return
 			
-			# Messagebox status
-			
-			url = self.guifiAPI.urlForDevice(device_id)
-			messagestr = 'Device succesfully created with id %d\n\nYou can view it in the following url:\n%s' %(device_id, url)
-			g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.INFO, Gtk.ButtonsType.CLOSE, messagestr)
-			g.add_button('Open in web browser', -12)
-			g.set_title('Response from server')
-			res = g.run()
-			g.destroy()
-			
-			if res != Gtk.ResponseType.CLOSE:
-				openUrl(url)
-		
+			CreatedSuccessfullyOpenUrlMessageDialog('Device', self.guifiAPI.urlForDevice(device_id), device_id)
+
 		self.editdevicedialog.destroy()
 
 
@@ -546,18 +514,7 @@ class EditRadioDialog:
 				ErrorResponseFromServerMessageDialog(e)
 				return
 			
-			# Messagebox status
-			
-			url = self.guifiAPI.urlForRadio(did, radiodev_counter)
-			messagestr = 'Radio succesfully created with id %d\n\nYou can view it in the following url:\n%s' %(radiodev_counter, url)
-			g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.INFO, Gtk.ButtonsType.CLOSE, messagestr)
-			g.add_button('Open in web browser', -12)
-			g.set_title('Response from server')
-			res = g.run()
-			g.destroy()
-			
-			if res != Gtk.ResponseType.CLOSE:
-				openUrl(url)
+			CreatedSuccessfullyOpenUrlMessageDialog('Radio', self.guifiAPI.urlForDevice(did), did)
 			
 		self.editradiodialog.destroy()
 
@@ -818,3 +775,15 @@ def CreateLocalOrRemoteMessageDialog(host, what, title=None):
 	res = g.run()
 	g.destroy()
 	return res
+
+
+def CreatedSuccessfullyOpenUrlMessageDialog(what, url, zone_id):
+	message = '%s succesfully created with id %d\n\nYou can view it in the following url:\n%s' %(what, zone_id, url)
+	g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.INFO, Gtk.ButtonsType.CLOSE, message)
+	g.add_button('Open in web browser', -12)
+	g.set_title('Response from server')
+	res = g.run()
+	g.destroy()
+	
+	if res != Gtk.ResponseType.CLOSE:
+		openUrl(url)

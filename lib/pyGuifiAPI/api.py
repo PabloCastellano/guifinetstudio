@@ -498,7 +498,6 @@ class GuifiAPI:
 			interfaces = response.get('interfaces')
 			print 'Radio succesfully created', radiodev_counter
 			print self.urlForDevice(int(did))
-			# TODO: self.urlForRadio() ???
 			
 			"""
 {"command":"guifi.radio.add",
