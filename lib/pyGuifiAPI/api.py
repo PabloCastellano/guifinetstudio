@@ -498,28 +498,11 @@ class GuifiAPI:
 			interfaces = response.get('interfaces')
 			print 'Radio succesfully created', radiodev_counter
 			print self.urlForDevice(int(did))
-			
-			"""
-{"command":"guifi.radio.add",
- "code":{"code":200,
-         "str":"Request completed successfully"},
- "responses":{"radiodev_counter":0,
-              "interfaces":[{"interface_type":"wds\/p2p"},
-                            {"interface_type":"wLan\/Lan","ipv4":[{"ipv4_type":1,
-                                                                   "ipv4":"10.64.2.225",
-                                                                   "netmask":"255.255.255.224"
-                                                                   }
-                                                                  ]
-                            }
-                           ]
-             }
-}
-"""
 		else:
 			extra = response['extra'] if response.has_key('extra') else None
 			raise GuifiApiError(response['str'], response['code'], extra)
 			
-		return radiodev_counter
+		return (radiodev_counter, interfaces)
 
 	def updateRadio(self, did, radiodev, angle=None, gain=None,
 					azimuth=None, amode=None):

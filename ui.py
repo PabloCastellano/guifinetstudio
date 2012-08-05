@@ -507,14 +507,14 @@ class EditRadioDialog:
 				return
 				
 			try:
-				radiodev_counter = self.guifiAPI.addRadio(rmode, did, self.radiomacentry.get_text(), angle=rangle, gain=rgain, azimuth=razimuth, 
+				(radiodev_counter, interfaces) = self.guifiAPI.addRadio(rmode, did, self.radiomacentry.get_text(), angle=rangle, gain=rgain, azimuth=razimuth, 
 				amode=None, ssid=ssid, protocol=protocol, channel=channel, clients=clients)
 				#amode=antenna_mode when the bug is fixed
 			except GuifiApiError, e:
 				ErrorResponseFromServerMessageDialog(e)
 				return
 			
-			CreatedSuccessfullyOpenUrlMessageDialog('Radio', self.guifiAPI.urlForDevice(did), did)
+			CreatedSuccessfullyOpenUrlMessageDialog('Radio', self.guifiAPI.urlForDevice(did), radiodev_counter, interfaces)
 			
 		self.editradiodialog.destroy()
 
@@ -777,8 +777,43 @@ def CreateLocalOrRemoteMessageDialog(host, what, title=None):
 	return res
 
 
-def CreatedSuccessfullyOpenUrlMessageDialog(what, url, zone_id):
-	message = '%s succesfully created with id %d\n\nYou can view it in the following url:\n%s' %(what, zone_id, url)
+def CreatedSuccessfullyOpenUrlMessageDialog(what, url, id, extra=None):
+	if what == 'Radio':
+		# interfaces = extra 
+		"""
+		{"command":"guifi.radio.add",
+		 "code":{"code":200,
+				 "str":"Request completed successfully"},
+		 "responses":{"radiodev_counter":0,
+					  "interfaces":[{"interface_type":"wds\/p2p"},
+									{"interface_type":"wLan\/Lan","ipv4":[{"ipv4_type":1,
+																		   "ipv4":"10.64.2.225",
+																		   "netmask":"255.255.255.224"
+																		   }
+																		  ]
+									}
+								   ]
+					 }
+		}
+		"""
+		message = 'Radio successfully created with id %d\n\nInformation:\n' %id
+
+		for iface in extra:
+			for ifaceitems in iface.items():
+				if isinstance(ifaceitems[1], list):
+					for ips in ifaceitems[1]:
+						for ipv4 in ips.items():
+							message += '    %s: %s\n' %ipv4
+							print '  %s - %s' %ipv4
+				else:
+					message += '  %s: %s\n' %ifaceitems
+					print '%s - %s' %ifaceitems
+		
+		message += '\nYou can view it in the following url:\n%s' %url
+			
+	else:
+		message = '%s succesfully created with id %d\n\nYou can view it in the following url:\n%s' %(what, id, url)
+		
 	g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.INFO, Gtk.ButtonsType.CLOSE, message)
 	g.add_button('Open in web browser', -12)
 	g.set_title('Response from server')
