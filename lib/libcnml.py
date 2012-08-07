@@ -488,16 +488,14 @@ class CNMLLink:
 		
 
 class Status:
-	UNKNOWN = 0
 	PLANNED = 1
 	WORKING = 2
 	TESTING = 3
 	BUILDING = 4
+	RESERVED = 5
 	
 	@staticmethod
 	def strToStatus(status):
-		st = Status.UNKNOWN
-		
 		if status.lower() == "planned":
 			st = Status.PLANNED
 		elif status.lower() == "working":
@@ -506,10 +504,30 @@ class Status:
 			st = Status.TESTING
 		elif status.lower() == "building":
 			st = Status.BUILDING
-
+		elif status.lower() == "reserved":
+			st = Status.RESERVED
+		else:
+			raise ValueError
+			
 		return st
 	
-
+	@staticmethod
+	def statusToStr(status):
+		if status == Status.PLANNED:
+			st = 'Planned'
+		elif status == Status.WORKING:
+			st = 'Working'
+		elif status == Status.TESTING:
+			st = 'Testing'
+		elif status == Status.BUILDING:
+			st = 'Building'
+		elif status == Status.RESERVED:
+			st = 'Reserved'
+		else:
+			raise ValueError
+			
+		return st
+			
 class CNMLParser():
 	def __init__(self, filename, lazy=False):
 		self.filename = filename

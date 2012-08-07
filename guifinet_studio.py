@@ -75,7 +75,6 @@ class GuifinetStudio:
 		self.uimanager.add_ui_from_file("guifinet_studio_menu.ui")
 		self.uimanager.insert_action_group(self.actiongroup1)
 		self.menu1 = self.uimanager.get_widget("/KeyPopup1")
-		self.menu2 = self.uimanager.get_widget("/KeyPopup2")
 
 		self.t6 = self.ui.get_object("treeviewcolumn6")
 			
@@ -174,21 +173,15 @@ class GuifinetStudio:
 		# Given a list of node ids, counts how many of them are for each status (working, planned...)
 		def countNodes(nodes):
 			nodescount = dict()
-			nodescount[Status.UNKNOWN] = 0
+			nodescount[Status.RESERVED] = 0
 			nodescount[Status.PLANNED] = 0
 			nodescount[Status.WORKING] = 0
 			nodescount[Status.TESTING] = 0
 			nodescount[Status.BUILDING] = 0
 			
 			for n in nodes:
-				st = n.status
-				nodescount[st] += 1
-				
-			try:
-				assert nodescount[Status.UNKNOWN] == 0
-			except AssertionError:
-				print 'There are %d nodes with status == UNKNOWN' %nodescount[Status.UNKNOWN]
-				
+				nodescount[n.status] += 1
+			
 			return (nodescount[Status.PLANNED], nodescount[Status.WORKING], nodescount[Status.TESTING], nodescount[Status.BUILDING])
 
 		zone = self.cnmlp.getZone(zid)
