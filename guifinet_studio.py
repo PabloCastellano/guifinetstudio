@@ -42,6 +42,8 @@ from ui import *
 
 from datetime import datetime, timedelta
 
+from champlainguifinet import GtkGuifinetMap
+
 class GuifinetStudio:
 	def __init__(self, cnmlFile=None):
 		self.ui = Gtk.Builder()
@@ -60,27 +62,14 @@ class GuifinetStudio:
 		self.actiongroup1 = self.ui.get_object("actiongroup1")
 		self.menuitem6 = self.ui.get_object("menuitem6")
 
-		self.embedBox = self.ui.get_object("embedBox")
 		self.notebook1 = self.ui.get_object("notebook1")
 		self.notebook1.set_show_tabs(False)
 		
-		self.embed = GtkChamplain.Embed()
-		self.embed.set_size_request(640, 480)
-		
-		self.view = self.embed.get_view()
-		self.view.set_reactive(True)
-		self.view.set_kinetic_mode(True)
-		self.view.set_zoom_level(13)
-		self.view.center_on(36.72341, -4.42428)
-		self.view.connect('button-release-event', self.mouse_click_cb)
-		
-		scale = Champlain.Scale()
-		scale.connect_view(self.view)
-		self.view.bin_layout_add(scale, Clutter.BinAlignment.START, Clutter.BinAlignment.END)
+		self.guifinetmap = GtkGuifinetMap()
 
 		self.box1 = self.ui.get_object('box1')
 		self.paned = self.ui.get_object("paned1")
-		self.paned.pack2(self.embed, True, True)
+		self.paned.pack2(self.guifinetmap, True, True)
 		
 		self.uimanager = Gtk.UIManager()
 		self.uimanager.add_ui_from_file("guifinet_studio_menu.ui")
@@ -89,9 +78,6 @@ class GuifinetStudio:
 		self.menu2 = self.uimanager.get_widget("/KeyPopup2")
 
 		self.t6 = self.ui.get_object("treeviewcolumn6")
-
-		self.points_layer = None
-		self.labels_layer = None
 			
 		self.mainWindow.show_all()
 
@@ -120,7 +106,7 @@ class GuifinetStudio:
 				#print 'Loaded "%s" successfully' %self.cnmlFile
 				self.statusbar.push(0, 'Loaded "%s" successfully' %self.cnmlFile)
 				self.completaArbol()
-				self.paintMap()
+				self.guifinetmap.paintMap(self.cnmlp.getNodes())
 			except IOError:
 				print 'Error loading cnml'
 				self.statusbar.push(0, 'CNML file "%s" couldn\'t be loaded' %cnmlFile)
@@ -173,24 +159,6 @@ class GuifinetStudio:
 		self.treestore2.set_sort_column_id (0, Gtk.SortType.ASCENDING)
 		self.statusbar.push(0, "Loaded CNML succesfully")
 
-
-	def add_node_point(self, layer, lat, lon, size=12):
-		p = Champlain.Point.new()
-		p.set_location(lat, lon)
-		p.set_size(size)
-		layer.add_marker(p)
-	
-	
-	def add_node_label(self, layer, lat, lon, nombre):
-		p = Champlain.Label.new()
-		p.set_text(nombre)
-		color = Clutter.Color.new(0, 0, 0, 255)
-		p.set_text_color(color)
-		p.set_location(lat, lon)
-		p.set_draw_background(False)
-		layer.add_marker(p)
-
-
 	# Recursive
 	def __completaArbol_recursive(self, parentzid, parenttree):
 		zones = self.cnmlp.getSubzonesFromZone(parentzid)
@@ -241,34 +209,6 @@ class GuifinetStudio:
 			row = (None, None, None, None, None, n.title, n.id)
 			self.treestore.append(parentzone, row)
 			self.treestore2.append(None, (n.title, n.id))
-		
-
-	# Two layers:
-	#  1) Points only
-	#  2) Labels only
-	def paintMap(self):
-		self.points_layer = Champlain.MarkerLayer()
-		self.points_layer.set_selection_mode(Champlain.SelectionMode.SINGLE)
-		self.labels_layer = Champlain.MarkerLayer()
-
-		nodes = self.cnmlp.getNodes()
-
-		for n in nodes:
-			self.add_node_point(self.points_layer, n.latitude, n.longitude)
-			self.add_node_label(self.labels_layer, n.latitude, n.longitude, n.title)
-		
-		# It's important to add points the last. Points are selectable while labels are not
-		# If labels is added later, then you click on some point and it doesn't get selected
-		# because you are really clicking on the label. Looks like an usability bug?
-		self.view.add_layer(self.labels_layer)
-		self.view.add_layer(self.points_layer)
-
-	def mouse_click_cb(self, widget, event):
-		# event == void (GdkEventButton?)
-		if event.button == 3: # Right button
-			X, Y = event.x, event.y
-			self.lon, self.lat = self.view.x_to_longitude(X), self.view.y_to_latitude(Y)
-			self.menu2.popup(None, None, None, None, event.button, event.time)
 
 
 	def on_action1_activate(self, action, data=None):
@@ -335,7 +275,6 @@ class GuifinetStudio:
 		self.cnmlFile = self.opendialog.get_filename()
 		print self.cnmlFile
 		
-
 		try:
 			self.cnmlp = CNMLParser(self.cnmlFile)
 			self.completaArbol()
@@ -354,8 +293,7 @@ class GuifinetStudio:
 	def on_imagemenuitem3_activate(self, widget, data=None):
 		self.treestore.clear()
 		self.treestore2.clear()
-		self.points_layer.remove_all()
-		self.labels_layer.remove_all()
+		self.guifinetmap.reset()
 		self.statusbar.push(0, "Closed CNML file")
 		self.cnmlFile = None
 		
@@ -515,18 +453,12 @@ class GuifinetStudio:
 			
 	def on_showPointsButton_toggled(self, widget, data=None):
 		print 'Show points:', widget.get_active()	
-		if widget.get_active():
-			self.points_layer.show_all_markers()
-		else:
-			self.points_layer.hide_all_markers()
-
-	
+		self.guifinetmap.show_points(widget.get_active())
+		
+		
 	def on_showLabelsButton_toggled(self, widget, data=None):
 		print 'Show labels:', widget.get_active()
-		if widget.get_active():
-			self.labels_layer.show_all_markers()
-		else:
-			self.labels_layer.hide_all_markers()
+		self.guifinetmap.show_labels(widget.get_active())
 	
 	
 	def on_showLinksButton_toggled(self, widget, data=None):
