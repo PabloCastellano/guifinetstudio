@@ -264,31 +264,19 @@ class GuifinetStudio:
 				(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.ACCEPT))
 
 		if dialog.run() == Gtk.ResponseType.ACCEPT:
-			filename = dialog.get_filename()
-			print filename
-			# TODO: Reload file
+			self.cnmlFile = dialog.get_filename()
+			print self.cnmlFile
+		
+			try:
+				self.cnmlp = CNMLParser(self.cnmlFile)
+				self.completaArbol()
+				self.guifinetmap.paintMap(self.cnmlp.getNodes())
+			except IOError:
+				self.statusbar.push(0, "CNML file \"%s\" couldn't be loaded" %self.cnmlFile)
+				self.cnmlFile = None
 		
 		dialog.destroy()
 				
-		
-	def on_filechooserdialog_file_activated(self, widget, data=None):
-		self.cnmlFile = self.opendialog.get_filename()
-		print self.cnmlFile
-		
-		try:
-			self.cnmlp = CNMLParser(self.cnmlFile)
-			self.completaArbol()
-			self.paintMap()
-		except IOError:
-			self.statusbar.push(0, "CNML file \"%s\" couldn't be loaded" %self.cnmlFile)
-			self.cnmlFile = None
-		
-		
-	def on_filechooserdialog_response(self, widget, response):
-		print 'response:', response
-		self.opendialog.destroy()
-
-
 		
 	def on_imagemenuitem3_activate(self, widget, data=None):
 		self.treestore.clear()
