@@ -26,12 +26,6 @@
         <signal name="activate" handler="on_action4_activate" swapped="no"/>
       </object>
     </child>
-    <child>
-      <object class="GtkAction" id="action5">
-        <property name="label" translatable="yes">Create new Guifi.net node here</property>
-        <signal name="activate" handler="on_action5_activate" swapped="no"/>
-      </object>
-    </child>
   </object>
   <object class="GtkImage" id="image10">
     <property name="visible">True</property>

@@ -65,8 +65,8 @@ class GuifinetStudio:
 		self.notebook1 = self.ui.get_object("notebook1")
 		self.notebook1.set_show_tabs(False)
 		
-		self.guifinetmap = GtkGuifinetMap()
-
+		self.guifinetmap = GtkGuifinetMap(self)
+		
 		self.box1 = self.ui.get_object('box1')
 		self.paned = self.ui.get_object("paned1")
 		self.paned.pack2(self.guifinetmap, True, True)
@@ -196,6 +196,10 @@ class GuifinetStudio:
 		return tree
 		
 		
+	def create_new_node(self, coords):
+		EditNodeDialog(self.guifiAPI, self.cnmlp.getZones(), self.zonecnmlp, self.allZones, coords)
+
+	
 	def __addNodesFromZoneToTree(self, zid, parentzone):
 		nodes = self.cnmlp.getNodesFromZone(zid)
 		for n in nodes:
@@ -244,12 +248,7 @@ class GuifinetStudio:
 		
 		UnsolclicDialog(node)
 		########
-		
-		
-	def on_action5_activate(self, action, data=None):
-		EditNodeDialog(self.guifiAPI, self.cnmlp.getZones(), self.zonecnmlp, self.allZones, (self.lat, self.lon))
-		del self.lat, self.lon
-	
+			
 	
 	def on_imagemenuitem2_activate(self, widget, data=None):
 		dialog = Gtk.FileChooserDialog('Open CNML file', self.mainWindow,

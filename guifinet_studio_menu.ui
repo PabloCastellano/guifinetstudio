@@ -8,9 +8,4 @@
 		<menuitem action="action4"/>
 		<separator/>
 	</popup>
-
-	<popup name="KeyPopup2">
-		<menuitem action="action5"/>
-	</popup>
-
 </ui>

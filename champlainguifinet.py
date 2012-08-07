@@ -5,13 +5,21 @@ GtkClutter.init([]) # Must be initialized before importing those:
 from gi.repository import Gdk, Gtk
 from gi.repository import GtkChamplain, Champlain
 
+import os
+import sys
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append('lib')
+
+from libcnml import Status
+
 
 # It's compound of two ChamplainMarkerLayer layers
 class GtkGuifinetMap(GtkChamplain.Embed):
-	def __init__(self):
+	def __init__(self, parent):
 		GtkChamplain.Embed.__init__(self)
 		self.set_size_request(640, 480)
 		
+		self.parent = parent
 		self.view = self.get_view()
 		self.view.set_reactive(True)
 		self.view.set_kinetic_mode(True)
@@ -33,19 +41,53 @@ class GtkGuifinetMap(GtkChamplain.Embed):
 		self.view.add_layer(self.labels_layer)
 		self.view.add_layer(self.points_layer)
 		
-		print 'Initialized Guifinet map'		
+		self.menu = Gtk.Menu()
+		menuitem1 = Gtk.MenuItem('Create new Guifi.net node here')
+		menuitem1.connect('activate', self.create_new_node)
+		self.menu.append(menuitem1)
+		self.menu.show_all()
 
 
-	def add_node_point(self, lat, lon, size=12):
+	def create_new_node(self, action, data=None):
+		self.parent.create_new_node((self.lat, self.lon))
+		del self.lat, self.lon
+
+	
+	def colorFromStatus(self, status):
+		# Planned: blue
+		# Working: green
+		# Testing: orange
+		# Building: black
+		# Reserved: red
+		if status == Status.PLANNED:
+			color = Clutter.Color.new(0, 0, 255, 255)
+		elif status == Status.WORKING:
+			color = Clutter.Color.new(44, 188, 15, 255)
+		elif status == Status.TESTING:
+			color = Clutter.Color.new(255, 174, 69, 255)
+		elif status == Status.BUILDING:
+			color = Clutter.Color.new(0, 0, 0, 255)
+		elif status == Status.RESERVED:
+			color = Clutter.Color.new(255, 0, 0, 255)
+		else:
+			raise ValueError
+
+		return color
+		
+		
+	def add_node_point(self, lat, lon, status, size=12):
 		p = Champlain.Point.new()
 		p.set_location(lat, lon)
 		p.set_size(size)
+		color = self.colorFromStatus(status)
+		p.set_color(color)
 		self.points_layer.add_marker(p)
+		print 'Status:', Status.statusToStr(status)
 	
-	
-	def add_node_label(self, lat, lon, text):
+	def add_node_label(self, lat, lon, text, status):
 		p = Champlain.Label.new()
 		p.set_text(text)
+		#color = self.colorFromStatus(status)
 		color = Clutter.Color.new(0, 0, 0, 255)
 		p.set_text_color(color)
 		p.set_location(lat, lon)
@@ -56,8 +98,8 @@ class GtkGuifinetMap(GtkChamplain.Embed):
 	# nodes = self.cnmlp.getNodes()
 	def paintMap(self, nodes):
 		for n in nodes:
-			self.add_node_point(n.latitude, n.longitude)
-			self.add_node_label(n.latitude, n.longitude, n.title)
+			self.add_node_point(n.latitude, n.longitude, n.status)
+			self.add_node_label(n.latitude, n.longitude, n.title, n.status)
 		
 	
 	def reset(self):
@@ -84,7 +126,7 @@ class GtkGuifinetMap(GtkChamplain.Embed):
 		if event.button == 3: # Right button
 			X, Y = event.x, event.y
 			self.lon, self.lat = self.view.x_to_longitude(X), self.view.y_to_latitude(Y)
-			self.menu2.popup(None, None, None, None, event.button, event.time)
+			self.menu.popup(None, None, None, None, event.button, event.time)
 
 
 if __name__ == '__main__':
