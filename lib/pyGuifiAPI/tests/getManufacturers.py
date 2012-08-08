@@ -6,7 +6,7 @@ from api import *
 
 #No authentication needed
 g = GuifiAPI()
-manufacturers = g.getManufacturers()
+manufacturers = g.getManufacturers(secure=SECURE)
 
 print 'Total manufacturers:', len(manufacturers)
 print 'ID\tName\tURL'

@@ -6,7 +6,7 @@ from api import *
 
 #No authentication needed
 g = GuifiAPI()
-firmwares = g.getFirmwares()
+firmwares = g.getFirmwares(secure=SECURE)
 
 print 'Total firmwares:', len(firmwares)
 print 'Title\t\t\tDescription'

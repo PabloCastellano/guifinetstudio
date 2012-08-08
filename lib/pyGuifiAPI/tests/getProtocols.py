@@ -5,7 +5,8 @@ sys.path.append('..')
 from api import *
 
 #No authentication needed
-g = GuifiAPI()
+g = GuifiAPI(secure=SECURE)
+
 protocols = g.getProtocols()
 
 print 'Total protocols:', len(protocols)

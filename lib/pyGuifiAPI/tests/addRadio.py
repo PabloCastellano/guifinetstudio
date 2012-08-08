@@ -15,7 +15,7 @@ if sys.argv[2] not in ('ap', 'ad-hoc'):
 	print 'Invalid mode:', sys.argv[1]
 	sys.exit(1)
 
-g = GuifiAPI(USERNAME, PASSWORD)
+g = GuifiAPI(USERNAME, PASSWORD, secure=SECURE)
 g.auth()
 
 # NanoStation2 and AirOSv30

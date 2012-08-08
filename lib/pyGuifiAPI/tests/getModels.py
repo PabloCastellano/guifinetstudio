@@ -11,7 +11,8 @@ else:
 	model = sys.argv[1]
 
 #No authentication needed
-g = GuifiAPI()
+g = GuifiAPI(secure=SECURE)
+
 models = g.getModels(model)
 
 print 'Total models:', len(models)

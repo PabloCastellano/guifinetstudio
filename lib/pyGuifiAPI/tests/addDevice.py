@@ -10,7 +10,7 @@ if len(sys.argv) != 2:
 	print 'Usage: %s <nick>' %sys.argv[0]
 	sys.exit(1)
 
-g = GuifiAPI(USERNAME, PASSWORD)
+g = GuifiAPI(USERNAME, PASSWORD, secure=SECURE)
 g.auth()
 
 # NanoStation2 and AirOSv30

@@ -10,7 +10,7 @@ if len(sys.argv) != 3:
 	print 'Usage: %s <node_id> <new_title>' %sys.argv[0]
 	sys.exit(1)
 
-g = GuifiAPI(USERNAME, PASSWORD)
+g = GuifiAPI(USERNAME, PASSWORD, secure=SECURE)
 g.auth()
 
 try:

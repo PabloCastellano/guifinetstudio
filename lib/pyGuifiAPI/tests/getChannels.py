@@ -9,7 +9,7 @@ if len(sys.argv) != 2:
 	sys.exit(1)
 	
 #No authentication needed
-g = GuifiAPI()
+g = GuifiAPI(secure=SECURE)
 channels = g.getChannels(sys.argv[1])
 
 print 'Total channels:', len(channels)
