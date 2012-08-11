@@ -129,6 +129,10 @@ class GtkGuifinetMap(GtkChamplain.Embed):
 			self.menu.popup(None, None, None, None, event.button, event.time)
 
 
+	def getView(self):
+		return self.view
+		
+		
 if __name__ == '__main__':
 	w = Gtk.Window()
 	map = GtkGuifinetMap()

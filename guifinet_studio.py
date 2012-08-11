@@ -158,6 +158,7 @@ class GuifinetStudio:
 		self.treestore2.set_sort_column_id (0, Gtk.SortType.ASCENDING)
 		self.statusbar.push(0, "Loaded CNML succesfully")
 
+
 	# Recursive
 	def __completaArbol_recursive(self, parentzid, parenttree):
 		zones = self.cnmlp.getSubzonesFromZone(parentzid)
@@ -217,7 +218,18 @@ class GuifinetStudio:
 
 
 	def on_action3_activate(self, action, data=None):
-		print 'View in map'
+		self.notebook1.set_current_page(0)		
+
+		# get node id
+		sel = self.treeview.get_selection()
+		(model, it) = sel.get_selected()
+		nid = model.get_value(it, 6)
+		
+		lat = self.cnmlp.getNode(nid).latitude
+		lon = self.cnmlp.getNode(nid).longitude	
+	
+		self.guifinetmap.getView().center_on(lat, lon)
+		
 	
 	
 	def on_action4_activate(self, action, data=None):
@@ -420,7 +432,7 @@ class GuifinetStudio:
 			nid = model.get_value(it, 1)
 			lat = float(self.cnmlp.getNode(nid).latitude)
 			lon = float(self.cnmlp.getNode(nid).longitude)
-			self.view.center_on(lat, lon)
+			self.guifinetmap.getView().center_on(lat, lon)
 			#self.view.go_to(lat, lon)
 		
 	
