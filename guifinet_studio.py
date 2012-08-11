@@ -214,7 +214,12 @@ class GuifinetStudio:
 	
 	
 	def on_action2_activate(self, action, data=None):
-		Gtk.show_uri(None, "http://guifi.net/node/", Gtk.get_current_event_time())
+		# get node id
+		sel = self.treeview.get_selection()
+		(model, it) = sel.get_selected()
+		nid = model.get_value(it, 6)
+
+		Gtk.show_uri(None, self.guifiAPI.urlForNode(nid), Gtk.get_current_event_time())
 
 
 	def on_action3_activate(self, action, data=None):
