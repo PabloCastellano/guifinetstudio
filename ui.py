@@ -552,6 +552,38 @@ class EditInterfaceDialog:
 		self.editinterfacedialog.set_title('Create new Guifi.net interface')
 
 
+	def on_editinterfacedialog_response(self, widget, response):
+		if response == Gtk.ResponseType.ACCEPT:
+			
+			"""
+			if not self.editinterfacevalidation():
+				print "There's some invalid data"
+				return
+			"""
+			
+			it = self.editifacedevcombobox.get_active_iter()
+			did = self.editifacedevcombobox.get_model().get_value(it, 0)
+			
+			it = self.editifaceradiocombobox.get_active_iter()
+			rid = self.editifaceradiocombobox.get_model().get_value(it, 0)
+			
+			res = CreateLocalOrRemoteMessageDialog(self.guifiAPI.getHost(), 'interface')
+			
+			if res in (Gtk.ResponseType.CANCEL, Gtk.ResponseType.DELETE_EVENT):
+				return
+				
+			try:
+				(iid, ipv4) = self.guifiAPI.addInterface(did, rid)
+						
+			except GuifiApiError, e:
+				ErrorResponseFromServerMessageDialog(e)
+				return
+			
+			CreatedSuccessfullyOpenUrlMessageDialog('Interface', self.guifiAPI.urlForDevice(did), iid, ipv4)
+				
+		self.editinterfacedialog.destroy()
+
+
 class EditLinkDialog:
 	def __init__(self, nodes):
 		self.ui = Gtk.Builder()
@@ -571,7 +603,50 @@ class EditLinkDialog:
 
 	def on_editlinkdialog_response(self, widget, response):
 		if response == Gtk.ResponseType.ACCEPT:
-			pass
+			
+			"""
+			if not self.editlinkvalidation():
+				print "There's some invalid data"
+				return
+			"""
+			
+			it = self.editlinknode1combobox.get_active_iter()
+			nid1 = self.editlinknode1combobox.get_model().get_value(it, 0)
+			
+			it = self.editlinknode2combobox.get_active_iter()
+			nid2 = self.editlinknode2combobox.get_model().get_value(it, 0)
+			
+			it = self.editlinkdev1combobox.get_active_iter()
+			dev1 = self.editlinkdev1combobox.get_model().get_value(it, 0)
+			
+			it = self.editlinkdev2combobox.get_active_iter()
+			dev2 = self.editlinkdev2combobox.get_model().get_value(it, 0)
+			
+			it = self.editlinkradio1combobox.get_active_iter()
+			radio1 = self.editlinkradio1combobox.get_model().get_value(it, 0)
+			
+			it = self.editlinkradio2combobox.get_active_iter()
+			radio2 = self.editlinkradio2combobox.get_model().get_value(it, 0)
+			
+			ipv4 = self.editlinkipv4entry.get_text()
+			
+			it = self.editlinkstatuscombobox.get_active_iter()
+			status = self.editlinkstatuscombobox.get_model().get_value(it, 0)
+			
+			res = CreateLocalOrRemoteMessageDialog(self.guifiAPI.getHost(), 'interface')
+			
+			if res in (Gtk.ResponseType.CANCEL, Gtk.ResponseType.DELETE_EVENT):
+				return
+				
+			try:
+				(iid, ipv4) = self.guifiAPI.addInterface(did, rid)
+						
+			except GuifiApiError, e:
+				ErrorResponseFromServerMessageDialog(e)
+				return
+			
+			CreatedSuccessfullyOpenUrlMessageDialog('Interface', self.guifiAPI.urlForDevice(did), iid, ipv4)
+				
 		self.editlinkdialog.destroy()
 		
 		
@@ -589,6 +664,7 @@ class CNMLDialog:
 		
 		fillAvailableCNMLModel(configmanager, self.treeview4.get_model(), zonecnmlp)
 		
+	
 	def on_cnmldialog_response(self, widget, response):
 		self.cnmldialog.destroy()
 
@@ -763,8 +839,8 @@ def	ErrorResponseFromServerMessageDialog(e):
 
 def CreateLocalOrRemoteMessageDialog(host, what, title=None):
 	# Messagebox (internet / local / cancelar)
-	if what == 'radio':
-		message = 'You are about to create a new radio.\nPlease choose where you want to create it'
+	if what in ('radio', 'interface'):
+		message = 'You are about to create a new %s.\nPlease choose where you want to create it' %what
 	else:
 		message = 'You are about to create the %s named "%s".\nPlease choose where you want to create it' %(what, title)
 		
@@ -778,24 +854,18 @@ def CreateLocalOrRemoteMessageDialog(host, what, title=None):
 
 
 def CreatedSuccessfullyOpenUrlMessageDialog(what, url, id, extra=None):
-	if what == 'Radio':
+	if what == 'Interface':
+		# ipv4 = extra
+		message = 'Interface successfully created with id %d\n\nInformation:\n' %id
+
+		for settings in extra[0].items():
+			message += '  %s: %s\n' %settings
+			print '%s - %s' %settings
+		
+		message += '\nYou can view it in the following url:\n%s' %url
+
+	elif what == 'Radio':
 		# interfaces = extra 
-		"""
-		{"command":"guifi.radio.add",
-		 "code":{"code":200,
-				 "str":"Request completed successfully"},
-		 "responses":{"radiodev_counter":0,
-					  "interfaces":[{"interface_type":"wds\/p2p"},
-									{"interface_type":"wLan\/Lan","ipv4":[{"ipv4_type":1,
-																		   "ipv4":"10.64.2.225",
-																		   "netmask":"255.255.255.224"
-																		   }
-																		  ]
-									}
-								   ]
-					 }
-		}
-		"""
 		message = 'Radio successfully created with id %d\n\nInformation:\n' %id
 
 		for iface in extra:

@@ -6,6 +6,7 @@
     <property name="border_width">5</property>
     <property name="title" translatable="yes">Create new Guifi.net radio</property>
     <property name="type_hint">dialog</property>
+    <signal name="response" handler="on_editinterfacedialog_response" swapped="no"/>
     <child internal-child="vbox">
       <object class="GtkBox" id="dialog-vbox12">
         <property name="can_focus">False</property>
@@ -87,7 +88,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkComboBox" id="combobox20">
+                      <object class="GtkComboBox" id="editifacenodecombobox">
                         <property name="width_request">125</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
@@ -100,7 +101,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkComboBox" id="combobox21">
+                      <object class="GtkComboBox" id="editifacedevcombobox">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                       </object>
@@ -112,7 +113,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkComboBox" id="combobox22">
+                      <object class="GtkComboBox" id="editifaceradiocombobox">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                       </object>
@@ -127,7 +128,7 @@
                       <object class="GtkLabel" id="label90">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">Device:</property>
+                        <property name="label" translatable="yes">Device:  </property>
                         <attributes>
                           <attribute name="weight" value="bold"/>
                         </attributes>

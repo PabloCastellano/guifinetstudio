@@ -546,12 +546,17 @@ class GuifiAPI:
 		params = urllib.urlencode(data)
 		(codenum, response) = self.sendRequest(params)
 
+		# "responses":{"ipv4":[{"ipv4_type":"1","ipv4":"10.64.3.33","netmask":"255.255.255.224"}],"interface_id":76140}
 		if codenum == ANSWER_GOOD:
-			pass
+			iid = int(response.get('interface_id'))
+			ipv4 = response.get('ipv4')
+			print 'Interface succesfully created', iid
+			print self.urlForDevice(int(did))
 		else:
 			extra = response['extra'] if response.has_key('extra') else None
 			raise GuifiApiError(response['str'], response['code'], extra)
 			
+		return (iid, ipv4)
 			
 	def removeInterface(self, iid):
 				
@@ -563,7 +568,7 @@ class GuifiAPI:
 		(codenum, response) = self.sendRequest(params)
 
 		if codenum == ANSWER_GOOD:
-			pass
+			print 'Interface %s succesfully removed' %iid
 		else:
 			extra = response['extra'] if response.has_key('extra') else None
 			raise GuifiApiError(response['str'], response['code'], extra)
@@ -575,18 +580,23 @@ class GuifiAPI:
 		if not self.is_authenticated():
 			raise GuifiApiError('You have to be authenticated to run this action')
 			
-		data = {'command':'guifi.interface.add', 'from_device_id':fromdid,
+		data = {'command':'guifi.link.add', 'from_device_id':fromdid,
 				'from_radiodev_counter':fromradiodev, 'to_device_id':todid,
 				'to_radiodev_counter':toradiodev}
 		params = urllib.urlencode(data)
 		(codenum, response) = self.sendRequest(params)
 
 		if codenum == ANSWER_GOOD:
-			pass
+			lid = int(response.get('link_id'))
+			ipv4 = response.get('ipv4')
+			print 'Link succesfully created', lid
+			#print self.urlForDevice(int(lid))
 		else:
+			# FIXME: Crashes when there are several errors and extra is a list (no has_key())
 			extra = response['extra'] if response.has_key('extra') else None
 			raise GuifiApiError(response['str'], response['code'], extra)
 
+		return (lid, ipv4)
 
 	def updateLink(self, lid, ipv4=None, status=None):
 				
@@ -614,7 +624,7 @@ class GuifiAPI:
 		(codenum, response) = self.sendRequest(params)
 
 		if codenum == ANSWER_GOOD:
-			pass
+			print 'Link %s succesfully removed' %lid
 		else:
 			extra = response['extra'] if response.has_key('extra') else None
 			raise GuifiApiError(response['str'], response['code'], extra)
