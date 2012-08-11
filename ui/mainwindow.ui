@@ -395,18 +395,47 @@
             <property name="can_focus">False</property>
             <property name="toolbar_style">both</property>
             <child>
-              <object class="GtkToggleToolButton" id="changeViewButton">
+              <object class="GtkToolButton" id="maptoolbutton">
                 <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="has_tooltip">True</property>
-                <property name="tooltip_markup" translatable="yes">Change view</property>
-                <property name="tooltip_text" translatable="yes">Change view</property>
                 <property name="use_action_appearance">False</property>
-                <property name="label" translatable="yes">Change view</property>
+                <property name="label" translatable="yes">Map</property>
                 <property name="use_underline">True</property>
-                <property name="stock_id">gtk-cdrom</property>
-                <signal name="toggled" handler="on_changeViewButton_toggled" swapped="no"/>
+                <property name="stock_id">gtk-disconnect</property>
+                <signal name="clicked" handler="on_maptoolbutton_clicked" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkToolButton" id="nodestoolbutton">
+                <property name="use_action_appearance">False</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="use_action_appearance">False</property>
+                <property name="label" translatable="yes">Nodes</property>
+                <property name="use_underline">True</property>
+                <property name="stock_id">gtk-dialog-warning</property>
+                <signal name="clicked" handler="on_nodestoolbutton_clicked" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkToolButton" id="servicestoolbutton">
+                <property name="use_action_appearance">False</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="use_action_appearance">False</property>
+                <property name="label" translatable="yes">Services</property>
+                <property name="use_underline">True</property>
+                <property name="stock_id">gtk-page-setup</property>
+                <signal name="clicked" handler="on_servicestoolbutton_clicked" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>

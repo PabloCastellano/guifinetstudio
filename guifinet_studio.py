@@ -377,11 +377,16 @@ class GuifinetStudio:
 		dialog.destroy()
 		
 
-	def on_changeViewButton_toggled(self, widget, data=None):
-		if self.notebook1.get_current_page() == 0:
-			self.notebook1.set_current_page(1)
-		else:
-			self.notebook1.set_current_page(0)
+	def on_maptoolbutton_clicked(self, widget, data=None):
+		self.notebook1.set_current_page(0)
+		
+		
+	def on_nodestoolbutton_clicked(self, widget, data=None):
+		self.notebook1.set_current_page(1)
+		
+		
+	def on_servicestoolbutton_clicked(self, widget, data=None):
+		self.notebook1.set_current_page(2)
 		
 		
 	def on_button5_clicked(self, widget, data=None):
