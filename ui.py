@@ -633,19 +633,19 @@ class EditLinkDialog:
 			it = self.editlinkstatuscombobox.get_active_iter()
 			status = self.editlinkstatuscombobox.get_model().get_value(it, 0)
 			
-			res = CreateLocalOrRemoteMessageDialog(self.guifiAPI.getHost(), 'interface')
+			res = CreateLocalOrRemoteMessageDialog(self.guifiAPI.getHost(), 'link')
 			
 			if res in (Gtk.ResponseType.CANCEL, Gtk.ResponseType.DELETE_EVENT):
 				return
 				
 			try:
-				(iid, ipv4) = self.guifiAPI.addInterface(did, rid)
+				(lid, ipv4) = self.guifiAPI.addLink(dev1, radio1, dev2, radio2, ipv4=ipv4, status=status)
 						
 			except GuifiApiError, e:
 				ErrorResponseFromServerMessageDialog(e)
 				return
 			
-			CreatedSuccessfullyOpenUrlMessageDialog('Interface', self.guifiAPI.urlForDevice(did), iid, ipv4)
+			CreatedSuccessfullyOpenUrlMessageDialog('Link', self.guifiAPI.urlForDevice(dev1), lid, ipv4)
 				
 		self.editlinkdialog.destroy()
 		
@@ -839,7 +839,7 @@ def	ErrorResponseFromServerMessageDialog(e):
 
 def CreateLocalOrRemoteMessageDialog(host, what, title=None):
 	# Messagebox (internet / local / cancelar)
-	if what in ('radio', 'interface'):
+	if what in ('radio', 'interface', 'link'):
 		message = 'You are about to create a new %s.\nPlease choose where you want to create it' %what
 	else:
 		message = 'You are about to create the %s named "%s".\nPlease choose where you want to create it' %(what, title)
@@ -854,9 +854,9 @@ def CreateLocalOrRemoteMessageDialog(host, what, title=None):
 
 
 def CreatedSuccessfullyOpenUrlMessageDialog(what, url, id, extra=None):
-	if what == 'Interface':
+	if what in ('Interface', 'Link'):
 		# ipv4 = extra
-		message = 'Interface successfully created with id %d\n\nInformation:\n' %id
+		message = '%s successfully created with id %d\n\nInformation:\n' %(what,id)
 
 		for settings in extra[0].items():
 			message += '  %s: %s\n' %settings

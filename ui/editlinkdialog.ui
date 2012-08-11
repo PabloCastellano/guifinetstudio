@@ -140,9 +140,10 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkComboBox" id="combobox25">
+                              <object class="GtkComboBox" id="editlinkdev1combobox">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
+                                <property name="model">liststore1</property>
                               </object>
                               <packing>
                                 <property name="left_attach">1</property>
@@ -152,9 +153,10 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkComboBox" id="combobox26">
+                              <object class="GtkComboBox" id="editlinkradio1combobox">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
+                                <property name="model">liststore3</property>
                               </object>
                               <packing>
                                 <property name="left_attach">1</property>
@@ -257,9 +259,10 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkComboBox" id="combobox28">
+                              <object class="GtkComboBox" id="editlinkdev2combobox">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
+                                <property name="model">liststore2</property>
                               </object>
                               <packing>
                                 <property name="left_attach">1</property>
@@ -269,9 +272,10 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkComboBox" id="combobox29">
+                              <object class="GtkComboBox" id="editlinkradio2combobox">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
+                                <property name="model">liststore4</property>
                               </object>
                               <packing>
                                 <property name="left_attach">1</property>
@@ -322,9 +326,16 @@
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <child>
-                          <object class="GtkComboBox" id="combobox23">
+                          <object class="GtkComboBox" id="editlinkstatuscombobox">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
+                            <property name="model">liststore7</property>
+                            <child>
+                              <object class="GtkCellRendererText" id="cellrenderertext1"/>
+                              <attributes>
+                                <attribute name="text">0</attribute>
+                              </attributes>
+                            </child>
                           </object>
                           <packing>
                             <property name="left_attach">1</property>
@@ -360,7 +371,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkEntry" id="entry18">
+                          <object class="GtkEntry" id="editlinkipv4entry">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="invisible_char">●</property>
@@ -405,6 +416,10 @@
       <action-widget response="-6">button19</action-widget>
     </action-widgets>
   </object>
+  <object class="GtkListStore" id="liststore1"/>
+  <object class="GtkListStore" id="liststore2"/>
+  <object class="GtkListStore" id="liststore3"/>
+  <object class="GtkListStore" id="liststore4"/>
   <object class="GtkListStore" id="liststore5">
     <columns>
       <!-- column-name id -->
@@ -420,5 +435,19 @@
       <!-- column-name title -->
       <column type="gchararray"/>
     </columns>
+  </object>
+  <object class="GtkListStore" id="liststore7">
+    <columns>
+      <!-- column-name status -->
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0" translatable="yes">Planned</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes"></col>
+      </row>
+    </data>
   </object>
 </interface>

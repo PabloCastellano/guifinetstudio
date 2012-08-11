@@ -590,13 +590,14 @@ class GuifiAPI:
 			lid = int(response.get('link_id'))
 			ipv4 = response.get('ipv4')
 			print 'Link succesfully created', lid
-			#print self.urlForDevice(int(lid))
+			print self.urlForDevice(int(fromdid))
 		else:
 			# FIXME: Crashes when there are several errors and extra is a list (no has_key())
 			extra = response['extra'] if response.has_key('extra') else None
 			raise GuifiApiError(response['str'], response['code'], extra)
 
 		return (lid, ipv4)
+
 
 	def updateLink(self, lid, ipv4=None, status=None):
 				
