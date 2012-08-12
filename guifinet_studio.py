@@ -112,36 +112,35 @@ class GuifinetStudio:
 				self.cnmlp = None
 				self.cnmlFile = None
 		
-		
-		tokendate = self.configmanager.getAuthTokenDate()
-		
-		now = datetime.now()
-		yesterday = now - timedelta(1)
-		
-		if now-yesterday <= timedelta(1):
-			# auth token is still valid (if it hasn't been requested by another application)
-			authToken = self.configmanager.getAuthToken()
-		else:
-			authToken = None
-		
-		print 'authToken:', authToken
-		
+			
 		# Guifi.net API
-		self.guifiAPI = pyGuifiAPI.GuifiAPI(self.configmanager.getUsername(), self.configmanager.getPassword(), self.configmanager.getHost(), False, authToken=authToken)
-		self.authenticated = False
+		self.guifiAPI = pyGuifiAPI.GuifiAPI(self.configmanager.getUsername(), self.configmanager.getPassword(), self.configmanager.getHost(), secure=False)
+		self.authAPI()
 		
 		# Descargar siempre?
 		self.allZones = []
 		cnmlGWfile = self.configmanager.pathForCNMLCachedFile(GUIFI_NET_WORLD_ZONE_ID, 'zones')
-		self.zonecnmlp = CNMLParser(cnmlGWfile)
-		for z in self.zonecnmlp.getZones():
-			self.allZones.append((z.id, z.title))
+		try:
+			self.zonecnmlp = CNMLParser(cnmlGWfile)
+			for z in self.zonecnmlp.getZones():
+				self.allZones.append((z.id, z.title))
+		except IOError:
+			print 'Error loading cnml guifiworld zone'
+			self.statusbar.push(0, 'CNML file "%s" couldn\'t be loaded' %cnmlGWfile)
+			self.zonecnmlp = None
+
+
+	def on_searchentry_changed(self, widget, data=None):
+		print widget, data
+		print widget.get_text()
 		
-		if not authToken:
-			print 'not valid token -> authenticating...'
-			self.authAPI()
-
-
+		model = self.treeview2.get_model()
+		# https://bugzilla.gnome.org/show_bug.cgi?id=681687
+		#nodesfilter = Gtk.TreeModelFilter()
+		#model.refilter()
+		return False
+		
+		
 	def completaArbol(self):
 		self.treestore.clear()
 		self.treestore2.clear()
@@ -490,22 +489,36 @@ class GuifinetStudio:
 
 				
 	def authAPI(self):
-		try:
-			self.guifiAPI.auth()
-			self.configmanager.setAuthToken(self.guifiAPI.getAuthToken())
-			self.configmanager.setAuthTokenDate() #update with now()
-			self.configmanager.save()
-			self.authenticated = True
-			self.statusbar.push(0, "Logged into Guifi.net")
-		except URLError, e: # Not connected to the Internets
-			self.statusbar.push(0, "Couldn't login into Guifi.net: check your Internet connection")
-			self.authenticated = False
-		except GuifiApiError, e:
-			g = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, 
-								"Couldn't login into Guifi.net:\n" + e.reason)
-			g.run()
-			g.destroy()
-			self.authenticated = False
+		tokendate = self.configmanager.getAuthTokenDate()
+
+		now = datetime.now()
+		yesterday = now - timedelta(1)
+		
+		if now-yesterday <= timedelta(1):
+			# auth token is still valid (if it hasn't been requested by another application)
+			authToken = self.configmanager.getAuthToken()
+		else:
+			authToken = None
+		
+		if authToken:
+			print 'Reusing valid auth token:', authToken
+			self.guifiAPI.setAuthToken(authToken)
+		else:
+			print 'not valid token -> authenticating...'
+			
+			try:
+				self.guifiAPI.auth()
+				self.configmanager.setAuthToken(self.guifiAPI.getAuthToken())
+				self.configmanager.setAuthTokenDate() #update with now()
+				self.configmanager.save()
+				self.statusbar.push(0, "Logged into Guifi.net")
+			except URLError, e: # Not connected to the Internets
+				self.statusbar.push(0, "Couldn't login into Guifi.net: check your Internet connection")
+			except GuifiApiError, e:
+				g = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, 
+									"Couldn't login into Guifi.net:\n" + e.reason)
+				g.run()
+				g.destroy()
 		
 
 		
