@@ -661,8 +661,9 @@ class CNMLDialog:
 		self.treeview4 = self.ui.get_object('treeview4')
 		
 		self.cnmldialog.show_all()
-		
-		fillAvailableCNMLModel(configmanager, self.treeview4.get_model(), zonecnmlp)
+
+		if zonecnmlp:
+			fillAvailableCNMLModel(configmanager, self.treeview4.get_model(), zonecnmlp)
 		
 	
 	def on_cnmldialog_response(self, widget, response):
@@ -696,8 +697,9 @@ class PreferencesDialog:
 		
 		fillZonesEntryCompletion(self.entrycompletion2, allZones)
 		
-		defaultZoneTitle = zonecnmlp.getZone(self.configmanager.getDefaultZone()).title
-		self.entrycompletion2.get_entry().set_text(defaultZoneTitle)
+		if zonecnmlp:
+			defaultZoneTitle = zonecnmlp.getZone(self.configmanager.getDefaultZone()).title
+			self.entrycompletion2.get_entry().set_text(defaultZoneTitle)
 
 	# temporary method until I find a better way to do it
 	def findZoneIdInEntryCompletion(self, entrycompletion):
