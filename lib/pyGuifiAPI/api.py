@@ -93,8 +93,8 @@ class GuifiAPI:
 	def sendRequest(self, data):
 		""" Sends API request and returns json result"""
 		url = self.base_api_url + data
-		print '<<<sendRequest>>>', url, len(url)
-		print 'Headers:', self.headers
+		#print '<<<sendRequest>>>', url, len(url)
+		#print 'Headers:', self.headers
 		
 		req = Request(url, headers=self.headers)
 		try:
