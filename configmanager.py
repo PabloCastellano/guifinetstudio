@@ -59,6 +59,7 @@ class GuifinetStudioConfig:
 		with open(self.CONFIG_FILENAME, 'w') as fp:
 			self.config.write(fp)
 
+
 	def createDefaultConfig(self):
 		defaultconfig = ConfigParser.SafeConfigParser()
 		defaultconfig.add_section('api')
@@ -67,19 +68,19 @@ class GuifinetStudioConfig:
 		defaultconfig.set('api', 'host', 'test.guifi.net')
 		defaultconfig.set('api', 'token', '')
 		defaultconfig.set('api', 'token_date', '')
-		defaultconfig.add_section('default')
-		defaultconfig.set('default', 'zone', '')
-		defaultconfig.set('default', 'zone_type', '')
-		defaultconfig.set('default', 'contact', '')
+		defaultconfig.add_section('general')
+		defaultconfig.set('general', 'zone', '')
+		defaultconfig.set('general', 'zone_type', '')
+		defaultconfig.set('general', 'contact', '')
 		
 		with open(self.CONFIG_FILENAME, 'wb') as configfile:
 			defaultconfig.write(configfile)
 
 	def getContact(self):
-		return self.config.get('default', 'contact')
+		return self.config.get('general', 'contact')
 
 	def setContact(self, contact):
-		self.config.set('default', 'contact', contact)
+		self.config.set('general', 'contact', contact)
 	
 	def getUsername(self):
 		return self.config.get('api', 'username')
@@ -88,22 +89,22 @@ class GuifinetStudioConfig:
 		self.config.set('api', 'username', username)
 			
 	def getDefaultZone(self):
-		zone = self.config.get('default', 'zone')
+		zone = self.config.get('general', 'zone')
 		if zone == '':
 			return None
 		else:
 			return int(zone)
 		
 	def setDefaultZone(self, zid):
-		self.config.set('default', 'zone', str(zid))
+		self.config.set('general', 'zone', str(zid))
 	
 	def getDefaultZoneType(self):
-		return self.config.get('default', 'zone_type')
+		return self.config.get('general', 'zone_type')
 		
 	def setDefaultZoneType(self, ztype):
 		if ztype not in ['zones', 'nodes', 'detail']:
 			raise ValueError
-		self.config.set('default', 'zone_type', ztype)
+		self.config.set('general', 'zone_type', ztype)
 	
 	def getPassword(self):
 		return self.config.get('api', 'password')
