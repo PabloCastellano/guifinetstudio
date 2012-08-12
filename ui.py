@@ -94,7 +94,14 @@ class EditNodeDialog:
 		self.editnodedialog.show_all()
 		
 		fillZonesComboBox(self.nodezonecombobox, zones)
-		fillZonesEntryCompletion(self.entrycompletion1, allZones)
+		
+		if allZones == []:
+			label92 = self.ui.get_object('label92')
+			label92.set_visible(False)
+			entry19 = self.ui.get_object('entry19')
+			entry19.set_visible(False)
+		else:
+			fillZonesEntryCompletion(self.entrycompletion1, allZones)
 
 		if coords:
 			self.nodecoordinatesentry.set_text(str(coords[0]) + ', ' + str(coords[1]))
@@ -664,7 +671,8 @@ class CNMLDialog:
 
 		if zonecnmlp:
 			fillAvailableCNMLModel(configmanager, self.treeview4.get_model(), zonecnmlp)
-		
+		else:
+			print "Error: there's no guifi.net world zones cnml"
 	
 	def on_cnmldialog_response(self, widget, response):
 		self.cnmldialog.destroy()
@@ -695,11 +703,18 @@ class PreferencesDialog:
 		self.contactentry.set_text(self.configmanager.getContact())
 		self.hostentry.set_text(self.configmanager.getHost())
 		
-		fillZonesEntryCompletion(self.entrycompletion2, allZones)
+		if allZones == []:
+			self.defaultzoneentry.set_sensitive(False)
+			label39 = self.ui.get_object('label39')
+			label39.set_sensitive(False)
+		else:
+			fillZonesEntryCompletion(self.entrycompletion2, allZones)
 		
 		if zonecnmlp:
 			defaultZoneTitle = zonecnmlp.getZone(self.configmanager.getDefaultZone()).title
 			self.entrycompletion2.get_entry().set_text(defaultZoneTitle)
+		else:
+			print "Error: there's no guifi.net world zones cnml"
 
 	# temporary method until I find a better way to do it
 	def findZoneIdInEntryCompletion(self, entrycompletion):

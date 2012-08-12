@@ -125,7 +125,9 @@ class GuifinetStudio:
 			for z in self.zonecnmlp.getZones():
 				self.allZones.append((z.id, z.title))
 		except IOError:
-			print 'Error loading cnml guifiworld zone'
+			print 'Error loading cnml guifiworld zone:', cnmlGWfile
+			print 'Guifi.net Studio will run normally but note that some features are disabled'
+			print 'To solve it, just download the Guifi.net World zones CNML'
 			self.statusbar.push(0, 'CNML file "%s" couldn\'t be loaded' %cnmlGWfile)
 			self.zonecnmlp = None
 
