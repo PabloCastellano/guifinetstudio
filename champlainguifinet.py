@@ -114,7 +114,7 @@ class GtkGuifinetMap(GtkChamplain.Embed):
 			self.points_layer.hide_all_markers()
 
 
-	def show_labels(active):
+	def show_labels(self, active):
 		if active:
 			self.labels_layer.show_all_markers()
 		else:

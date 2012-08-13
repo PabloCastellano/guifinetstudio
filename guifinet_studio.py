@@ -44,6 +44,8 @@ from datetime import datetime, timedelta
 
 from champlainguifinet import GtkGuifinetMap
 
+from calc import Calculator
+
 class GuifinetStudio:
 	def __init__(self, cnmlFile=None):
 		self.ui = Gtk.Builder()
@@ -132,6 +134,9 @@ class GuifinetStudio:
 			self.zonecnmlp = None
 
 
+	def on_calcimagemenuitem_activate(self, widget, data=None):
+		Calculator()
+		
 	def on_searchentry_changed(self, widget, data=None):
 		print widget, data
 		print widget.get_text()
