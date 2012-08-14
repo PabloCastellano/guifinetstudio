@@ -301,7 +301,7 @@ class GuifinetStudio:
 		
 			try:
 				self.cnmlp = CNMLParser(self.cnmlFile)
-				# FIXME
+				# FIXME: only if necessary (there's a zone loaded already)
 				self.on_imagemenuitem3_activate()
 				self.completaArbol()
 				self.guifinetmap.paintMap(self.cnmlp.getNodes())
