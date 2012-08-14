@@ -122,8 +122,12 @@ class GuifinetStudio:
 		self.guifiAPI = pyGuifiAPI.GuifiAPI(self.configmanager.getUsername(), self.configmanager.getPassword(), self.configmanager.getHost(), secure=False)
 		self.authAPI()
 		
-		# Descargar siempre?
+		# TODO: Generate an intermediary file for allZones instead of loading the cnml everytime
 		self.allZones = []
+		self.rebuildAllZones()
+
+
+	def rebuildAllZones(self):
 		cnmlGWfile = self.configmanager.pathForCNMLCachedFile(GUIFI_NET_WORLD_ZONE_ID, 'zones')
 		try:
 			self.zonecnmlp = CNMLParser(cnmlGWfile)
@@ -132,13 +136,23 @@ class GuifinetStudio:
 		except IOError:
 			print 'Error loading cnml guifiworld zone:', cnmlGWfile
 			print 'Guifi.net Studio will run normally but note that some features are disabled'
-			print 'To solve it, just download the Guifi.net World zones CNML'
+			print 'To solve it, just download the Guifi.net World zones CNML going to Tools -> Update zones'
+			
+			message = 'Error loading Guifi.net World zone\n\n'
+			message += 'Guifi.net Studio will run normally but note that some features are disabled\n'
+			message += 'To solve it, just download the Guifi.net World zones CNML again\n'
+			message += 'You can go to Tools -> Update zones'
+			g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.WARNING, Gtk.ButtonsType.CLOSE, message)
+			g.set_title('File not found: %s' %cnmlGWfile)
+			res = g.run()
+			g.destroy()
 			self.statusbar.push(0, 'CNML file "%s" couldn\'t be loaded' %cnmlGWfile)
 			self.zonecnmlp = None
 
 
 	def on_calcimagemenuitem_activate(self, widget, data=None):
 		Calculator()
+
 		
 	def on_searchentry_changed(self, widget, data=None):
 		print widget, data
@@ -362,17 +376,19 @@ class GuifinetStudio:
 		
 
 	def on_downloadcnmlmenuitem_activate(self, widget, data=None):
-		CNMLDialog(self.configmanager, self.zonecnmlp)
+		CNMLDialog(self.configmanager, self.zonecnmlp, self.allZones, self.guifiAPI)
 	
 	
 	def on_updatezonesmenuitem_activate(self, widget, data=None):
 		try:
 			fp = self.guifiAPI.downloadCNML(GUIFI_NET_WORLD_ZONE_ID, 'zones')
-			zone_filename = '%d.cnml' %GUIFI_NET_WORLD_ZONE_ID
-			filename = os.path.join(self.configmanager.CACHE_DIR, 'zones', zone_filename)
+			filename = self.configmanager.pathForCNMLCachedFile(GUIFI_NET_WORLD_ZONE_ID, 'zones')
 			with open(filename, 'w') as zonefile:
 				zonefile.write(fp.read())
+			print 'Zone saved successfully to', filename
+			self.rebuildAllZones()
 		except URLError, e:
+			print 'Error accessing to the Internets:', str(e.reason)
 			g = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, 
 								"Error accessing to the Internets:\n" + str(e.reason))
 			g.set_title('Error downloading CNML')

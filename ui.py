@@ -659,21 +659,52 @@ class EditLinkDialog:
 		
 		
 class CNMLDialog:
-	def __init__(self, configmanager, zonecnmlp):
+	def __init__(self, configmanager, zonecnmlp, allZones, guifiAPI):
 		self.ui = Gtk.Builder()
 		self.ui.add_from_file('ui/cnmldialog.ui')
 		self.ui.connect_signals(self)
 
+		self.zonecnmlp = zonecnmlp
+		self.configmanager = configmanager
+		self.guifiAPI = guifiAPI
 		self.cnmldialog = self.ui.get_object('cnmldialog')
 		self.treeview4 = self.ui.get_object('treeview4')
+		self.entrycompletion1 = self.ui.get_object('entrycompletion1')
 		
 		self.cnmldialog.show_all()
 
 		if zonecnmlp:
-			fillAvailableCNMLModel(configmanager, self.treeview4.get_model(), zonecnmlp)
+			fillAvailableCNMLModel(self.configmanager, self.treeview4.get_model(), self.zonecnmlp)
+			fillZonesEntryCompletion(self.entrycompletion1, allZones)
 		else:
+			# allZones == []
 			print "Error: there's no guifi.net world zones cnml"
+			message = "Guifi.net World zones CNML file couldn't be found\n\nYou have to download it first by going to Tools -> Update zones"
+			g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, message)
+			g.set_title('File not found')
+			res = g.run()
+			g.destroy()
+			self.cnmldialog.destroy()
+			
 	
+	def on_downloadbutton_clicked(self, widget, data=None):
+		zid = findZoneIdInEntryCompletion(self.entrycompletion1)
+		
+		if zid is None:
+			return False
+			
+		print 'Downloading zone:', zid
+		
+		ctype = 'detail'
+		fp = self.guifiAPI.downloadCNML(zid, ctype)
+		filename = self.configmanager.pathForCNMLCachedFile(zid, ctype)
+		with open(filename, 'w') as zonefile:
+			zonefile.write(fp.read())
+		print 'CNML (%s) saved successfully to' %ctype, filename
+		
+		#Reload
+		fillAvailableCNMLModel(self.configmanager, self.treeview4.get_model(), self.zonecnmlp)
+		
 	def on_cnmldialog_response(self, widget, response):
 		self.cnmldialog.destroy()
 
@@ -715,31 +746,6 @@ class PreferencesDialog:
 			self.entrycompletion2.get_entry().set_text(defaultZoneTitle)
 		else:
 			print "Error: there's no guifi.net world zones cnml"
-
-	# temporary method until I find a better way to do it
-	def findZoneIdInEntryCompletion(self, entrycompletion):
-		model = self.entrycompletion2.get_model()
-		it = model.get_iter_first()
-		
-		title = self.entrycompletion2.get_entry().get_text()
-		
-		while it:
-			zone = model.get_value(it, 1)
-			if zone.lower() == title.lower():
-				break
-			it = model.iter_next(it)
-		
-		if it is None:
-			print 'ERROR: Zone title not found!'
-			return None
-		else:
-			pass
-			# - msgbox showing problem
-			# - dont change
-			# ...
-			
-		zid = model.get_value(it, 0)
-		return zid
 		
 		
 	def on_preferencesdialog_response(self, widget, response):
@@ -750,7 +756,7 @@ class PreferencesDialog:
 			
 			# How can I get the GtkTreeIter from the "active item" in GtkEntry/GtkEntryCompletion?
 			# Otherwise: loop :-S		
-			zid = self.findZoneIdInEntryCompletion(self.entrycompletion2)
+			zid = findZoneIdInEntryCompletion(self.entrycompletion2)
 			
 			if zid:
 				self.configmanager.setDefaultZone(zid)
@@ -827,6 +833,7 @@ def fillZonesEntryCompletion(entrycompletion, allZones):
 
 def fillAvailableCNMLModel(configmanager, model, zonecnmlp):
 	cnmls = dict()
+	model.clear()
 	
 	for d in ['nodes', 'zones', 'detail']:
 		directory = os.path.join(configmanager.CACHE_DIR, d)
@@ -909,3 +916,29 @@ def CreatedSuccessfullyOpenUrlMessageDialog(what, url, id, extra=None):
 	
 	if res != Gtk.ResponseType.CLOSE:
 		openUrl(url)
+
+
+# temporary method until I find a better way to do it
+def findZoneIdInEntryCompletion(entrycompletion):
+	model = entrycompletion.get_model()
+	it = model.get_iter_first()
+	
+	title = entrycompletion.get_entry().get_text()
+	
+	while it:
+		zone = model.get_value(it, 1)
+		if zone.lower() == title.lower():
+			break
+		it = model.iter_next(it)
+	
+	if it is None:
+		print 'ERROR: Zone title not found!'
+		return None
+	else:
+		pass
+		# - msgbox showing problem
+		# - dont change
+		# ...
+		
+	zid = model.get_value(it, 0)
+	return zid

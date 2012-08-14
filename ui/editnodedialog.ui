@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <!-- interface-requires gtk+ 3.0 -->
+  <object class="GtkEntryCompletion" id="entrycompletion1">
+    <property name="model">liststore8</property>
+    <property name="text_column">1</property>
+  </object>
   <object class="GtkDialog" id="editnodedialog">
     <property name="can_focus">False</property>
     <property name="border_width">5</property>
@@ -571,10 +575,6 @@ I know and agree to the Legal warning concerning data protection and information
       <action-widget response="-3">editnodeokbutton</action-widget>
       <action-widget response="-6">editnodecancelbutton</action-widget>
     </action-widgets>
-  </object>
-  <object class="GtkEntryCompletion" id="entrycompletion1">
-    <property name="model">liststore8</property>
-    <property name="text_column">1</property>
   </object>
   <object class="GtkListStore" id="liststore3">
     <columns>
