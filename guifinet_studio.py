@@ -116,6 +116,9 @@ class GuifinetStudio:
 		
 			
 		# Guifi.net API
+		if self.configmanager.getUsername() is None or self.configmanager.getPassword() is None or self.configmanager.getHost() is None:
+			print 'Some required data to initialize Guifi.net API is not available.'
+			print 'Please check username, password and host in preferences'
 		self.guifiAPI = pyGuifiAPI.GuifiAPI(self.configmanager.getUsername(), self.configmanager.getPassword(), self.configmanager.getHost(), secure=False)
 		self.authAPI()
 		
