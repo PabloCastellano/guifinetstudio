@@ -781,6 +781,46 @@ class NodeDialog:
 		self.nodedialog.destroy()
 		
 
+class ChangeZoneDialog:
+	def __init__(self, configmanager, zonecnmlp):
+		self.ui = Gtk.Builder()
+		self.ui.add_from_file('ui/changezonedialog.ui')
+		self.ui.connect_signals(self)
+
+		self.changezonedialog = self.ui.get_object('changezonedialog')
+		self.zonescombobox = self.ui.get_object('zonescombobox')
+	
+		model = self.zonescombobox.get_model()
+		fillAvailableCNMLModel2(configmanager, model, zonecnmlp)
+		
+		defaultzone = configmanager.getDefaultZone()
+		# FIXME: It's not defaultzone but current zone being displayed
+		if defaultzone is not None:
+			it = model.get_iter_first()
+			n = 0
+			while it:
+				zid = model.get_value(it, 0)
+				if zid == defaultzone:
+					self.zonescombobox.set_active(n)
+					break
+				it = model.iter_next(it)
+				n += 1
+					
+#		self.changezonedialog.show_all()
+		
+	def run(self):
+		return self.changezonedialog.run()
+		
+		
+	def getSelectedZone(self):
+		it = self.zonescombobox.get_active_iter()
+		zid = self.zonescombobox.get_model().get_value(it, 0)
+		return zid
+		
+		
+	def destroy(self):
+		self.changezonedialog.destroy()
+		
 ###################################################
 #self.cnmlp.getNodes()
 def fillNodesComboBox(combobox, nodes):
@@ -851,6 +891,17 @@ def fillAvailableCNMLModel(configmanager, model, zonecnmlp):
 	
 	for zid in cnmls:			
 		model.append((zid, zonecnmlp.getZone(zid).title, cnmls[zid]['nodes'], cnmls[zid]['zones'], cnmls[zid]['detail']))
+
+
+def fillAvailableCNMLModel2(configmanager, model, zonecnmlp):
+	
+	directory = os.path.join(configmanager.CACHE_DIR, 'detail')
+	filelist = os.listdir(directory)
+	for f in filelist:
+		zid, ext = f.split('.')
+		zid = int(zid)
+		if ext == 'cnml':
+			model.append((zid, zonecnmlp.getZone(zid).title))
 
 
 def	ErrorResponseFromServerMessageDialog(e):

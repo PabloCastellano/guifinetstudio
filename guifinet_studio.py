@@ -301,6 +301,8 @@ class GuifinetStudio:
 		
 			try:
 				self.cnmlp = CNMLParser(self.cnmlFile)
+				# FIXME
+				self.on_imagemenuitem3_activate()
 				self.completaArbol()
 				self.guifinetmap.paintMap(self.cnmlp.getNodes())
 			except IOError:
@@ -310,7 +312,7 @@ class GuifinetStudio:
 		dialog.destroy()
 				
 		
-	def on_imagemenuitem3_activate(self, widget, data=None):
+	def on_imagemenuitem3_activate(self, widget=None, data=None):
 		self.treestore.clear()
 		self.treestore2.clear()
 		self.guifinetmap.reset()
@@ -375,6 +377,28 @@ class GuifinetStudio:
 		self.view.zoom_out()
 		
 
+	def on_changezoneimagemenuitem_activate(self, widget, data=None):
+		dialog = ChangeZoneDialog(self.configmanager, self.zonecnmlp)
+
+		if dialog.run() == Gtk.ResponseType.ACCEPT:
+			
+			zid = dialog.getSelectedZone()
+			print 'selected:', zid
+			filename = self.configmanager.pathForCNMLCachedFile(zid, 'detail')
+		
+			try:
+				self.cnmlp = CNMLParser(filename)
+				# FIXME: only if necessary (there's a zone loaded already)
+				self.on_imagemenuitem3_activate()
+				self.completaArbol()
+				self.guifinetmap.paintMap(self.cnmlp.getNodes())
+				self.cnmlFile = filename
+			except IOError:
+				self.statusbar.push(0, "CNML file \"%s\" couldn't be loaded" %filename)
+				self.cnmlFile = None
+				
+		dialog.destroy()
+		
 	def on_downloadcnmlmenuitem_activate(self, widget, data=None):
 		CNMLDialog(self.configmanager, self.zonecnmlp, self.allZones, self.guifiAPI)
 	
