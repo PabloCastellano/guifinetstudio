@@ -60,6 +60,9 @@ class GuifinetStudio:
 		self.treestore2 = self.ui.get_object("treestore2")
 		self.treeview = self.ui.get_object("treeview1")
 		self.treeview2 = self.ui.get_object("treeview2")
+		self.treemodelfilter2 = self.ui.get_object('treemodelfilter2')
+		searchentry = self.ui.get_object('searchentry')
+		self.treemodelfilter2.set_visible_func(filterbyname_func, searchentry)
 		self.statusbar = self.ui.get_object("statusbar1")
 		self.actiongroup1 = self.ui.get_object("actiongroup1")
 		self.menuitem6 = self.ui.get_object("menuitem6")
@@ -126,7 +129,7 @@ class GuifinetStudio:
 		self.allZones = []
 		self.rebuildAllZones()
 
-
+      
 	def on_exportgmlimagemenuitem_activate(self, widget, data=None):
 		print 'Export to GML'
 		raise NotImplementedError
@@ -178,10 +181,8 @@ class GuifinetStudio:
 		print widget, data
 		print widget.get_text()
 		
-		model = self.treeview2.get_model()
-		# https://bugzilla.gnome.org/show_bug.cgi?id=681687
-		#nodesfilter = Gtk.TreeModelFilter()
-		#model.refilter()
+		nodesfilter = self.treeview2.get_model()
+		nodesfilter.refilter()   
 		return False
 		
 		

@@ -649,7 +649,7 @@
                               <object class="GtkTreeView" id="treeview2">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
-                                <property name="model">treestore2</property>
+                                <property name="model">treemodelfilter2</property>
                                 <property name="headers_clickable">False</property>
                                 <property name="search_column">0</property>
                                 <signal name="button-release-event" handler="on_treeview2_button_release_event" swapped="no"/>
@@ -979,6 +979,17 @@
       </object>
     </child>
   </object>
+  <object class="GtkTreeStore" id="treestore2">
+    <columns>
+      <!-- column-name title -->
+      <column type="gchararray"/>
+      <!-- column-name nid -->
+      <column type="gint"/>
+    </columns>
+  </object>
+  <object class="GtkTreeModelFilter" id="treemodelfilter2">
+    <property name="child_model">treestore2</property>
+  </object>
   <object class="GtkTreeStore" id="treestore1">
     <columns>
       <!-- column-name Zona -->
@@ -994,14 +1005,6 @@
       <!-- column-name Nodo -->
       <column type="gchararray"/>
       <!-- column-name id -->
-      <column type="gint"/>
-    </columns>
-  </object>
-  <object class="GtkTreeStore" id="treestore2">
-    <columns>
-      <!-- column-name title -->
-      <column type="gchararray"/>
-      <!-- column-name nid -->
       <column type="gint"/>
     </columns>
   </object>

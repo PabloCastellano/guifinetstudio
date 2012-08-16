@@ -73,3 +73,9 @@ def CNML2KML(cnmlp, filename='mycnml.kml'):
         
     
 
+# GtkTreeModelFilterVisibleFunc
+# Case insensitive :)
+def filterbyname_func(model, it, entry):
+	haystack = model.get_value(it, 0).lower()
+	needle = entry.get_text().lower()	
+	return needle in haystack
