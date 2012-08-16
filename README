@@ -18,7 +18,11 @@ Under Ubuntu 12.04 (and surely most of the Ubuntu derivates) you can simply run:
 sudo apt-get install python2.7 gir1.2-gtkchamplain-0.12
 
 optional:
-sudo apt-get install git python-lxml
+sudo apt-get install git python-lxml python-kml
+
+git: Only necessary if you want to download Guifi.net Studio and deal with its repository
+python-lxml: it's faster than the default XML API. It's recommended and used if available
+python-kml: Only necessary if you want to export CNML to KML format
 
 === lxml ===
 Note: python-lxml does a better memory management and is faster than minidom (default XML library in Python).

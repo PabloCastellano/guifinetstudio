@@ -46,3 +46,30 @@ def openUrl(url):
 	systemstr = 'xdg-open %s' %url
 	os.system(systemstr)
 
+
+def CNML2KML(cnmlp, filename='mycnml.kml'):
+	try:
+		import kmldom
+	except ImportError:
+		print 'CNML2KML: function not available. kmldom module not found'
+		raise
+	
+	factory = kmldom.KmlFactory.GetFactory()
+	doc = factory.CreateDocument()
+	
+	for node in cnmlp.getNodes():
+		coordinates = factory.CreateCoordinates()
+		coordinates.add_latlng(node.latitude, node.longitude)
+		point = factory.CreatePoint()
+		point.set_coordinates(coordinates)
+		placemark = factory.CreatePlacemark()
+		placemark.set_name(node.title)
+		placemark.set_geometry(point)
+		doc.add_feature(placemark)
+
+	xml = kmldom.SerializePretty(doc)
+	with open(filename, 'w') as kmlfp:
+		kmlfp.write(xml)
+        
+    
+

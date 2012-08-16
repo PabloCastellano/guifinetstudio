@@ -127,6 +127,26 @@ class GuifinetStudio:
 		self.rebuildAllZones()
 
 
+	def on_exportgmlimagemenuitem_activate(self, widget, data=None):
+		print 'Export to GML'
+		raise NotImplementedError
+		
+		
+	def on_exportkmlimagemenuitem_activate(self, widget, data=None):
+		dialog = Gtk.FileChooserDialog('Save KML file', self.mainWindow,
+				Gtk.FileChooserAction.SAVE,
+				(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_SAVE, Gtk.ResponseType.ACCEPT))
+
+		if dialog.run() == Gtk.ResponseType.ACCEPT:
+			filename = dialog.get_filename()
+			print filename
+		
+		dialog.destroy()
+		
+		print 'Export to KML'
+		CNML2KML(self.cnmlp, filename)
+		
+		
 	def rebuildAllZones(self):
 		cnmlGWfile = self.configmanager.pathForCNMLCachedFile(GUIFI_NET_WORLD_ZONE_ID, 'zones')
 		try:
