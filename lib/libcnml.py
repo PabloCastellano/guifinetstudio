@@ -546,6 +546,36 @@ class CNMLParser():
 			self.loaded = False
 	
 	
+	def validateDTD(self, tree):
+		print 'Validating file "%s"...' %self.filename
+		
+		if LXML:
+			self.validateDTDLxml(tree)
+		else:
+			self.validateDTDMinidom(tree)
+
+	
+	def validateDTDLxml(self, tree):
+		dtdfile = 'tests/cnml.dtd'
+		try:
+			with open(dtdfile, 'rb') as dtdfp:
+				dtd = etree.DTD(dtdfp)
+
+			print 'DTD validation:', dtd.validate(tree)			
+			errors = dtd.error_log.filter_from_errors()
+			if len(errors) > 0:
+				print '%d errors found:' %len(errors)
+				print errors
+	
+		except IOError:
+			print 'DTD Validation failed: %s file not found' %dtdfile
+		
+		
+	def validateDTDMinidom(self, tree):
+		print 'DTD validation is not implemented with Minidom API'
+		pass
+		
+		
 	def getInterfaces(self):
 		return self.ifaces.values()
 		
@@ -567,9 +597,13 @@ class CNMLParser():
 	def getLinks(self):
 		return self.links.values()
 		
-	def loadLxml(self):
+	def loadLxml(self, validate=True):
 		tree = etree.parse(self.filename)
 
+		if validate:
+			print 'Validating file "%s"...' %self.filename
+			self.validateDTDLxml(tree)
+			
 		# --zones--
 		zones = tree.iterfind('//zone')
 		
@@ -633,9 +667,13 @@ class CNMLParser():
 			link.setLinkedParameters(self.devices, self.ifaces, self.nodes)
 			
 		
-	def loadMinidom(self):
+	def loadMinidom(self, validate=True):
 		tree = MD.parse(self.filename)
 
+		if validate:
+			print 'Validating file "%s"...' %self.filename
+			self.validateDTDMinidom(tree)
+			
 		# --zones--
 		zones = tree.getElementsByTagName("zone")
 		
@@ -699,7 +737,7 @@ class CNMLParser():
 			link.setLinkedParameters(self.devices, self.ifaces, self.nodes)
 				
 		
-	def load(self):
+	def load(self, validate=True):
 		self.zones = dict()
 		self.nodes = dict()
 		self.devices = dict()
@@ -708,9 +746,9 @@ class CNMLParser():
 		self.links = dict()
 		
 		if LXML:
-			self.loadLxml()
+			self.loadLxml(validate)
 		else:
-			self.loadMinidom()
+			self.loadMinidom(validate)
 
 		print 'Loaded "%s" successfully' %self.filename
 		self.loaded = True

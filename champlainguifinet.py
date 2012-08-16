@@ -82,7 +82,6 @@ class GtkGuifinetMap(GtkChamplain.Embed):
 		color = self.colorFromStatus(status)
 		p.set_color(color)
 		self.points_layer.add_marker(p)
-		print 'Status:', Status.statusToStr(status)
 	
 	def add_node_label(self, lat, lon, text, status):
 		p = Champlain.Label.new()
