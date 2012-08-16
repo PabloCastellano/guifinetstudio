@@ -12,6 +12,12 @@ sys.path.append('lib')
 
 from libcnml import Status
 
+from utils import I18N_APP_NAME, I18N_APP_DIR
+
+import gettext
+gettext.bindtextdomain(I18N_APP_NAME, I18N_APP_DIR)
+gettext.textdomain(I18N_APP_NAME)
+_ = gettext.gettext
 
 # It's compound of two ChamplainMarkerLayer layers
 class GtkGuifinetMap(GtkChamplain.Embed):

@@ -29,7 +29,12 @@ from libcnml import CNMLParser, Status
 from unsolclic import UnSolClic
 
 from utils import *
-	
+
+import gettext
+gettext.bindtextdomain(I18N_APP_NAME, I18N_APP_DIR)
+gettext.textdomain(I18N_APP_NAME)
+_ = gettext.gettext
+
 class UnsolclicDialog:
 	def __init__(self, node):
 		self.ui = Gtk.Builder()
@@ -37,7 +42,7 @@ class UnsolclicDialog:
 		self.ui.connect_signals(self)
 
 		self.uscdialog = self.ui.get_object("uscdialog")
-		self.uscdialog.set_title("Unsolclic for node "+node.title)
+		self.uscdialog.set_title(_('Unsolclic for node'), node.title)
 
 		# Unsolclic instance
 		self.usc = UnSolClic()
@@ -45,17 +50,17 @@ class UnsolclicDialog:
 		self.node = node
 		conf = self.usc.generate(node)
 
-		self.usctextbuffer = self.ui.get_object("usctextbuffer")
+		self.usctextbuffer = self.ui.get_object('usctextbuffer')
 		self.usctextbuffer.set_text(conf)
 		
 		self.uscdialog.show_all()
 		
 	def on_uscdialog_response(self, widget, response):
 		if response == -12: #Auto-load to device
-			print 'Autoload configuration'
+			print _('Autoload configuration')
 			raise NotImplementedError
 		elif response == -13: #Copy to clipboard
-			print 'copy usc to clipboard'
+			print _('Copy usc to clipboard')
 			#cb = Gtk.Clipboard()
 			#cb.set_text(self.usctextbuffer.get_text(), -1)
 			self.usctextbuffer.copy_clipboard(Gtk.Clipboard.get(Gdk.Atom.intern('0', True)))
@@ -90,7 +95,7 @@ class EditNodeDialog:
 		self.entrycompletion1 = self.ui.get_object('entrycompletion1')
 		self.nodeinfotextbuffer = self.ui.get_object('nodeinfotextbuffer')
 
-		self.editnodedialog.set_title('Create new Guifi.net node')
+		self.editnodedialog.set_title(_('Create new Guifi.net node'))
 		self.editnodedialog.show_all()
 		
 		fillZonesComboBox(self.nodezonecombobox, zones)
@@ -164,7 +169,7 @@ class EditNodeDialog:
 			nodeinfotext = self.nodeinfotextview.get_buffer().get_text(start, end, True)
 			
 			if not self.editnodevalidation():
-				print "There's some invalid data"
+				print _("There's some invalid data")
 				return
 			
 			lat,lon = self.nodecoordinatesentry.get_text().split(',')
@@ -258,7 +263,7 @@ class EditZoneDialog:
 			zoneinfotext = self.zoneinfotextview.get_buffer().get_text(start, end, True)
 			
 			if not self.editzonevalidation():
-				print "There's some invalid data"
+				print _("There's some invalid data")
 				return
 			
 			it = self.parentzonecombobox.get_active_iter()
@@ -317,7 +322,7 @@ class EditDeviceDialog:
 
 		self.editdevicedialog.show_all()
 		
-		self.editdevicedialog.set_title('Create new Guifi.net device')
+		self.editdevicedialog.set_title(_('Create new Guifi.net device'))
 		fillNodesComboBox(self.editdevicenodecombobox, nodes)
 		
 	def editdevicevalidation(self):
@@ -351,7 +356,7 @@ class EditDeviceDialog:
 			"""
 			
 			if not self.editdevicevalidation():
-				print "There's some invalid data"
+				print _("There's some invalid data")
 				return
 			
 			it = self.editdevicenodecombobox.get_active_iter()
@@ -450,7 +455,7 @@ class EditRadioDialog:
 		
 		self.editradiodialog.show_all()
 		
-		self.editradiodialog.set_title('Create new Guifi.net radio')
+		self.editradiodialog.set_title(_('Create new Guifi.net radio'))
 		fillNodesComboBox(self.editradionodecombobox, cnmlp.getNodes())
 		
 	def editradiovalidation(self):
@@ -464,7 +469,7 @@ class EditRadioDialog:
 		if response == Gtk.ResponseType.ACCEPT:
 			
 			if not self.editradiovalidation():
-				print "There's some invalid data"
+				print _("There's some invalid data")
 				return
 			
 			it = self.radiomodecombobox.get_active_iter()
@@ -556,7 +561,7 @@ class EditInterfaceDialog:
 		
 		self.editinterfacedialog.show_all()
 
-		self.editinterfacedialog.set_title('Create new Guifi.net interface')
+		self.editinterfacedialog.set_title(_('Create new Guifi.net interface'))
 
 
 	def on_editinterfacedialog_response(self, widget, response):
@@ -603,7 +608,7 @@ class EditLinkDialog:
 
 		self.editlinkdialog.show_all()
 
-		self.editlinkdialog.set_title('Create new Guifi.net link')
+		self.editlinkdialog.set_title(_('Create new Guifi.net link'))
 		fillNodesComboBox(self.editlinknode1combobox, nodes)
 		fillNodesComboBox(self.editlinknode2combobox, nodes)
 
@@ -678,10 +683,10 @@ class CNMLDialog:
 			fillZonesEntryCompletion(self.entrycompletion1, allZones)
 		else:
 			# allZones == []
-			print "Error: there's no guifi.net world zones cnml"
-			message = "Guifi.net World zones CNML file couldn't be found\n\nYou have to download it first by going to Tools -> Update zones"
+			print _("Error: there's no guifi.net world zones cnml")
+			message = _("Guifi.net World zones CNML file couldn't be found\n\nYou have to download it first by going to Tools -> Update zones")
 			g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, message)
-			g.set_title('File not found')
+			g.set_title(_('File not found'))
 			res = g.run()
 			g.destroy()
 			self.cnmldialog.destroy()
@@ -693,14 +698,14 @@ class CNMLDialog:
 		if zid is None:
 			return False
 			
-		print 'Downloading zone:', zid
+		print _('Downloading zone:'), zid
 		
 		ctype = 'detail'
 		fp = self.guifiAPI.downloadCNML(zid, ctype)
 		filename = self.configmanager.pathForCNMLCachedFile(zid, ctype)
 		with open(filename, 'w') as zonefile:
 			zonefile.write(fp.read())
-		print 'CNML (%s) saved successfully to' %ctype, filename
+		print _('CNML (%s) saved successfully to') %ctype, filename
 		
 		#Reload
 		fillAvailableCNMLModel(self.configmanager, self.treeview4.get_model(), self.zonecnmlp)
@@ -745,7 +750,7 @@ class PreferencesDialog:
 			defaultZoneTitle = zonecnmlp.getZone(self.configmanager.getDefaultZone()).title
 			self.entrycompletion2.get_entry().set_text(defaultZoneTitle)
 		else:
-			print "Error: there's no guifi.net world zones cnml"
+			print _("Error: there's no Guifi.net world zones CNML")
 		
 		
 	def on_preferencesdialog_response(self, widget, response):
@@ -773,7 +778,7 @@ class NodeDialog:
 		self.ui.connect_signals(self)
 
 		self.nodedialog = self.ui.get_object("nodedialog")
-		self.nodedialog.set_title("Information about node XXX")
+		self.nodedialog.set_title(_('Information about node'))
 		self.nodedialog.show_all()
 		
 		
@@ -839,7 +844,7 @@ def fillZonesComboBox(combobox, zones):
 	model = combobox.get_model()
 	model.clear()
 	model.set_sort_column_id (1, Gtk.SortType.ASCENDING)
-	model.append((0, '-- Most recently used --'))
+	model.append((0, '-- '+_('Most recently used')+' --'))
 		
 	n = 0
 	for z in zones:
@@ -905,9 +910,9 @@ def fillAvailableCNMLModel2(configmanager, model, zonecnmlp):
 
 
 def	ErrorResponseFromServerMessageDialog(e):
-	errormessage = 'Error %d: %s\n\nError message:\n%s' %(e.code, e.reason, e.extra)
+	errormessage = _('Error %d: %s\n\nError message:\n%s') %(e.code, e.reason, e.extra)
 	g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, errormessage)
-	g.set_title('Response from server')
+	g.set_title(_('Response from server'))
 	g.run()
 	g.destroy()
 	
@@ -915,9 +920,9 @@ def	ErrorResponseFromServerMessageDialog(e):
 def CreateLocalOrRemoteMessageDialog(host, what, title=None):
 	# Messagebox (internet / local / cancelar)
 	if what in ('radio', 'interface', 'link'):
-		message = 'You are about to create a new %s.\nPlease choose where you want to create it' %what
+		message = _('You are about to create a new %s.\nPlease choose where you want to create it') %what
 	else:
-		message = 'You are about to create the %s named "%s".\nPlease choose where you want to create it' %(what, title)
+		message = _('You are about to create the %s named "%s".\nPlease choose where you want to create it') %(what, title)
 		
 	g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.QUESTION, Gtk.ButtonsType.CANCEL, message)
 	g.set_title('Confirmation')
@@ -931,17 +936,17 @@ def CreateLocalOrRemoteMessageDialog(host, what, title=None):
 def CreatedSuccessfullyOpenUrlMessageDialog(what, url, id, extra=None):
 	if what in ('Interface', 'Link'):
 		# ipv4 = extra
-		message = '%s successfully created with id %d\n\nInformation:\n' %(what,id)
+		message = _('%s successfully created with id %d\n\nInformation:\n') %(what,id)
 
 		for settings in extra[0].items():
 			message += '  %s: %s\n' %settings
 			print '%s - %s' %settings
 		
-		message += '\nYou can view it in the following url:\n%s' %url
+		message += _('\nYou can view it in the following url:\n%s') %url
 
 	elif what == 'Radio':
 		# interfaces = extra 
-		message = 'Radio successfully created with id %d\n\nInformation:\n' %id
+		message = _('Radio successfully created with id %d\n\nInformation:\n') %id
 
 		for iface in extra:
 			for ifaceitems in iface.items():
@@ -954,14 +959,14 @@ def CreatedSuccessfullyOpenUrlMessageDialog(what, url, id, extra=None):
 					message += '  %s: %s\n' %ifaceitems
 					print '%s - %s' %ifaceitems
 		
-		message += '\nYou can view it in the following url:\n%s' %url
+		message += _('\nYou can view it in the following url:\n%s') %url
 			
 	else:
-		message = '%s succesfully created with id %d\n\nYou can view it in the following url:\n%s' %(what, id, url)
+		message = _('%s succesfully created with id %d\n\nYou can view it in the following url:\n%s') %(what, id, url)
 		
 	g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.INFO, Gtk.ButtonsType.CLOSE, message)
-	g.add_button('Open in web browser', -12)
-	g.set_title('Response from server')
+	g.add_button(_('Open in web browser'), -12)
+	g.set_title(_('Response from server'))
 	res = g.run()
 	g.destroy()
 	
@@ -983,7 +988,7 @@ def findZoneIdInEntryCompletion(entrycompletion):
 		it = model.iter_next(it)
 	
 	if it is None:
-		print 'ERROR: Zone title not found!'
+		print _('ERROR: Zone title not found!')
 		return None
 	else:
 		pass

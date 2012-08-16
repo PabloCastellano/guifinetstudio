@@ -19,6 +19,14 @@
 
 import jinja2
 
+from utils import I18N_APP_NAME, I18N_APP_DIR
+
+import gettext
+gettext.bindtextdomain(I18N_APP_NAME, I18N_APP_DIR)
+gettext.textdomain(I18N_APP_NAME)
+_ = gettext.gettext
+
+
 class UnSolClic:
 	
 	NANOSTATION2 = 0
@@ -31,7 +39,7 @@ class UnSolClic:
 		self.env = jinja2.Environment(loader=jinja2.FileSystemLoader('unsolclic'), extensions=['jinja2.ext.i18n'])
 		self.test1()
 
-		print 'Supported devices:'
+		print _('Supported devices:')
 		print '\n'.join(self.getSupportedDevices())
 		print
 		

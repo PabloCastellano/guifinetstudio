@@ -21,16 +21,24 @@ import os
 import ConfigParser
 from datetime import datetime
 
+from utils import I18N_APP_NAME, I18N_APP_DIR
+
+import gettext
+gettext.bindtextdomain(I18N_APP_NAME, I18N_APP_DIR)
+gettext.textdomain(I18N_APP_NAME)
+_ = gettext.gettext
+
+
 try:
 	from gi.repository import GnomeKeyring
 	USE_GNOME_KEYRING = GnomeKeyring.is_available()
 	KEYRING_NAME = 'login' #default keyring that gets unlocked normally when the user starts the session
 	GUIFINETLOGINKEYNAME = 'guifinetlogin'
-	print 'Use GNOME Keyring:', USE_GNOME_KEYRING
+	print _('Use GNOME Keyring:'), USE_GNOME_KEYRING
 	GnomeKeyring.unlock_sync(KEYRING_NAME, None)
 except ImportError:
-	print 'GNOME Keyring dependency not available'
-	print 'Using plain text configuration files instead'
+	print _('GNOME Keyring dependency not available')
+	print _('Using plain text configuration files instead')
 	USE_GNOME_KEYRING = False
 
 class GuifinetStudioConfig:
@@ -48,14 +56,14 @@ class GuifinetStudioConfig:
 
 	def initConfig(self):
 		if not os.path.exists(self.CONFIG_DIR):
-			print 'No configuration found. Creating a default one in', self.CONFIG_DIR
+			print _('No configuration found. Creating a default one in'), self.CONFIG_DIR
 			os.mkdir(self.CONFIG_DIR)
 			self.createDefaultConfig()
 		elif not os.path.exists(self.CONFIG_FILENAME):
 			self.createDefaultConfig()
 			
 		if not os.path.exists(self.CACHE_DIR):
-			print 'No cache folder found. Creating', self.CACHE_DIR
+			print _('No cache folder found. Creating'), self.CACHE_DIR
 			os.mkdir(self.CACHE_DIR)
 			os.mkdir(os.path.join(self.CACHE_DIR, 'zones'))
 			os.mkdir(os.path.join(self.CACHE_DIR, 'nodes'))
@@ -68,7 +76,7 @@ class GuifinetStudioConfig:
 			if res == []:
 				raise Exception
 		except Exception:
-			print 'Error reading file:', self.CONFIG_FILENAME
+			print _('Error reading file:'), self.CONFIG_FILENAME
 			raise
 			
 			
@@ -110,7 +118,7 @@ class GuifinetStudioConfig:
 		if USE_GNOME_KEYRING:
 			username = self.gkr_get(GUIFINETLOGINKEYNAME)
 			if username is None:
-				print "Error reading username in GNOME Keyring :-("
+				print _('Error reading username in GNOME Keyring :-(')
 			else:
 				return username.split(':')[0]
 		else:
@@ -150,7 +158,7 @@ class GuifinetStudioConfig:
 		if USE_GNOME_KEYRING:
 			password = self.gkr_get(GUIFINETLOGINKEYNAME)
 			if password is None:
-				print "Error reading password in GNOME Keyring :-("
+				print _('Error reading password in GNOME Keyring :-(')
 			else:
 				return password.split(':')[1]
 		else:
@@ -177,7 +185,7 @@ class GuifinetStudioConfig:
 		
 		
 	def setAuthToken(self, token):
-		print '<<<setAuthToken>>>', token
+		#print '<<<setAuthToken>>>', token
 		self.config.set('api', 'token', token)
 		
 		
@@ -191,7 +199,7 @@ class GuifinetStudioConfig:
 		
 		
 	def setAuthTokenDate(self, tokendate=None):
-		print '<<<setAuthTokenDate>>>', tokendate
+		#print '<<<setAuthTokenDate>>>', tokendate
 		if not tokendate:
 			tokendate = str(datetime.now())
 			
@@ -220,11 +228,8 @@ class GuifinetStudioConfig:
 			return value[0].secret
 		elif result == GnomeKeyring.Result.NO_MATCH:
 			# Key doesn't exist, create again
-			print "Key doesn't exist in GNOME Keyring. Creating again..."
+			print _("Key doesn't exist in GNOME Keyring. Creating again...")
 			self.gkr_store(GUIFINETLOGINKEYNAME, ':')
 			return ''
 		else:	
 			return None
-		
-			
-

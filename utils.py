@@ -21,6 +21,13 @@ import re
 import os
 
 GUIFI_NET_WORLD_ZONE_ID = 3671
+I18N_APP_NAME = 'Guifi.net Studio'
+I18N_APP_DIR = 'i18n/'
+
+import gettext
+gettext.bindtextdomain(I18N_APP_NAME, I18N_APP_DIR)
+gettext.textdomain(I18N_APP_NAME)
+_ = gettext.gettext
 
 re_email = re.compile("^.+@.+\..{2,4}$")
 re_mac = re.compile("[0-9a-f]{2}([-:][0-9a-f]{2}){5}$")
@@ -42,7 +49,7 @@ def valid_mac_address(mac):
 	return re_mac.match(mac.lower()) is not None
 
 def openUrl(url):
-	print 'Opening in web browser'
+	print _('Opening in web browser:'), url
 	systemstr = 'xdg-open %s' %url
 	os.system(systemstr)
 
@@ -51,7 +58,7 @@ def CNML2KML(cnmlp, filename='mycnml.kml'):
 	try:
 		import kmldom
 	except ImportError:
-		print 'CNML2KML: function not available. kmldom module not found'
+		print _('CNML2KML: function not available. kmldom module not found')
 		raise
 	
 	factory = kmldom.KmlFactory.GetFactory()

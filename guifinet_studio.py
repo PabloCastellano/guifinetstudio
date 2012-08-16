@@ -46,6 +46,11 @@ from champlainguifinet import GtkGuifinetMap
 
 from calc import Calculator
 
+import gettext
+gettext.bindtextdomain(I18N_APP_NAME, I18N_APP_DIR)
+gettext.textdomain(I18N_APP_NAME)
+_ = gettext.gettext
+
 class GuifinetStudio:
 	def __init__(self, cnmlFile=None):
 		self.ui = Gtk.Builder()
@@ -97,8 +102,9 @@ class GuifinetStudio:
 			else:
 				# no default zone
 				self.cnmlp = None
-				print 'No default zone. Please choose one'
-				self.statusbar.push(0, 'No default zone. Please choose one')
+				msg = _('No default zone. Please choose one')
+				print msg
+				self.statusbar.push(0, msg)
 				self.cnmlp = None
 				self.cnmlFile = None
 		
@@ -107,21 +113,20 @@ class GuifinetStudio:
 			try:
 				self.cnmlp = CNMLParser(cnmlFile)
 				self.cnmlFile = cnmlFile
-				#print 'Loaded "%s" successfully' %self.cnmlFile
-				self.statusbar.push(0, 'Loaded "%s" successfully' %self.cnmlFile)
+				self.statusbar.push(0, _('Loaded "%s" successfully') %self.cnmlFile)
 				self.completaArbol()
 				self.guifinetmap.paintMap(self.cnmlp.getNodes())
 			except IOError:
-				print 'Error loading cnml'
-				self.statusbar.push(0, 'CNML file "%s" couldn\'t be loaded' %cnmlFile)
+				print _('Error loading CNML')
+				self.statusbar.push(0, _('CNML file "%s" couldn\'t be loaded') %cnmlFile)
 				self.cnmlp = None
 				self.cnmlFile = None
 		
 			
 		# Guifi.net API
 		if self.configmanager.getUsername() is None or self.configmanager.getPassword() is None or self.configmanager.getHost() is None:
-			print 'Some required data to initialize Guifi.net API is not available.'
-			print 'Please check username, password and host in preferences'
+			print _('Some required data to initialize Guifi.net API is not available.')
+			print _('Please check username, password and host in preferences')
 		self.guifiAPI = pyGuifiAPI.GuifiAPI(self.configmanager.getUsername(), self.configmanager.getPassword(), self.configmanager.getHost(), secure=False)
 		self.authAPI()
 		
@@ -131,12 +136,12 @@ class GuifinetStudio:
 
       
 	def on_exportgmlimagemenuitem_activate(self, widget, data=None):
-		print 'Export to GML'
+		print _('Export to GML')
 		raise NotImplementedError
 		
 		
 	def on_exportkmlimagemenuitem_activate(self, widget, data=None):
-		dialog = Gtk.FileChooserDialog('Save KML file', self.mainWindow,
+		dialog = Gtk.FileChooserDialog(_('Save KML file'), self.mainWindow,
 				Gtk.FileChooserAction.SAVE,
 				(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_SAVE, Gtk.ResponseType.ACCEPT))
 
@@ -146,7 +151,7 @@ class GuifinetStudio:
 		
 		dialog.destroy()
 		
-		print 'Export to KML'
+		print _('Export to KML')
 		CNML2KML(self.cnmlp, filename)
 		
 		
@@ -157,19 +162,19 @@ class GuifinetStudio:
 			for z in self.zonecnmlp.getZones():
 				self.allZones.append((z.id, z.title))
 		except IOError:
-			print 'Error loading cnml guifiworld zone:', cnmlGWfile
-			print 'Guifi.net Studio will run normally but note that some features are disabled'
-			print 'To solve it, just download the Guifi.net World zones CNML going to Tools -> Update zones'
+			print _('Error loading cnml guifiworld zone:'), cnmlGWfile
+			print _('Guifi.net Studio will run normally but note that some features are disabled')
+			print _('To solve it, just download the Guifi.net World zones CNML going to Tools -> Update zones')
 			
-			message = 'Error loading Guifi.net World zone\n\n'
-			message += 'Guifi.net Studio will run normally but note that some features are disabled\n'
-			message += 'To solve it, just download the Guifi.net World zones CNML again\n'
-			message += 'You can go to Tools -> Update zones'
+			message = _('Error loading Guifi.net World zone\n\n')
+			message += _('Guifi.net Studio will run normally but note that some features are disabled\n')
+			message += _('To solve it, just download the Guifi.net World zones CNML again\n')
+			message += _('You can go to Tools -> Update zones')
 			g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.WARNING, Gtk.ButtonsType.CLOSE, message)
-			g.set_title('File not found: %s' %cnmlGWfile)
+			g.set_title(_('File not found: %s') %cnmlGWfile)
 			res = g.run()
 			g.destroy()
-			self.statusbar.push(0, 'CNML file "%s" couldn\'t be loaded' %cnmlGWfile)
+			self.statusbar.push(0, _('CNML file "%s" couldn\'t be loaded') %cnmlGWfile)
 			self.zonecnmlp = None
 
 
@@ -200,7 +205,7 @@ class GuifinetStudio:
 		
 		self.treestore.set_sort_column_id (5, Gtk.SortType.ASCENDING)
 		self.treestore2.set_sort_column_id (0, Gtk.SortType.ASCENDING)
-		self.statusbar.push(0, "Loaded CNML succesfully")
+		self.statusbar.push(0, _('CNML loaded successfully'))
 
 
 	# Recursive
@@ -294,15 +299,15 @@ class GuifinetStudio:
 		
 		if devices == {}:
 			g = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, 
-								"Couldn't generate unsolclick.\nThe node doesn't have any device defined.")
-			g.set_title('Error generating unsolclic')
+								_("Couldn't generate unsolclick.\nThe node doesn't have any device defined."))
+			g.set_title(_('Error generating unsolclic'))
 			g.run()
 			g.destroy()
 			return
 		elif len(devices) > 1:
 			g = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.WARNING, Gtk.ButtonsType.CLOSE, 
-								"Several devices in this node. Generating just the first one.")
-			g.set_title('Warning generating unsolclic')
+								_('Several devices in this node. Generating just the first one.'))
+			g.set_title(_('Warning generating unsolclic'))
 			g.run()
 			g.destroy()
 		
@@ -313,7 +318,7 @@ class GuifinetStudio:
 			
 	
 	def on_imagemenuitem2_activate(self, widget, data=None):
-		dialog = Gtk.FileChooserDialog('Open CNML file', self.mainWindow,
+		dialog = Gtk.FileChooserDialog(_('Open CNML file'), self.mainWindow,
 				Gtk.FileChooserAction.OPEN,
 				(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.ACCEPT))
 
@@ -328,7 +333,7 @@ class GuifinetStudio:
 				self.completaArbol()
 				self.guifinetmap.paintMap(self.cnmlp.getNodes())
 			except IOError:
-				self.statusbar.push(0, "CNML file \"%s\" couldn't be loaded" %self.cnmlFile)
+				self.statusbar.push(0, _('CNML file "%s" couldn\'t be loaded') %self.cnmlFile)
 				self.cnmlFile = None
 		
 		dialog.destroy()
@@ -338,7 +343,7 @@ class GuifinetStudio:
 		self.treestore.clear()
 		self.treestore2.clear()
 		self.guifinetmap.reset()
-		self.statusbar.push(0, "Closed CNML file")
+		self.statusbar.push(0, _('Closed CNML file'))
 		self.cnmlFile = None
 		
 		
@@ -405,7 +410,6 @@ class GuifinetStudio:
 		if dialog.run() == Gtk.ResponseType.ACCEPT:
 			
 			zid = dialog.getSelectedZone()
-			print 'selected:', zid
 			filename = self.configmanager.pathForCNMLCachedFile(zid, 'detail')
 		
 			try:
@@ -416,7 +420,7 @@ class GuifinetStudio:
 				self.guifinetmap.paintMap(self.cnmlp.getNodes())
 				self.cnmlFile = filename
 			except IOError:
-				self.statusbar.push(0, "CNML file \"%s\" couldn't be loaded" %filename)
+				self.statusbar.push(0, _('CNML file "%s" couldn\'t be loaded') %filename)
 				self.cnmlFile = None
 				
 		dialog.destroy()
@@ -431,13 +435,13 @@ class GuifinetStudio:
 			filename = self.configmanager.pathForCNMLCachedFile(GUIFI_NET_WORLD_ZONE_ID, 'zones')
 			with open(filename, 'w') as zonefile:
 				zonefile.write(fp.read())
-			print 'Zone saved successfully to', filename
+			print _('Zone saved successfully to'), filename
 			self.rebuildAllZones()
 		except URLError, e:
-			print 'Error accessing to the Internets:', str(e.reason)
+			print _('Error accessing to the Internets:'), str(e.reason)
 			g = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, 
-								"Error accessing to the Internets:\n" + str(e.reason))
-			g.set_title('Error downloading CNML')
+								_('Error accessing to the Internets:\n') + str(e.reason))
+			g.set_title(_('Error downloading CNML'))
 			g.run()
 			g.destroy()
 		
@@ -447,9 +451,9 @@ class GuifinetStudio:
 		dialog.set_program_name('Guifi·net Studio')
 		dialog.set_version('v1.0')
 		dialog.set_copyright('Copyright © 2011-2012 Pablo Castellano')
-		dialog.set_comments('Explore your free network offline!')
+		dialog.set_comments(_('Grow your own Internets!'))
 		dialog.set_website('http://lainconscienciadepablo.net')
-		dialog.set_website_label("Author's blog")
+		dialog.set_website_label(_("Author's blog"))
 		dialog.set_license_type(Gtk.License.GPL_3_0)
 	
 		with open("AUTHORS") as f:
@@ -525,22 +529,18 @@ class GuifinetStudio:
 			
 			
 	def on_showPointsButton_toggled(self, widget, data=None):
-		print 'Show points:', widget.get_active()	
 		self.guifinetmap.show_points(widget.get_active())
 		
 		
 	def on_showLabelsButton_toggled(self, widget, data=None):
-		print 'Show labels:', widget.get_active()
 		self.guifinetmap.show_labels(widget.get_active())
 	
 	
 	def on_showLinksButton_toggled(self, widget, data=None):
-		print 'Show links:', widget.get_active()
 		raise NotImplementedError
 	
 
 	def on_showZonesButton_toggled(self, widget, data=None):
-		print 'Show zones:', widget.get_active()
 		raise NotImplementedError
 		
 		
@@ -573,22 +573,22 @@ class GuifinetStudio:
 			authToken = None
 		
 		if authToken:
-			print 'Reusing valid auth token:', authToken
+			print _('Reusing valid auth token:'), authToken
 			self.guifiAPI.setAuthToken(authToken)
 		else:
-			print 'not valid token -> authenticating...'
+			print _('not valid token -> authenticating...')
 			
 			try:
 				self.guifiAPI.auth()
 				self.configmanager.setAuthToken(self.guifiAPI.getAuthToken())
 				self.configmanager.setAuthTokenDate() #update with now()
 				self.configmanager.save()
-				self.statusbar.push(0, "Logged into Guifi.net")
+				self.statusbar.push(0, _('Logged into Guifi.net'))
 			except URLError, e: # Not connected to the Internets
-				self.statusbar.push(0, "Couldn't login into Guifi.net: check your Internet connection")
+				self.statusbar.push(0, _("Couldn't login into Guifi.net: check your Internet connection"))
 			except GuifiApiError, e:
 				g = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, 
-									"Couldn't login into Guifi.net:\n" + e.reason)
+									_("Couldn't login into Guifi.net:\n") + e.reason)
 				g.run()
 				g.destroy()
 		
