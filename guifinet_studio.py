@@ -223,6 +223,7 @@ class GuifinetStudio:
 			nodescount[Status.WORKING] = 0
 			nodescount[Status.TESTING] = 0
 			nodescount[Status.BUILDING] = 0
+			nodescount[Status.DROPPED] = 0
 			
 			for n in nodes:
 				nodescount[n.status] += 1

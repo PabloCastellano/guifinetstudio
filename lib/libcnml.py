@@ -493,6 +493,7 @@ class Status:
 	TESTING = 3
 	BUILDING = 4
 	RESERVED = 5
+	DROPPED = 6
 	
 	@staticmethod
 	def strToStatus(status):
@@ -506,7 +507,10 @@ class Status:
 			st = Status.BUILDING
 		elif status.lower() == "reserved":
 			st = Status.RESERVED
+		elif status.lower() == "dropped":
+			st = Status.DROPPED
 		else:
+			print 'Value:', status
 			raise ValueError
 			
 		return st
@@ -523,6 +527,8 @@ class Status:
 			st = 'Building'
 		elif status == Status.RESERVED:
 			st = 'Reserved'
+		elif status == Status.DROPPED:
+			st = 'Dropped'
 		else:
 			raise ValueError
 			
