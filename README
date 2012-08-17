@@ -77,3 +77,21 @@ To run the application use the python interpreter version 2.7 instead of
 3 that is provided by default in this distribution:
 
     $> python2.7 guifinet_studio.py
+
+== Translations ==
+Guifi.net Studio uses gettext() so that it can be easily translated into other languages
+
+If you want to help with internationalization/localization (i18n/l10n) have a look at:
+https://www.transifex.com/projects/p/guifinetstudio/
+
+You can also use the following Guifi.net mailing list where we coordinate translations:
+https://lists.guifi.net/listinfo/guifi-gtra
+guifi-gtra@lists.guifi.net
+
+Generate .pot file:
+xgettext --language=Python --keyword=_ --output=locale/guifinetstudio.pot champlainguifinet.py configmanager.py guifinet_studio.py ui.py unsolclic.py utils.py
+xgettext -j --language=Glade --output=locale/guifinetstudio.pot ui/*.ui
+
+Compile es.po:
+mkdir -p es/LC_MESSAGES && msgfmt es.po -o es/LC_MESSAGES/guifinetstudio.mo
+
