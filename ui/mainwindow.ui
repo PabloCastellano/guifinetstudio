@@ -365,12 +365,13 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkCheckMenuItem" id="menuitem7">
+                      <object class="GtkCheckMenuItem" id="fullscreenmenuitem">
                         <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">Fullscreen</property>
                         <property name="use_underline">True</property>
+                        <signal name="toggled" handler="on_fullscreenmenuitem_toggled" swapped="no"/>
                       </object>
                     </child>
                     <child>
@@ -979,17 +980,6 @@
       </object>
     </child>
   </object>
-  <object class="GtkTreeStore" id="treestore2">
-    <columns>
-      <!-- column-name title -->
-      <column type="gchararray"/>
-      <!-- column-name nid -->
-      <column type="gint"/>
-    </columns>
-  </object>
-  <object class="GtkTreeModelFilter" id="treemodelfilter2">
-    <property name="child_model">treestore2</property>
-  </object>
   <object class="GtkTreeStore" id="treestore1">
     <columns>
       <!-- column-name Zona -->
@@ -1007,5 +997,16 @@
       <!-- column-name id -->
       <column type="gint"/>
     </columns>
+  </object>
+  <object class="GtkTreeStore" id="treestore2">
+    <columns>
+      <!-- column-name title -->
+      <column type="gchararray"/>
+      <!-- column-name nid -->
+      <column type="gint"/>
+    </columns>
+  </object>
+  <object class="GtkTreeModelFilter" id="treemodelfilter2">
+    <property name="child_model">treestore2</property>
   </object>
 </interface>

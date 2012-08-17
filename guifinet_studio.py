@@ -139,6 +139,15 @@ class GuifinetStudio:
 		self.rebuildAllZones()
 
       
+	def on_fullscreenmenuitem_toggled(self, widget, data=None):
+		isActive = widget.get_active()
+
+		if isActive:
+			self.mainWindow.fullscreen()
+		else:
+			self.mainWindow.unfullscreen()
+
+
 	def on_exportgmlimagemenuitem_activate(self, widget, data=None):
 		print _('Export to GML')
 		raise NotImplementedError
