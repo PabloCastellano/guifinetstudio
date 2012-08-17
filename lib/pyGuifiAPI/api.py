@@ -188,7 +188,7 @@ class GuifiAPI:
 					#{"errors":[{"code":403,"str":"Request is not valid: some input data is incorrect","extra":"Either the supplied username or password are not correct"}]}
 					raise GuifiApiError('Error during authentication: '+str(errorcode)+ ': '+response['str'])
 				else:
-					raise GuifiApiError('Unexpected return code: '+errorcode)
+					raise GuifiApiError('Unexpected return code: '+str(errorcode))
 		except URLError: # Not connected to the Internets
 			raise
 	

@@ -46,14 +46,18 @@ from champlainguifinet import GtkGuifinetMap
 
 from calc import Calculator
 
-import gettext
-gettext.bindtextdomain(I18N_APP_NAME, I18N_APP_DIR)
-gettext.textdomain(I18N_APP_NAME)
+import locale, gettext
+gettext.bindtextdomain(APP_NAME, LOCALE_DIR)
+gettext.textdomain(APP_NAME)
+locale.setlocale(locale.LC_ALL, '')
+locale.bindtextdomain(APP_NAME, LOCALE_DIR)
 _ = gettext.gettext
+
 
 class GuifinetStudio:
 	def __init__(self, cnmlFile=None):
 		self.ui = Gtk.Builder()
+		self.ui.set_translation_domain(APP_NAME)
 		self.ui.add_from_file('ui/mainwindow.ui')
 		self.ui.connect_signals(self)
 

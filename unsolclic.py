@@ -19,11 +19,11 @@
 
 import jinja2
 
-from utils import I18N_APP_NAME, I18N_APP_DIR
+from utils import APP_NAME, LOCALE_DIR
 
 import gettext
-gettext.bindtextdomain(I18N_APP_NAME, I18N_APP_DIR)
-gettext.textdomain(I18N_APP_NAME)
+gettext.bindtextdomain(APP_NAME, LOCALE_DIR)
+gettext.textdomain(APP_NAME)
 _ = gettext.gettext
 
 

@@ -21,14 +21,17 @@ import re
 import os
 
 GUIFI_NET_WORLD_ZONE_ID = 3671
-I18N_APP_NAME = 'Guifi.net Studio'
-I18N_APP_DIR = 'i18n/'
+I18N_APP_NAME = 'guifinetstudio'
+APP_NAME = I18N_APP_NAME
+LOCALE_DIR = 'locale'
 
 import gettext
-gettext.bindtextdomain(I18N_APP_NAME, I18N_APP_DIR)
-gettext.textdomain(I18N_APP_NAME)
+gettext.bindtextdomain(APP_NAME, LOCALE_DIR)
+gettext.textdomain(APP_NAME)
 _ = gettext.gettext
 
+
+########
 re_email = re.compile("^.+@.+\..{2,4}$")
 re_mac = re.compile("[0-9a-f]{2}([-:][0-9a-f]{2}){5}$")
 

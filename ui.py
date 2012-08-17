@@ -30,19 +30,23 @@ from unsolclic import UnSolClic
 
 from utils import *
 
-import gettext
-gettext.bindtextdomain(I18N_APP_NAME, I18N_APP_DIR)
-gettext.textdomain(I18N_APP_NAME)
+import locale, gettext
+gettext.bindtextdomain(APP_NAME, LOCALE_DIR)
+gettext.textdomain(APP_NAME)
+locale.setlocale(locale.LC_ALL, '')
+locale.bindtextdomain(APP_NAME, LOCALE_DIR)
 _ = gettext.gettext
+
 
 class UnsolclicDialog:
 	def __init__(self, node):
 		self.ui = Gtk.Builder()
+		self.ui.set_translation_domain(APP_NAME)
 		self.ui.add_from_file('ui/uscdialog.ui')
 		self.ui.connect_signals(self)
 
 		self.uscdialog = self.ui.get_object("uscdialog")
-		self.uscdialog.set_title(_('Unsolclic for node'), node.title)
+		self.uscdialog.set_title(_('Unsolclic for node ') + node.title)
 
 		# Unsolclic instance
 		self.usc = UnSolClic()
@@ -74,6 +78,7 @@ class UnsolclicDialog:
 class EditNodeDialog:
 	def __init__(self, api, zones, zonecnmlp, allZones, coords=None):
 		self.ui = Gtk.Builder()
+		self.ui.set_translation_domain(APP_NAME)
 		self.ui.add_from_file('ui/editnodedialog.ui')
 		self.ui.connect_signals(self)
 
@@ -205,6 +210,7 @@ class EditNodeDialog:
 class EditZoneDialog:
 	def __init__(self, api, zones):
 		self.ui = Gtk.Builder()
+		self.ui.set_translation_domain(APP_NAME)
 		self.ui.add_from_file('ui/editzonedialog.ui')
 		self.ui.connect_signals(self)
 
@@ -296,6 +302,7 @@ class EditZoneDialog:
 class EditDeviceDialog:
 	def __init__(self, api, nodes):
 		self.ui = Gtk.Builder()
+		self.ui.set_translation_domain(APP_NAME)
 		self.ui.add_from_file('ui/editdevicedialog.ui')
 		self.ui.connect_signals(self)
 		
@@ -431,6 +438,7 @@ class EditDeviceDialog:
 class EditRadioDialog:
 	def __init__(self, api, cnmlp):
 		self.ui = Gtk.Builder()
+		self.ui.set_translation_domain(APP_NAME)
 		self.ui.add_from_file('ui/editradiodialog.ui')
 		self.ui.connect_signals(self)
 
@@ -554,6 +562,7 @@ class EditRadioDialog:
 class EditInterfaceDialog:
 	def __init__(self):
 		self.ui = Gtk.Builder()
+		self.ui.set_translation_domain(APP_NAME)
 		self.ui.add_from_file('ui/editinterfacedialog.ui')
 		self.ui.connect_signals(self)
 
@@ -599,6 +608,7 @@ class EditInterfaceDialog:
 class EditLinkDialog:
 	def __init__(self, nodes):
 		self.ui = Gtk.Builder()
+		self.ui.set_translation_domain(APP_NAME)
 		self.ui.add_from_file('ui/editlinkdialog.ui')
 		self.ui.connect_signals(self)
 
@@ -666,6 +676,7 @@ class EditLinkDialog:
 class CNMLDialog:
 	def __init__(self, configmanager, zonecnmlp, allZones, guifiAPI):
 		self.ui = Gtk.Builder()
+		self.ui.set_translation_domain(APP_NAME)
 		self.ui.add_from_file('ui/cnmldialog.ui')
 		self.ui.connect_signals(self)
 
@@ -717,6 +728,7 @@ class CNMLDialog:
 class PreferencesDialog:
 	def __init__(self, configmanager, zones, zonecnmlp, allZones):
 		self.ui = Gtk.Builder()
+		self.ui.set_translation_domain(APP_NAME)
 		self.ui.add_from_file('ui/preferencesdialog.ui')
 		self.ui.connect_signals(self)
 
@@ -774,6 +786,7 @@ class PreferencesDialog:
 class NodeDialog:
 	def __init__(self):
 		self.ui = Gtk.Builder()
+		self.ui.set_translation_domain(APP_NAME)
 		self.ui.add_from_file('ui/nodedialog.ui')
 		self.ui.connect_signals(self)
 
@@ -789,6 +802,7 @@ class NodeDialog:
 class ChangeZoneDialog:
 	def __init__(self, configmanager, zonecnmlp):
 		self.ui = Gtk.Builder()
+		self.ui.set_translation_domain(APP_NAME)
 		self.ui.add_from_file('ui/changezonedialog.ui')
 		self.ui.connect_signals(self)
 
