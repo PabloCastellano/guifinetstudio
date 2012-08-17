@@ -901,14 +901,14 @@ def fillAvailableCNMLModel(configmanager, model, zonecnmlp):
 			zid, ext = f.split('.')
 			zid = int(zid)
 			if ext == 'cnml':
-				if not cnmls.has_key('zid'):
+				if not cnmls.has_key(zid):
 					cnmls[zid] = dict()
 					cnmls[zid]['nodes'] = False
 					cnmls[zid]['zones'] = False
 					cnmls[zid]['detail'] = False
 				cnmls[zid][d] = True
 	
-	for zid in cnmls:			
+	for zid in cnmls:
 		model.append((zid, zonecnmlp.getZone(zid).title, cnmls[zid]['nodes'], cnmls[zid]['zones'], cnmls[zid]['detail']))
 
 
