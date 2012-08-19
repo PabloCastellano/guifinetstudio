@@ -18,14 +18,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from gi.repository import GtkClutter, Clutter
-GtkClutter.init([]) # Must be initialized before importing those:
 from gi.repository import Gdk, Gtk
-from gi.repository import GtkChamplain, Champlain
 
 from pyGuifiAPI.error import GuifiApiError
 
-from libcnml import CNMLParser, Status
 from unsolclic import UnSolClic
 
 from utils import *
@@ -162,7 +158,7 @@ class EditNodeDialog:
 		try:
 			if self.nodeelevationentry.get_text() != '':
 				int(self.nodeelevationentry.get_text())
-		except ValueError, e:
+		except ValueError:
 			self.nodeelevationentry.grab_focus()
 			return False
 			
@@ -698,7 +694,7 @@ class CNMLDialog:
 			message = _("Guifi.net World zones CNML file couldn't be found\n\nYou have to download it first by going to Tools -> Update zones")
 			g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, message)
 			g.set_title(_('File not found'))
-			res = g.run()
+			g.run()
 			g.destroy()
 			self.cnmldialog.destroy()
 			

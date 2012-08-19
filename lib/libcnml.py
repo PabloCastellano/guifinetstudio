@@ -27,8 +27,6 @@ except ImportError:
 	print 'lxml module not found. Falling back to minidom'
 	
 
-import sys
-
 class CNMLZone:
 	def __init__(self, zid, parentid, aps=0, box=[], nclients=0, ndevices=0, nlinks=0, nservices=0, title=''):
 		self.id = zid
@@ -581,9 +579,6 @@ class CNMLParser():
 		print 'DTD validation is not implemented with Minidom API'
 		pass
 		
-		
-	def getInterfaces(self):
-		return self.ifaces.values()
 		
 	def getNodes(self):
 		return self.nodes.values()

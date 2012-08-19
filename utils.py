@@ -40,10 +40,10 @@ def valid_email_address(email):
 		return re_email.match(email) is not None
 	else:
 		# list of email addresses separated by commas
-		for email in emails.split(','):
-			if email == '':
+		for e in email.split(','):
+			if e == '':
 				continue
-			em = email.strip()
+			em = e.strip()
 			if valid_email_address(em) is False:
 				return False
 		return True

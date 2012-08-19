@@ -18,7 +18,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from urllib2 import Request, urlopen, HTTPError, URLError
+from urllib2 import Request, urlopen, URLError
 # Warning: HTTPS requests do not do any verification of the server’s certificate.
 # Currently urllib2 does not support fetching of https locations through a proxy. This can be a problem.
 # http://www.voidspace.org.uk/python/articles/urllib2.shtml
@@ -27,10 +27,6 @@ from error import GuifiApiError
 from constants import *
 
 import urllib
-
-import base64
-
-import sys
 import json
 
 class GuifiAPI:

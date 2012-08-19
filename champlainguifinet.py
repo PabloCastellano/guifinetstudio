@@ -2,7 +2,7 @@
 
 from gi.repository import GtkClutter, Clutter
 GtkClutter.init([]) # Must be initialized before importing those:
-from gi.repository import Gdk, Gtk
+from gi.repository import Gtk
 from gi.repository import GtkChamplain, Champlain
 
 import os

@@ -18,10 +18,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from gi.repository import GtkClutter, Clutter
-GtkClutter.init([]) # Must be initialized before importing those:
 from gi.repository import Gdk, Gtk
-from gi.repository import GtkChamplain, Champlain
 
 import os
 import sys
@@ -126,7 +123,7 @@ class GuifinetStudio:
 			try:
 				self.cnmlp = CNMLParser(cnmlFile)
 				# FIXME: only if necessary (there's a zone loaded already)
-				self.statusbar.push(0, _('Loaded "%s" successfully') %self.cnmlFile)
+				self.statusbar.push(0, _('Loaded "%s" successfully') %cnmlFile)
 				self.completaArbol()
 				self.guifinetmap.paintMap(self.cnmlp.getNodes())
 				self.cnmlFile = cnmlFile
@@ -208,7 +205,7 @@ class GuifinetStudio:
 			message += _('You can go to Tools -> Update zones')
 			g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.WARNING, Gtk.ButtonsType.CLOSE, message)
 			g.set_title(_('File not found: %s') %cnmlGWfile)
-			res = g.run()
+			g.run()
 			g.destroy()
 			self.statusbar.push(0, _('CNML file "%s" couldn\'t be loaded') %cnmlGWfile)
 			self.zonecnmlp = None
@@ -608,6 +605,7 @@ class GuifinetStudio:
 
 				
 	def authAPI(self):
+		# TO DO
 		tokendate = self.configmanager.getAuthTokenDate()
 
 		now = datetime.now()
