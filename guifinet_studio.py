@@ -107,7 +107,9 @@ class GuifinetStudio:
 			# Load default zone cnml
 			defaultzone = self.configmanager.getDefaultZone()
 			if defaultzone is not None:
-				ztype = self.configmanager.getDefaultZoneType()
+				# FIXME:
+				#ztype = self.configmanager.getDefaultZoneType()
+				ztype = 'detail'
 				cnmlFile = self.configmanager.pathForCNMLCachedFile(defaultzone, ztype)
 			else:
 				# no default zone
@@ -440,11 +442,11 @@ class GuifinetStudio:
 
 		
 	def zoom_in(self, widget, data=None):
-		self.view.zoom_in()
+		self.guifinetmap.zoom_in()
 		
 		
 	def zoom_out(self, widget, data=None):
-		self.view.zoom_out()
+		self.guifinetmap.zoom_out()
 		
 
 	def on_changezoneimagemenuitem_activate(self, widget, data=None):
@@ -453,21 +455,29 @@ class GuifinetStudio:
 		if dialog.run() == Gtk.ResponseType.ACCEPT:
 			
 			zid = dialog.getSelectedZone()
-			filename = self.configmanager.pathForCNMLCachedFile(zid, 'detail')
-		
-			try:
-				self.cnmlp = CNMLParser(filename)
-				# FIXME: only if necessary (there's a zone loaded already)
-				self.reset()
-				self.completaArbol()
-				self.guifinetmap.paintMap(self.cnmlp.getNodes())
-				self.cnmlFile = filename
-			except IOError:
-				self.statusbar.push(0, _('CNML file "%s" couldn\'t be loaded') %filename)
-				self.cnmlFile = None
-				self.cnmlp = None
-				
+			
+			if zid:
+				filename = self.configmanager.pathForCNMLCachedFile(zid, 'detail')
+			
+				try:
+					self.cnmlp = CNMLParser(filename)
+					# FIXME: only if necessary (there's a zone loaded already)
+					self.reset()
+					self.completaArbol()
+					self.guifinetmap.paintMap(self.cnmlp.getNodes())
+					self.cnmlFile = filename
+					
+				except IOError:
+					self.statusbar.push(0, _('CNML file "%s" couldn\'t be loaded') %filename)
+					self.cnmlFile = None
+					self.cnmlp = None
+					
+				active = self.cnmlp is not None
+				self.imagemenuitem3.set_sensitive(active)
+				self.enable_api_menuitems(active)
+			
 		dialog.destroy()
+		
 		
 	def on_downloadcnmlmenuitem_activate(self, widget, data=None):
 		CNMLDialog(self.configmanager, self.zonecnmlp, self.allZones, self.guifiAPI)

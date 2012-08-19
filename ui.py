@@ -754,7 +754,7 @@ class PreferencesDialog:
 		else:
 			fillZonesEntryCompletion(self.entrycompletion2, allZones)
 		
-		if zonecnmlp:
+		if zonecnmlp and self.configmanager.getDefaultZone():
 			defaultZoneTitle = zonecnmlp.getZone(self.configmanager.getDefaultZone()).title
 			self.entrycompletion2.get_entry().set_text(defaultZoneTitle)
 		else:
@@ -766,11 +766,12 @@ class PreferencesDialog:
 			self.configmanager.setUsername(self.userentry.get_text())
 			self.configmanager.setPassword(self.passwordentry.get_text())
 			self.configmanager.setContact(self.contactentry.get_text())
+			self.configmanager.setHost(self.hostentry.get_text())			
+			# TO DO: Update GuifiAPI instance
 			
 			# How can I get the GtkTreeIter from the "active item" in GtkEntry/GtkEntryCompletion?
 			# Otherwise: loop :-S		
 			zid = findZoneIdInEntryCompletion(self.entrycompletion2)
-			
 			if zid:
 				self.configmanager.setDefaultZone(zid)
 				
@@ -830,6 +831,9 @@ class ChangeZoneDialog:
 		
 	def getSelectedZone(self):
 		it = self.zonescombobox.get_active_iter()
+		if it is None:
+			return None
+			
 		zid = self.zonescombobox.get_model().get_value(it, 0)
 		return zid
 		
@@ -914,11 +918,14 @@ def fillAvailableCNMLModel2(configmanager, model, zonecnmlp):
 	directory = os.path.join(configmanager.CACHE_DIR, 'detail')
 	filelist = os.listdir(directory)
 	for f in filelist:
-		zid, ext = f.split('.')
-		zid = int(zid)
-		if ext == 'cnml':
-			model.append((zid, zonecnmlp.getZone(zid).title))
-
+		try:
+			zid, ext = f.split('.')
+			zid = int(zid)
+			if ext == 'cnml':
+				model.append((zid, zonecnmlp.getZone(zid).title))
+		except ValueError:
+			# Some filename didn't contain '.'
+			pass
 
 def	ErrorResponseFromServerMessageDialog(e):
 	errormessage = _('Error %d: %s\n\nError message:\n%s') %(e.code, e.reason, e.extra)

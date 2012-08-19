@@ -115,6 +115,14 @@ class GtkGuifinetMap(GtkChamplain.Embed):
 		self.labels_layer.remove_all()
 		
 		
+	def zoom_in(self):
+		self.view.zoom_in()
+		
+		
+	def zoom_out(self):
+		self.view.zoom_out()
+		
+		
 	def show_points(self, active):
 		if active:
 			self.points_layer.show_all_markers()
