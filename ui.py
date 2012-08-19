@@ -726,7 +726,7 @@ class CNMLDialog:
 
 	
 class PreferencesDialog:
-	def __init__(self, configmanager, zones, zonecnmlp, allZones):
+	def __init__(self, configmanager, zonecnmlp, allZones):
 		self.ui = Gtk.Builder()
 		self.ui.set_translation_domain(APP_NAME)
 		self.ui.add_from_file('ui/preferencesdialog.ui')
@@ -806,6 +806,7 @@ class ChangeZoneDialog:
 		self.ui.add_from_file('ui/changezonedialog.ui')
 		self.ui.connect_signals(self)
 
+		self.okbutton = self.ui.get_object('okbutton')
 		self.changezonedialog = self.ui.get_object('changezonedialog')
 		self.zonescombobox = self.ui.get_object('zonescombobox')
 	

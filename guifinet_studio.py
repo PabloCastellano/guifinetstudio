@@ -76,6 +76,15 @@ class GuifinetStudio:
 		self.actiongroup1 = self.ui.get_object("actiongroup1")
 		self.menuitem6 = self.ui.get_object("menuitem6")
 
+		self.imagemenuitem2 = self.ui.get_object('imagemenuitem2')
+		self.imagemenuitem3 = self.ui.get_object('imagemenuitem3')
+		self.createnodemenuitem = self.ui.get_object('createnodemenuitem')
+		self.createzonemenuitem = self.ui.get_object('createzonemenuitem')
+		self.createdevicemenuitem = self.ui.get_object('createdevicemenuitem')
+		self.createradiomenuitem = self.ui.get_object('createradiomenuitem')
+		self.createinterfacemenuitem = self.ui.get_object('createinterfacemenuitem')
+		self.createlinkmenuitem = self.ui.get_object('createlinkmenuitem')
+		
 		self.notebook1 = self.ui.get_object("notebook1")
 		self.notebook1.set_show_tabs(False)
 		
@@ -116,16 +125,21 @@ class GuifinetStudio:
 			# CNMLParser
 			try:
 				self.cnmlp = CNMLParser(cnmlFile)
-				self.cnmlFile = cnmlFile
+				# FIXME: only if necessary (there's a zone loaded already)
 				self.statusbar.push(0, _('Loaded "%s" successfully') %self.cnmlFile)
 				self.completaArbol()
 				self.guifinetmap.paintMap(self.cnmlp.getNodes())
+				self.cnmlFile = cnmlFile
 			except IOError:
 				print _('Error loading CNML')
 				self.statusbar.push(0, _('CNML file "%s" couldn\'t be loaded') %cnmlFile)
 				self.cnmlp = None
 				self.cnmlFile = None
 		
+		if not self.cnmlp:
+			# Disable menus
+			self.imagemenuitem3.set_sensitive(False)
+			self.enable_api_menuitems(False)
 			
 		# Guifi.net API
 		if self.configmanager.getUsername() is None or self.configmanager.getPassword() is None or self.configmanager.getHost() is None:
@@ -138,7 +152,16 @@ class GuifinetStudio:
 		self.allZones = []
 		self.rebuildAllZones()
 
-      
+
+	def enable_api_menuitems(self, enable):
+		self.createnodemenuitem.set_sensitive(enable)
+		self.createzonemenuitem.set_sensitive(enable)
+		self.createdevicemenuitem.set_sensitive(enable)
+		self.createradiomenuitem.set_sensitive(enable)
+		self.createinterfacemenuitem.set_sensitive(enable)
+		self.createlinkmenuitem.set_sensitive(enable)
+		
+		
 	def on_fullscreenmenuitem_toggled(self, widget, data=None):
 		isActive = widget.get_active()
 
@@ -336,29 +359,39 @@ class GuifinetStudio:
 				(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.ACCEPT))
 
 		if dialog.run() == Gtk.ResponseType.ACCEPT:
-			self.cnmlFile = dialog.get_filename()
-			print self.cnmlFile
+			filename = dialog.get_filename()
 		
 			try:
-				self.cnmlp = CNMLParser(self.cnmlFile)
+				self.cnmlp = CNMLParser(filename)
 				# FIXME: only if necessary (there's a zone loaded already)
-				self.on_imagemenuitem3_activate()
+				self.reset()
 				self.completaArbol()
 				self.guifinetmap.paintMap(self.cnmlp.getNodes())
+				self.cnmlFile = filename
+				self.imagemenuitem3.set_sensitive(True)
 			except IOError:
 				self.statusbar.push(0, _('CNML file "%s" couldn\'t be loaded') %self.cnmlFile)
 				self.cnmlFile = None
+				self.cnmlp = None
 		
+		self.enable_api_menuitems(self.cnmlp is not None)
+			
 		dialog.destroy()
 				
 		
-	def on_imagemenuitem3_activate(self, widget=None, data=None):
+	def reset(self):
 		self.treestore.clear()
 		self.treestore2.clear()
 		self.guifinetmap.reset()
-		self.statusbar.push(0, _('Closed CNML file'))
-		self.cnmlFile = None
 		
+	def on_imagemenuitem3_activate(self, widget=None, data=None):
+		self.reset()
+		self.statusbar.push(0, _('Closed CNML file'))
+		self.imagemenuitem3.set_sensitive(False)
+		self.cnmlFile = None
+		self.cnmlp = None
+		
+		self.enable_api_menuitems(False)
 		
 	def gtk_main_quit(self, widget, data=None):
 		Gtk.main_quit()
@@ -388,7 +421,7 @@ class GuifinetStudio:
 
 	
 	def on_preferencesmenuitem_activate(self, widget, data=None):
-		PreferencesDialog(self.configmanager, self.cnmlp.getZones(), self.zonecnmlp, self.allZones)
+		PreferencesDialog(self.configmanager, self.zonecnmlp, self.allZones)
 		
 				
 	def on_menuitem5_toggled(self, widget, data=None):
@@ -428,13 +461,14 @@ class GuifinetStudio:
 			try:
 				self.cnmlp = CNMLParser(filename)
 				# FIXME: only if necessary (there's a zone loaded already)
-				self.on_imagemenuitem3_activate()
+				self.reset()
 				self.completaArbol()
 				self.guifinetmap.paintMap(self.cnmlp.getNodes())
 				self.cnmlFile = filename
 			except IOError:
 				self.statusbar.push(0, _('CNML file "%s" couldn\'t be loaded') %filename)
 				self.cnmlFile = None
+				self.cnmlp = None
 				
 		dialog.destroy()
 		
