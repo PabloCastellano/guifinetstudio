@@ -616,7 +616,7 @@ class GuifiAPI:
 		if not self.is_authenticated():
 			raise GuifiApiError('You have to be authenticated to run this action')
 			
-		data = {'command':'guifi.interface.remove', 'link_id':lid}
+		data = {'command':'guifi.link.remove', 'link_id':lid}
 		params = urllib.urlencode(data)
 		(codenum, response) = self.sendRequest(params)
 
