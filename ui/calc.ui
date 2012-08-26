@@ -158,7 +158,7 @@
                               <object class="GtkLabel" id="mwlabel1">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="label" translatable="yes">.... mW</property>
+                                <property name="label">.... mW</property>
                               </object>
                               <packing>
                                 <property name="left_attach">1</property>
@@ -171,7 +171,7 @@
                               <object class="GtkLabel" id="dbmlabel2">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="label" translatable="yes">... dBm</property>
+                                <property name="label">... dBm</property>
                               </object>
                               <packing>
                                 <property name="left_attach">1</property>
@@ -184,7 +184,7 @@
                               <object class="GtkLabel" id="dbmlabel1">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="label" translatable="yes">... dBm</property>
+                                <property name="label">... dBm</property>
                               </object>
                               <packing>
                                 <property name="left_attach">2</property>
@@ -197,7 +197,7 @@
                               <object class="GtkLabel" id="mwlabel2">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="label" translatable="yes">... mW</property>
+                                <property name="label">... mW</property>
                               </object>
                               <packing>
                                 <property name="left_attach">2</property>
@@ -232,7 +232,7 @@
                   <object class="GtkLabel" id="label1">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">page 1</property>
+                    <property name="label">page 1</property>
                   </object>
                   <packing>
                     <property name="tab_fill">False</property>
@@ -324,7 +324,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="invisible_char">●</property>
-                        <property name="text" translatable="yes">300</property>
+                        <property name="text">300</property>
                         <signal name="changed" handler="calculate_loss" swapped="no"/>
                       </object>
                       <packing>
@@ -339,7 +339,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="invisible_char">●</property>
-                        <property name="text" translatable="yes">2445</property>
+                        <property name="text">2445</property>
                         <signal name="changed" handler="calculate_loss" swapped="no"/>
                       </object>
                       <packing>
@@ -353,7 +353,7 @@
                       <object class="GtkLabel" id="dblosslabel">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">some dB</property>
+                        <property name="label">some dB</property>
                         <attributes>
                           <attribute name="weight" value="bold"/>
                         </attributes>
@@ -374,7 +374,7 @@
                   <object class="GtkLabel" id="label2">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">page 2</property>
+                    <property name="label">page 2</property>
                   </object>
                   <packing>
                     <property name="position">1</property>
@@ -455,7 +455,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="invisible_char">●</property>
-                        <property name="text" translatable="yes">65</property>
+                        <property name="text">65</property>
                         <signal name="changed" handler="calculate_emission" swapped="no"/>
                       </object>
                       <packing>
@@ -504,7 +504,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="invisible_char">●</property>
-                        <property name="text" translatable="yes">300</property>
+                        <property name="text">300</property>
                         <signal name="changed" handler="calculate_emission" swapped="no"/>
                       </object>
                       <packing>
@@ -519,7 +519,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="invisible_char">●</property>
-                        <property name="text" translatable="yes">2445</property>
+                        <property name="text">2445</property>
                         <signal name="changed" handler="calculate_emission" swapped="no"/>
                       </object>
                       <packing>
@@ -534,7 +534,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="invisible_char">●</property>
-                        <property name="text" translatable="yes">0</property>
+                        <property name="text">0</property>
                         <signal name="changed" handler="calculate_emission" swapped="no"/>
                       </object>
                       <packing>
@@ -549,7 +549,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="invisible_char">●</property>
-                        <property name="text" translatable="yes">3</property>
+                        <property name="text">3</property>
                         <signal name="changed" handler="calculate_emission" swapped="no"/>
                       </object>
                       <packing>
@@ -595,7 +595,7 @@
                       <object class="GtkLabel" id="powerlabel">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">some mW</property>
+                        <property name="label">some mW</property>
                         <attributes>
                           <attribute name="weight" value="bold"/>
                         </attributes>
@@ -611,7 +611,7 @@
                       <object class="GtkLabel" id="eirplabel">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">some W</property>
+                        <property name="label">some W</property>
                         <attributes>
                           <attribute name="weight" value="bold"/>
                         </attributes>
@@ -632,7 +632,7 @@
                   <object class="GtkLabel" id="label3">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">page 3</property>
+                    <property name="label">page 3</property>
                   </object>
                   <packing>
                     <property name="position">2</property>

@@ -96,7 +96,7 @@
     <property name="width_request">800</property>
     <property name="height_request">500</property>
     <property name="can_focus">False</property>
-    <property name="title" translatable="yes">Guifi·net Studio</property>
+    <property name="title">Guifi·net Studio</property>
     <signal name="destroy" handler="gtk_main_quit" swapped="no"/>
     <child>
       <object class="GtkVBox" id="vbox1">
@@ -178,7 +178,7 @@
                             <property name="can_focus">False</property>
                             <child>
                               <object class="GtkImageMenuItem" id="exportkmlimagemenuitem">
-                                <property name="label" translatable="yes">KML</property>
+                                <property name="label">KML</property>
                                 <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
@@ -189,7 +189,7 @@
                             </child>
                             <child>
                               <object class="GtkImageMenuItem" id="exportgmlimagemenuitem">
-                                <property name="label" translatable="yes">GML</property>
+                                <property name="label">GML</property>
                                 <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="sensitive">False</property>
@@ -585,7 +585,7 @@
                               <object class="GtkLabel" id="label1">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="label" translatable="yes">Buscar:</property>
+                                <property name="label" translatable="yes">Search: </property>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
@@ -844,7 +844,7 @@
                     </child>
                     <child>
                       <object class="GtkTreeViewColumn" id="treeviewcolumn1">
-                        <property name="title" translatable="yes">Zona</property>
+                        <property name="title" translatable="yes">Zone</property>
                         <property name="clickable">True</property>
                         <property name="sort_indicator">True</property>
                         <signal name="clicked" handler="on_treeviewcolumn6_clicked" swapped="no"/>
@@ -858,7 +858,7 @@
                     </child>
                     <child>
                       <object class="GtkTreeViewColumn" id="treeviewcolumn2">
-                        <property name="title" translatable="yes">Operativos</property>
+                        <property name="title" translatable="yes">Working</property>
                         <property name="clickable">True</property>
                         <property name="sort_indicator">True</property>
                         <signal name="clicked" handler="on_treeviewcolumn6_clicked" swapped="no"/>
@@ -872,7 +872,7 @@
                     </child>
                     <child>
                       <object class="GtkTreeViewColumn" id="treeviewcolumn3">
-                        <property name="title" translatable="yes">En construcción</property>
+                        <property name="title" translatable="yes">Building</property>
                         <property name="clickable">True</property>
                         <property name="sort_indicator">True</property>
                         <signal name="clicked" handler="on_treeviewcolumn6_clicked" swapped="no"/>
@@ -886,7 +886,7 @@
                     </child>
                     <child>
                       <object class="GtkTreeViewColumn" id="treeviewcolumn4">
-                        <property name="title" translatable="yes">En pruebas</property>
+                        <property name="title" translatable="yes">Testing</property>
                         <property name="clickable">True</property>
                         <property name="sort_indicator">True</property>
                         <signal name="clicked" handler="on_treeviewcolumn6_clicked" swapped="no"/>
@@ -900,7 +900,7 @@
                     </child>
                     <child>
                       <object class="GtkTreeViewColumn" id="treeviewcolumn5">
-                        <property name="title" translatable="yes">Proyectados</property>
+                        <property name="title" translatable="yes">Planned</property>
                         <property name="clickable">True</property>
                         <property name="sort_indicator">True</property>
                         <signal name="clicked" handler="on_treeviewcolumn6_clicked" swapped="no"/>
@@ -914,7 +914,7 @@
                     </child>
                     <child>
                       <object class="GtkTreeViewColumn" id="treeviewcolumn6">
-                        <property name="title" translatable="yes">Nodo</property>
+                        <property name="title" translatable="yes">Node</property>
                         <property name="clickable">True</property>
                         <property name="sort_indicator">True</property>
                         <signal name="clicked" handler="on_treeviewcolumn6_clicked" swapped="no"/>
@@ -980,6 +980,17 @@
       </object>
     </child>
   </object>
+  <object class="GtkTreeStore" id="treestore2">
+    <columns>
+      <!-- column-name title -->
+      <column type="gchararray"/>
+      <!-- column-name nid -->
+      <column type="gint"/>
+    </columns>
+  </object>
+  <object class="GtkTreeModelFilter" id="treemodelfilter2">
+    <property name="child_model">treestore2</property>
+  </object>
   <object class="GtkTreeStore" id="treestore1">
     <columns>
       <!-- column-name Zona -->
@@ -997,16 +1008,5 @@
       <!-- column-name id -->
       <column type="gint"/>
     </columns>
-  </object>
-  <object class="GtkTreeStore" id="treestore2">
-    <columns>
-      <!-- column-name title -->
-      <column type="gchararray"/>
-      <!-- column-name nid -->
-      <column type="gint"/>
-    </columns>
-  </object>
-  <object class="GtkTreeModelFilter" id="treemodelfilter2">
-    <property name="child_model">treestore2</property>
   </object>
 </interface>
