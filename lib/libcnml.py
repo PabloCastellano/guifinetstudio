@@ -133,13 +133,20 @@ class CNMLNode:
 		self.totalLinks = nlinks
 		self.status = status
 		self.devices = dict()
+		self.services = dict()
 		
 	def getDevices(self):
 		return self.devices.values()
 		
+	def getServices(self):
+		return self.services.values()
+		
 	def addDevice(self, dev):
 		self.devices[dev.id] = dev
 	
+	def addService(self, service):
+		self.services[service.id] = service
+		
 	@staticmethod
 	def parseMinidom(n):
 		nid = int(n.getAttribute("id"))
@@ -181,6 +188,47 @@ class CNMLNode:
 			return CNMLNode.parseMinidom(n)
 
 
+class CNMLService:
+	def __init__(self, sid, title, stype, status, created, parent):
+		self.id = sid
+		self.title = title
+		self.type = stype
+		self.status = status
+		self.created = created
+		self.parentNode = parent
+		
+	@staticmethod
+	def parseLxml(s, parent):
+		sid = int(s.get('id'))
+		title = s.get('title')
+		stype = s.get('type')
+		status = s.get('status')
+		status = Status.strToStatus(status)
+		created = s.get('created')
+		
+		newservice = CNMLService(sid, title, stype, status, created, parent)
+		return newservice
+		
+	@staticmethod
+	def parseMinidom(s, parent):
+		sid = int(s.getAttribute('id'))
+		title = s.getAttribute('title')
+		stype = s.getAttribute('type')
+		status = s.getAttribute('status')
+		status = Status.strToStatus(status)
+		created = s.getAttribute('created')
+		
+		newservice = CNMLService(sid, title, stype, status, created, parent)
+		return newservice
+				
+	@staticmethod
+	def parse(s, parent):
+		if LXML:
+			return CNMLService.parseLxml(s, parent)
+		else:
+			return CNMLService.parseMinidom(s, parent)
+
+
 class CNMLDevice:
 	def __init__(self, did, name, firmware, status, title, dtype, parent):
 		self.id = did
@@ -190,13 +238,20 @@ class CNMLDevice:
 		self.title = title
 		self.type = dtype
 		self.radios = dict()
+		self.interfaces = dict()
 		self.parentNode = parent
 		
 	def getRadios(self):
 		return self.radios.values()
 		
+	def getInterfaces(self):
+		return self.interfaces.values()
+
 	def addRadio(self, radio):
 		self.radios[radio.id] = radio
+
+	def addInterface(self, interface):
+		self.interfaces[interface.id] = interface
 
 	@staticmethod
 	def parseLxml(d, parent):
@@ -540,6 +595,7 @@ class CNMLParser():
 		self.nodes = None
 		self.zones = None
 		self.devices = None
+		self.services = None
 		self.radios = None
 		self.ifaces = None
 		self.links = None
@@ -589,6 +645,9 @@ class CNMLParser():
 	def getDevices(self):
 		return self.devices.values()
 	
+	def getServices(self):
+		return self.services.values()
+		
 	def getRadios(self):
 		return self.radios.values()
 	
@@ -636,7 +695,22 @@ class CNMLParser():
 				newdevice = CNMLDevice.parse(d, newnode)
 				self.devices[did] = newdevice
 				self.nodes[nid].addDevice(newdevice)
+
+				# --interfaces--
+				# If there's a working service in this device, it has interfaces (and it's not a son of a radio!)
+				for i in d.iterchildren('interface'):
+					iid = int(i.get('id'))
+					newiface = CNMLInterface.parse(i, newdevice)
+					self.ifaces[iid] = newiface
+					self.devices[did].addInterface(newiface)
 				
+				# --services--
+				for s in d.iterfind('service'):
+					sid = int(s.get('id'))
+					newservice = CNMLService.parse(s, newdevice)
+					self.services[sid] = newservice
+					self.nodes[nid].addService(newservice)
+					
 				# --radios--
 				for r in d.iterfind('radio'):
 					rid = int(r.get('id'))
@@ -707,6 +781,17 @@ class CNMLParser():
 				self.devices[did] = newdevice
 				self.nodes[nid].addDevice(newdevice)
 				
+				# --interfaces--
+				# TODO: If there's a working service in this device, it has interfaces (and it's not a son of a radio!)
+				# Look at the lxml parsing
+
+				# --services--
+				for s in d.getElementsByTagName('service'):
+					sid = int(s.getAttribute('id'))
+					newservice = CNMLService.parse(s, newdevice)
+					self.services[sid] = newservice
+					self.nodes[nid].addService(newservice)
+					
 				# --radios--
 				for r in d.getElementsByTagName("radio"):
 					rid = int(r.getAttribute('id'))
@@ -742,6 +827,7 @@ class CNMLParser():
 		self.zones = dict()
 		self.nodes = dict()
 		self.devices = dict()
+		self.services = dict()
 		self.radios = dict()
 		self.ifaces = dict()
 		self.links = dict()
