@@ -27,16 +27,6 @@
       </object>
     </child>
   </object>
-  <object class="GtkImage" id="image13">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="stock">gtk-save</property>
-  </object>
-  <object class="GtkImage" id="image14">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="stock">gtk-save</property>
-  </object>
   <object class="GtkImage" id="image1">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -53,6 +43,16 @@
     <property name="stock">gtk-media-forward</property>
   </object>
   <object class="GtkImage" id="image12">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="stock">gtk-save</property>
+  </object>
+  <object class="GtkImage" id="image13">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="stock">gtk-save</property>
+  </object>
+  <object class="GtkImage" id="image14">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="stock">gtk-save</property>
@@ -92,7 +92,51 @@
     <property name="can_focus">False</property>
     <property name="stock">gtk-go-forward</property>
   </object>
-  <object class="GtkTreeStore" id="treestore3"/>
+  <object class="GtkTreeStore" id="treestore2">
+    <columns>
+      <!-- column-name title -->
+      <column type="gchararray"/>
+      <!-- column-name nid -->
+      <column type="gint"/>
+    </columns>
+  </object>
+  <object class="GtkTreeModelFilter" id="treemodelfilter2">
+    <property name="child_model">treestore2</property>
+  </object>
+  <object class="GtkTreeStore" id="treestore1">
+    <columns>
+      <!-- column-name Zona -->
+      <column type="gchararray"/>
+      <!-- column-name Operativos -->
+      <column type="gchararray"/>
+      <!-- column-name En -->
+      <column type="gchararray"/>
+      <!-- column-name En1 -->
+      <column type="gchararray"/>
+      <!-- column-name Proyectados -->
+      <column type="gchararray"/>
+      <!-- column-name Nodo -->
+      <column type="gchararray"/>
+      <!-- column-name id -->
+      <column type="gint"/>
+    </columns>
+  </object>
+  <object class="GtkTreeStore" id="treestore3">
+    <columns>
+      <!-- column-name id -->
+      <column type="guint"/>
+      <!-- column-name service -->
+      <column type="gchararray"/>
+      <!-- column-name title -->
+      <column type="gchararray"/>
+      <!-- column-name node -->
+      <column type="gchararray"/>
+      <!-- column-name ip -->
+      <column type="gchararray"/>
+      <!-- column-name status -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
   <object class="GtkWindow" id="mainWindow">
     <property name="width_request">800</property>
     <property name="height_request">500</property>
@@ -540,7 +584,6 @@
               <object class="GtkToolButton" id="servicestoolbutton">
                 <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
-                <property name="sensitive">False</property>
                 <property name="can_focus">False</property>
                 <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">Services</property>
@@ -955,8 +998,94 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="model">treestore3</property>
+                    <property name="search_column">1</property>
+                    <property name="enable_grid_lines">vertical</property>
                     <child internal-child="selection">
                       <object class="GtkTreeSelection" id="treeview-selection4"/>
+                    </child>
+                    <child>
+                      <object class="GtkTreeViewColumn" id="treeviewcolumn11">
+                        <property name="title" translatable="yes">ID</property>
+                        <property name="clickable">True</property>
+                        <property name="sort_indicator">True</property>
+                        <signal name="clicked" handler="on_treeviewcolumn11_clicked" swapped="no"/>
+                        <child>
+                          <object class="GtkCellRendererText" id="cellrenderertext11"/>
+                          <attributes>
+                            <attribute name="text">0</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkTreeViewColumn" id="treeviewcolumn12">
+                        <property name="title" translatable="yes">Service</property>
+                        <property name="clickable">True</property>
+                        <property name="sort_indicator">True</property>
+                        <signal name="clicked" handler="on_treeviewcolumn11_clicked" swapped="no"/>
+                        <child>
+                          <object class="GtkCellRendererText" id="cellrenderertext8"/>
+                          <attributes>
+                            <attribute name="text">1</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkTreeViewColumn" id="treeviewcolumn13">
+                        <property name="title" translatable="yes">Title</property>
+                        <property name="clickable">True</property>
+                        <property name="sort_indicator">True</property>
+                        <signal name="clicked" handler="on_treeviewcolumn11_clicked" swapped="no"/>
+                        <child>
+                          <object class="GtkCellRendererText" id="cellrenderertext9"/>
+                          <attributes>
+                            <attribute name="text">2</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkTreeViewColumn" id="treeviewcolumn14">
+                        <property name="title" translatable="yes">Node</property>
+                        <property name="clickable">True</property>
+                        <property name="sort_indicator">True</property>
+                        <signal name="clicked" handler="on_treeviewcolumn11_clicked" swapped="no"/>
+                        <child>
+                          <object class="GtkCellRendererText" id="cellrenderertext10"/>
+                          <attributes>
+                            <attribute name="text">3</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkTreeViewColumn" id="treeviewcolumn15">
+                        <property name="title" translatable="yes">IP</property>
+                        <property name="clickable">True</property>
+                        <property name="sort_indicator">True</property>
+                        <signal name="clicked" handler="on_treeviewcolumn11_clicked" swapped="no"/>
+                        <child>
+                          <object class="GtkCellRendererText" id="cellrenderertext12"/>
+                          <attributes>
+                            <attribute name="text">4</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkTreeViewColumn" id="treeviewcolumn16">
+                        <property name="title" translatable="yes">Status</property>
+                        <property name="clickable">True</property>
+                        <property name="sort_indicator">True</property>
+                        <signal name="clicked" handler="on_treeviewcolumn11_clicked" swapped="no"/>
+                        <child>
+                          <object class="GtkCellRendererText" id="cellrenderertext13"/>
+                          <attributes>
+                            <attribute name="text">5</attribute>
+                          </attributes>
+                        </child>
+                      </object>
                     </child>
                   </object>
                 </child>
@@ -997,34 +1126,5 @@
         </child>
       </object>
     </child>
-  </object>
-  <object class="GtkTreeStore" id="treestore1">
-    <columns>
-      <!-- column-name Zona -->
-      <column type="gchararray"/>
-      <!-- column-name Operativos -->
-      <column type="gchararray"/>
-      <!-- column-name En -->
-      <column type="gchararray"/>
-      <!-- column-name En1 -->
-      <column type="gchararray"/>
-      <!-- column-name Proyectados -->
-      <column type="gchararray"/>
-      <!-- column-name Nodo -->
-      <column type="gchararray"/>
-      <!-- column-name id -->
-      <column type="gint"/>
-    </columns>
-  </object>
-  <object class="GtkTreeStore" id="treestore2">
-    <columns>
-      <!-- column-name title -->
-      <column type="gchararray"/>
-      <!-- column-name nid -->
-      <column type="gint"/>
-    </columns>
-  </object>
-  <object class="GtkTreeModelFilter" id="treemodelfilter2">
-    <property name="child_model">treestore2</property>
   </object>
 </interface>

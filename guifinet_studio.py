@@ -64,8 +64,10 @@ class GuifinetStudio:
 		self.nodesList = self.ui.get_object("scrolledwindow1")
 		self.treestore = self.ui.get_object("treestore1")
 		self.treestore2 = self.ui.get_object("treestore2")
+		self.treestore3 = self.ui.get_object('treestore3')
 		self.treeview = self.ui.get_object("treeview1")
 		self.treeview2 = self.ui.get_object("treeview2")
+		self.treeview4 = self.ui.get_object('treeview4')
 		self.treemodelfilter2 = self.ui.get_object('treemodelfilter2')
 		searchentry = self.ui.get_object('searchentry')
 		self.treemodelfilter2.set_visible_func(filterbyname_func, searchentry)
@@ -128,7 +130,7 @@ class GuifinetStudio:
 				self.cnmlp = CNMLParser(cnmlFile)
 				# FIXME: only if necessary (there's a zone loaded already)
 				self.statusbar.push(0, _('Loaded "%s" successfully') %cnmlFile)
-				self.fillNodesTreeView()
+				self.fillTreeViews()
 				self.guifinetmap.paintMap(self.cnmlp.getNodes())
 				self.cnmlFile = cnmlFile
 			except IOError:
@@ -227,16 +229,33 @@ class GuifinetStudio:
 		nodesfilter.refilter()   
 		return False
 	
+
+	def fillTreeViews(self):
+		self.fillNodesTreeView()
+		#self.fillSidePane()
+		self.fillServicesTreeView()
+
+
+	def fillServicesTreeView(self):
+		self.treestore3.clear()
+		self.treestore3.set_sort_column_id (0, Gtk.SortType.ASCENDING)
+
+		self.__addServicesFromZoneToTree(self.cnmlp.rootzone)
+
+		self.treeview4.expand_all()
+
 		
 	# Clears TreeView and adds a hierarchy of zones and nodes
 	# It uses __addZoneToTree(), __addNodesFromZoneToTree and __fillNodesTreeView_recursive()
 	def fillNodesTreeView(self):
-		# Reset
+		# Init - Reset
 		self.treestore.clear()
 		self.treestore2.clear()
+
 		self.treestore.set_sort_column_id (5, Gtk.SortType.ASCENDING)
 		self.treestore2.set_sort_column_id (0, Gtk.SortType.ASCENDING)
 		
+
 		# Add root zone and its nodes first
 		parenttree = self.__addZoneToTree(self.cnmlp.rootzone, None)
 		self.__addNodesFromZoneToTree(self.cnmlp.rootzone, parenttree)
@@ -292,6 +311,41 @@ class GuifinetStudio:
 		tree = self.treestore.append(parentzone, row)
 		return tree
 		
+
+	# Hacky function
+	# Services are associated to a device.
+	# However, that device may not define an interface and the interface being used by a working service
+	# can be defined in other places. Possibilities:
+	#  1- the interface is defined in the same device
+	#  2- the interface is defined in the first radio of the device
+	#  3- the interface is defined in sibling device
+	# If there are several devices, how can I know which one defines the correct IP. Or are both correct?
+	def __addServicesFromZoneToTree(self, zid):
+		services = self.cnmlp.getServices()
+
+		for s in services:
+			node = s.parentNode.parentNode
+			if s.status == Status.WORKING: # FIXME, any other value? testing maybe?
+				ifs = s.parentNode.getInterfaces()
+				if ifs == []:
+					radios = s.parentNode.getRadios()
+					if radios == [] or radios[0].getInterfaces() == []:
+						# sibling device
+						for devi in s.parentNode.parentNode.getDevices():
+							for radio in devi.getRadios():
+								ifs = radio.getInterfaces()
+					else:
+						ifs = s.parentNode.getRadios()[0].getInterfaces()
+
+				if len(ifs) > 1:
+					ip = 'Several IPs'
+				else:
+					ip = ifs[0].ipv4
+			else:
+				ip = None
+
+			self.treestore3.append(None, (s.id, s.type, s.title, node.title, ip, Status.statusToStr(s.status)))
+
 
 	# Adds a row with the name of the node to the list of nodes (first tab) and to the 'nodes treeview' (second tab)
 	def __addNodesFromZoneToTree(self, zid, parentzone):
@@ -377,7 +431,7 @@ class GuifinetStudio:
 				self.cnmlp = CNMLParser(filename)
 				# FIXME: only if necessary (there's a zone loaded already)
 				self.reset()
-				self.fillNodesTreeView()
+				self.fillTreeViews()
 				self.guifinetmap.paintMap(self.cnmlp.getNodes())
 				self.cnmlFile = filename
 				self.closecnmlmenuitem.set_sensitive(True)
@@ -478,7 +532,7 @@ class GuifinetStudio:
 					self.cnmlp = CNMLParser(filename)
 					# FIXME: only if necessary (there's a zone loaded already)
 					self.reset()
-					self.fillNodesTreeView()
+					self.fillTreeViews()
 					self.guifinetmap.paintMap(self.cnmlp.getNodes())
 					self.cnmlFile = filename
 					
@@ -613,6 +667,23 @@ class GuifinetStudio:
 		raise NotImplementedError
 		
 		
+	def on_treeviewcolumn11_clicked(self, action, data=None):
+		#print action.get_sort_column_id()
+		(column_id, sorttype) = self.treestore3.get_sort_column_id()
+		name = action.get_name()
+
+		if sorttype == Gtk.SortType.ASCENDING:
+			sorttype = Gtk.SortType.DESCENDING
+		else:
+			sorttype = Gtk.SortType.ASCENDING
+
+		# 'treeviewcolumn1, treeviewcolumn, treeviewcolumn, ..., treeviewcolumn
+		#FIXME: really hacky
+		column_id = int(name[-1]) -1
+
+		self.treestore3.set_sort_column_id (column_id, sorttype)
+
+
 	def on_treeviewcolumn6_clicked(self, action, data=None):
 		#print action.get_sort_column_id()
 		(column_id, sorttype) = self.treestore.get_sort_column_id()
@@ -623,7 +694,8 @@ class GuifinetStudio:
 		else:
 			sorttype = Gtk.SortType.ASCENDING
 			
-		# 'treeview1, treeview2, treeview3, ..., treeview6
+		# 'treeviewcolumn1, treeviewcolumn, treeviewcolumn, ..., treeviewcolumn
+		#FIXME: really hacky
 		column_id = int(name[-1]) -1
 		
 		self.treestore.set_sort_column_id (column_id, sorttype)
