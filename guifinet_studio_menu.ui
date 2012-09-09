@@ -1,11 +1,11 @@
 <ui>
 	<popup name="KeyPopup1">
-		<menuitem action="action1"/>
+		<menuitem action="nodepropertiesaction"/>
 		<separator/>
-		<menuitem action="action2"/>
-		<menuitem action="action3"/>
+		<menuitem action="viewnodeinwebsiteaction"/>
+		<menuitem action="viewnodeinmapaction"/>
 		<separator/>
-		<menuitem action="action4"/>
+		<menuitem action="unsolclicaction"/>
 		<separator/>
 	</popup>
 </ui>

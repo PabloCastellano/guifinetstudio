@@ -1,31 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <!-- interface-requires gtk+ 3.0 -->
-  <object class="GtkActionGroup" id="actiongroup1">
+  <object class="GtkActionGroup" id="nodeactiongroup">
     <child>
-      <object class="GtkAction" id="action2">
+      <object class="GtkAction" id="viewnodeinwebsiteaction">
         <property name="label" translatable="yes">View in website</property>
-        <signal name="activate" handler="on_action2_activate" swapped="no"/>
+        <signal name="activate" handler="on_viewnodeinwebsiteaction_activate" swapped="no"/>
       </object>
     </child>
     <child>
-      <object class="GtkAction" id="action1">
+      <object class="GtkAction" id="nodepropertiesaction">
         <property name="label" translatable="yes">Properties</property>
-        <signal name="activate" handler="on_action1_activate" swapped="no"/>
+        <signal name="activate" handler="on_nodepropertiesaction_activate" swapped="no"/>
       </object>
     </child>
     <child>
-      <object class="GtkAction" id="action3">
+      <object class="GtkAction" id="viewnodeinmapaction">
         <property name="label" translatable="yes">View in map</property>
-        <signal name="activate" handler="on_action3_activate" swapped="no"/>
+        <signal name="activate" handler="on_viewnodeinmapaction_activate" swapped="no"/>
       </object>
     </child>
     <child>
-      <object class="GtkAction" id="action4">
+      <object class="GtkAction" id="unsolclicaction">
         <property name="label" translatable="yes">Unsolclic</property>
-        <signal name="activate" handler="on_action4_activate" swapped="no"/>
+        <signal name="activate" handler="on_unsolclicaction_activate" swapped="no"/>
       </object>
     </child>
+  </object>
+  <object class="GtkImage" id="image13">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="stock">gtk-save</property>
+  </object>
+  <object class="GtkImage" id="image14">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="stock">gtk-save</property>
   </object>
   <object class="GtkImage" id="image1">
     <property name="visible">True</property>
@@ -43,16 +53,6 @@
     <property name="stock">gtk-media-forward</property>
   </object>
   <object class="GtkImage" id="image12">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="stock">gtk-save</property>
-  </object>
-  <object class="GtkImage" id="image13">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="stock">gtk-save</property>
-  </object>
-  <object class="GtkImage" id="image14">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="stock">gtk-save</property>
@@ -92,6 +92,7 @@
     <property name="can_focus">False</property>
     <property name="stock">gtk-go-forward</property>
   </object>
+  <object class="GtkTreeStore" id="treestore3"/>
   <object class="GtkWindow" id="mainWindow">
     <property name="width_request">800</property>
     <property name="height_request">500</property>
@@ -103,18 +104,18 @@
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <child>
-          <object class="GtkMenuBar" id="menubar1">
+          <object class="GtkMenuBar" id="menubar">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <child>
-              <object class="GtkMenuItem" id="menuitem1">
+              <object class="GtkMenuItem" id="filemenuitem">
                 <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">_File</property>
                 <property name="use_underline">True</property>
                 <child type="submenu">
-                  <object class="GtkMenu" id="menu1">
+                  <object class="GtkMenu" id="filemenu">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <child>
@@ -136,25 +137,25 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkImageMenuItem" id="imagemenuitem2">
+                      <object class="GtkImageMenuItem" id="opencnmlmenuitem">
                         <property name="label">gtk-open</property>
                         <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
-                        <signal name="activate" handler="on_imagemenuitem2_activate" swapped="no"/>
+                        <signal name="activate" handler="on_opencnmlmenuitem_activate" swapped="no"/>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkImageMenuItem" id="imagemenuitem3">
+                      <object class="GtkImageMenuItem" id="closecnmlmenuitem">
                         <property name="label">gtk-close</property>
                         <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
-                        <signal name="activate" handler="on_imagemenuitem3_activate" swapped="no"/>
+                        <signal name="activate" handler="on_closecnmlmenuitem_activate" swapped="no"/>
                       </object>
                     </child>
                     <child>
@@ -211,7 +212,7 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkImageMenuItem" id="imagemenuitem5">
+                      <object class="GtkImageMenuItem" id="quitmenuitem">
                         <property name="label">gtk-quit</property>
                         <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
@@ -226,14 +227,14 @@
               </object>
             </child>
             <child>
-              <object class="GtkMenuItem" id="menuitem8">
+              <object class="GtkMenuItem" id="editmenuitem">
                 <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">_Edit</property>
                 <property name="use_underline">True</property>
                 <child type="submenu">
-                  <object class="GtkMenu" id="menu5">
+                  <object class="GtkMenu" id="editmenu">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <child>
@@ -325,36 +326,36 @@
               </object>
             </child>
             <child>
-              <object class="GtkMenuItem" id="menuitem2">
+              <object class="GtkMenuItem" id="viewmenuitem">
                 <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">_View</property>
                 <property name="use_underline">True</property>
                 <child type="submenu">
-                  <object class="GtkMenu" id="menu4">
+                  <object class="GtkMenu" id="viewmenu">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <child>
-                      <object class="GtkCheckMenuItem" id="menuitem5">
+                      <object class="GtkCheckMenuItem" id="viewstatusbarmenuitem">
                         <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">Statusbar</property>
                         <property name="use_underline">True</property>
                         <property name="active">True</property>
-                        <signal name="toggled" handler="on_menuitem5_toggled" swapped="no"/>
+                        <signal name="toggled" handler="on_viewstatusbarmenuitem_toggled" swapped="no"/>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkCheckMenuItem" id="menuitem6">
+                      <object class="GtkCheckMenuItem" id="viewsidepanemenuitem">
                         <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">Side Pane</property>
                         <property name="use_underline">True</property>
                         <property name="active">True</property>
-                        <signal name="toggled" handler="on_menuitem6_toggled" swapped="no"/>
+                        <signal name="toggled" handler="on_viewsidepanemenuitem_toggled" swapped="no"/>
                       </object>
                     </child>
                     <child>
@@ -408,14 +409,14 @@
               </object>
             </child>
             <child>
-              <object class="GtkMenuItem" id="menuitem3">
+              <object class="GtkMenuItem" id="toolsmenuitem">
                 <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">_Tools</property>
                 <property name="use_underline">True</property>
                 <child type="submenu">
-                  <object class="GtkMenu" id="menu2">
+                  <object class="GtkMenu" id="toolsmenu">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <child>
@@ -466,25 +467,25 @@
               </object>
             </child>
             <child>
-              <object class="GtkMenuItem" id="menuitem4">
+              <object class="GtkMenuItem" id="helpmenuitem">
                 <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">_Help</property>
                 <property name="use_underline">True</property>
                 <child type="submenu">
-                  <object class="GtkMenu" id="menu3">
+                  <object class="GtkMenu" id="helpmenu">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <child>
-                      <object class="GtkImageMenuItem" id="imagemenuitem10">
+                      <object class="GtkImageMenuItem" id="aboutimagemenuitem">
                         <property name="label">gtk-about</property>
                         <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
-                        <signal name="activate" handler="on_imagemenuitem10_activate" swapped="no"/>
+                        <signal name="activate" handler="on_aboutimagemenuitem_activate" swapped="no"/>
                       </object>
                     </child>
                   </object>
@@ -610,7 +611,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkButton" id="button5">
+                              <object class="GtkButton" id="closesidepanebutton">
                                 <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
@@ -618,7 +619,7 @@
                                 <property name="use_action_appearance">False</property>
                                 <property name="relief">none</property>
                                 <property name="image_position">right</property>
-                                <signal name="clicked" handler="on_button5_clicked" swapped="no"/>
+                                <signal name="clicked" handler="on_closesidepanebutton_clicked" swapped="no"/>
                                 <child>
                                   <object class="GtkImage" id="image3">
                                     <property name="visible">True</property>
@@ -945,7 +946,24 @@
               </packing>
             </child>
             <child>
-              <placeholder/>
+              <object class="GtkScrolledWindow" id="scrolledwindow3">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="shadow_type">in</property>
+                <child>
+                  <object class="GtkTreeView" id="treeview4">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="model">treestore3</property>
+                    <child internal-child="selection">
+                      <object class="GtkTreeSelection" id="treeview-selection4"/>
+                    </child>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="position">2</property>
+              </packing>
             </child>
             <child type="tab">
               <object class="GtkLabel" id="label21">
@@ -980,17 +998,6 @@
       </object>
     </child>
   </object>
-  <object class="GtkTreeStore" id="treestore2">
-    <columns>
-      <!-- column-name title -->
-      <column type="gchararray"/>
-      <!-- column-name nid -->
-      <column type="gint"/>
-    </columns>
-  </object>
-  <object class="GtkTreeModelFilter" id="treemodelfilter2">
-    <property name="child_model">treestore2</property>
-  </object>
   <object class="GtkTreeStore" id="treestore1">
     <columns>
       <!-- column-name Zona -->
@@ -1008,5 +1015,16 @@
       <!-- column-name id -->
       <column type="gint"/>
     </columns>
+  </object>
+  <object class="GtkTreeStore" id="treestore2">
+    <columns>
+      <!-- column-name title -->
+      <column type="gchararray"/>
+      <!-- column-name nid -->
+      <column type="gint"/>
+    </columns>
+  </object>
+  <object class="GtkTreeModelFilter" id="treemodelfilter2">
+    <property name="child_model">treestore2</property>
   </object>
 </interface>

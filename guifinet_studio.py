@@ -70,11 +70,12 @@ class GuifinetStudio:
 		searchentry = self.ui.get_object('searchentry')
 		self.treemodelfilter2.set_visible_func(filterbyname_func, searchentry)
 		self.statusbar = self.ui.get_object("statusbar1")
-		self.actiongroup1 = self.ui.get_object("actiongroup1")
-		self.menuitem6 = self.ui.get_object("menuitem6")
+		self.viewsidepanemenuitem = self.ui.get_object('viewsidepanemenuitem')
 
-		self.imagemenuitem2 = self.ui.get_object('imagemenuitem2')
-		self.imagemenuitem3 = self.ui.get_object('imagemenuitem3')
+		# File menu
+		self.closecnmlmenuitem = self.ui.get_object('closecnmlmenuitem')
+		
+		# Edit menu
 		self.createnodemenuitem = self.ui.get_object('createnodemenuitem')
 		self.createzonemenuitem = self.ui.get_object('createzonemenuitem')
 		self.createdevicemenuitem = self.ui.get_object('createdevicemenuitem')
@@ -93,8 +94,9 @@ class GuifinetStudio:
 		
 		self.uimanager = Gtk.UIManager()
 		self.uimanager.add_ui_from_file("guifinet_studio_menu.ui")
-		self.uimanager.insert_action_group(self.actiongroup1)
-		self.menu1 = self.uimanager.get_widget("/KeyPopup1")
+		nodeactiongroup = self.ui.get_object("nodeactiongroup")
+		self.uimanager.insert_action_group(nodeactiongroup)
+		self.nodemenu = self.uimanager.get_widget("/KeyPopup1")
 
 		self.t6 = self.ui.get_object("treeviewcolumn6")
 			
@@ -126,7 +128,7 @@ class GuifinetStudio:
 				self.cnmlp = CNMLParser(cnmlFile)
 				# FIXME: only if necessary (there's a zone loaded already)
 				self.statusbar.push(0, _('Loaded "%s" successfully') %cnmlFile)
-				self.completaArbol()
+				self.fillNodesTreeView()
 				self.guifinetmap.paintMap(self.cnmlp.getNodes())
 				self.cnmlFile = cnmlFile
 			except IOError:
@@ -137,7 +139,7 @@ class GuifinetStudio:
 		
 		if not self.cnmlp:
 			# Disable menus
-			self.imagemenuitem3.set_sensitive(False)
+			self.closecnmlmenuitem.set_sensitive(False)
 			self.enable_api_menuitems(False)
 			
 		# Guifi.net API
@@ -224,38 +226,47 @@ class GuifinetStudio:
 		nodesfilter = self.treeview2.get_model()
 		nodesfilter.refilter()   
 		return False
+	
 		
-		
-	def completaArbol(self):
+	# Clears TreeView and adds a hierarchy of zones and nodes
+	# It uses __addZoneToTree(), __addNodesFromZoneToTree and __fillNodesTreeView_recursive()
+	def fillNodesTreeView(self):
+		# Reset
 		self.treestore.clear()
 		self.treestore2.clear()
-		# Add root zone
+		self.treestore.set_sort_column_id (5, Gtk.SortType.ASCENDING)
+		self.treestore2.set_sort_column_id (0, Gtk.SortType.ASCENDING)
+		
+		# Add root zone and its nodes first
 		parenttree = self.__addZoneToTree(self.cnmlp.rootzone, None)
 		self.__addNodesFromZoneToTree(self.cnmlp.rootzone, parenttree)
 		
-		# Iter for every zone (except root) and adds them with nodes to the TreeView
-		self.__completaArbol_recursive(self.cnmlp.rootzone, parenttree)
-										
-		self.treeview.expand_all()
+		#### Iter for every zone (except root, which is already added)
+		#### and adds them and their nodes to the TreeView
+		self.__fillNodesTreeView_recursive(self.cnmlp.rootzone, parenttree)
+		####
 		
-		self.treestore.set_sort_column_id (5, Gtk.SortType.ASCENDING)
-		self.treestore2.set_sort_column_id (0, Gtk.SortType.ASCENDING)
+		# Finish
+		self.treeview.expand_all()
 		self.statusbar.push(0, _('CNML loaded successfully'))
 
 
-	# Recursive
-	def __completaArbol_recursive(self, parentzid, parenttree):
+	# Recursive fillNodesTreeView()
+	def __fillNodesTreeView_recursive(self, parentzid, parenttree):
 		zones = self.cnmlp.getSubzonesFromZone(parentzid)
 		
+		# For every zone, add it to the treeview and then add its nodes and subzones
 		for z in zones:
 			tree = self.__addZoneToTree(z.id, parenttree)
 			self.__addNodesFromZoneToTree(z.id, tree)
-			self.__completaArbol_recursive(z.id, tree)
-			
+			self.__fillNodesTreeView_recursive(z.id, tree)
 		
+	
+	# Adds a row with the name of the zone and the number of nodes for each status (working, planned...)
 	def __addZoneToTree(self, zid, parentzone):
 		
 		# Given a list of node ids, counts how many of them are for each status (working, planned...)
+		# TODO: Rewrite this part
 		def countNodes(nodes):
 			nodescount = dict()
 			nodescount[Status.RESERVED] = 0
@@ -269,23 +280,20 @@ class GuifinetStudio:
 				nodescount[n.status] += 1
 			
 			return (nodescount[Status.PLANNED], nodescount[Status.WORKING], nodescount[Status.TESTING], nodescount[Status.BUILDING])
-
+		
 		zone = self.cnmlp.getZone(zid)
 		nodes = zone.getNodes()
 		
 		col1 = "%s (%d)" %(zone.title, len(nodes))
 		(nplanned, nworking, ntesting, nbuilding) = countNodes(nodes)
-
-		# Add a new row for the zone
+		
+		# Add the new row for the zone
 		row = (col1, str(nworking), str(nbuilding), str(ntesting), str(nplanned), None, None)
 		tree = self.treestore.append(parentzone, row)
 		return tree
 		
-		
-	def create_new_node(self, coords):
-		EditNodeDialog(self.guifiAPI, self.cnmlp.getZones(), self.zonecnmlp, self.allZones, coords)
 
-	
+	# Adds a row with the name of the node to the list of nodes (first tab) and to the 'nodes treeview' (second tab)
 	def __addNodesFromZoneToTree(self, zid, parentzone):
 		nodes = self.cnmlp.getNodesFromZone(zid)
 		for n in nodes:
@@ -294,11 +302,17 @@ class GuifinetStudio:
 			self.treestore2.append(None, (n.title, n.id))
 
 
-	def on_action1_activate(self, action, data=None):
+	# Shows the 'Create new node' dialog
+	def create_new_node(self, coords):
+		EditNodeDialog(self.guifiAPI, self.cnmlp.getZones(), self.zonecnmlp, self.allZones, coords)
+
+	
+	# Shows the 'Node' dialog
+	def on_nodepropertiesaction_activate(self, action, data=None):
 		NodeDialog()
 	
 	
-	def on_action2_activate(self, action, data=None):
+	def on_viewnodeinwebsiteaction_activate(self, action, data=None):
 		# get node id
 		sel = self.treeview.get_selection()
 		(model, it) = sel.get_selected()
@@ -307,7 +321,7 @@ class GuifinetStudio:
 		Gtk.show_uri(None, self.guifiAPI.urlForNode(nid), Gtk.get_current_event_time())
 
 
-	def on_action3_activate(self, action, data=None):
+	def on_viewnodeinmapaction_activate(self, action, data=None):
 		self.notebook1.set_current_page(0)		
 
 		# get node id
@@ -321,8 +335,7 @@ class GuifinetStudio:
 		self.guifinetmap.getView().center_on(lat, lon)
 		
 	
-	
-	def on_action4_activate(self, action, data=None):
+	def on_unsolclicaction_activate(self, action, data=None):
 		# get node id
 		sel = self.treeview.get_selection()
 		(model, it) = sel.get_selected()
@@ -352,7 +365,7 @@ class GuifinetStudio:
 		########
 			
 	
-	def on_imagemenuitem2_activate(self, widget, data=None):
+	def on_opencnmlmenuitem_activate(self, widget, data=None):
 		dialog = Gtk.FileChooserDialog(_('Open CNML file'), self.mainWindow,
 				Gtk.FileChooserAction.OPEN,
 				(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.ACCEPT))
@@ -364,10 +377,10 @@ class GuifinetStudio:
 				self.cnmlp = CNMLParser(filename)
 				# FIXME: only if necessary (there's a zone loaded already)
 				self.reset()
-				self.completaArbol()
+				self.fillNodesTreeView()
 				self.guifinetmap.paintMap(self.cnmlp.getNodes())
 				self.cnmlFile = filename
-				self.imagemenuitem3.set_sensitive(True)
+				self.closecnmlmenuitem.set_sensitive(True)
 			except IOError:
 				self.statusbar.push(0, _('CNML file "%s" couldn\'t be loaded') %self.cnmlFile)
 				self.cnmlFile = None
@@ -383,15 +396,17 @@ class GuifinetStudio:
 		self.treestore2.clear()
 		self.guifinetmap.reset()
 		
-	def on_imagemenuitem3_activate(self, widget=None, data=None):
+	
+	def on_closecnmlmenuitem_activate(self, widget=None, data=None):
 		self.reset()
 		self.statusbar.push(0, _('Closed CNML file'))
-		self.imagemenuitem3.set_sensitive(False)
+		self.closecnmlmenuitem.set_sensitive(False)
 		self.cnmlFile = None
 		self.cnmlp = None
 		
 		self.enable_api_menuitems(False)
 		
+	
 	def gtk_main_quit(self, widget, data=None):
 		Gtk.main_quit()
 	
@@ -423,7 +438,7 @@ class GuifinetStudio:
 		PreferencesDialog(self.configmanager, self.zonecnmlp, self.allZones)
 		
 				
-	def on_menuitem5_toggled(self, widget, data=None):
+	def on_viewstatusbarmenuitem_toggled(self, widget, data=None):
 		isActive = widget.get_active()
 		
 		if isActive:
@@ -432,7 +447,7 @@ class GuifinetStudio:
 			self.statusbar.hide()
 
 
-	def on_menuitem6_toggled(self, widget, data=None):
+	def on_viewsidepanemenuitem_toggled(self, widget, data=None):
 		isActive = widget.get_active()
 		
 		if isActive:
@@ -463,7 +478,7 @@ class GuifinetStudio:
 					self.cnmlp = CNMLParser(filename)
 					# FIXME: only if necessary (there's a zone loaded already)
 					self.reset()
-					self.completaArbol()
+					self.fillNodesTreeView()
 					self.guifinetmap.paintMap(self.cnmlp.getNodes())
 					self.cnmlFile = filename
 					
@@ -473,7 +488,7 @@ class GuifinetStudio:
 					self.cnmlp = None
 					
 				active = self.cnmlp is not None
-				self.imagemenuitem3.set_sensitive(active)
+				self.closecnmlmenuitem.set_sensitive(active)
 				self.enable_api_menuitems(active)
 			
 		dialog.destroy()
@@ -500,7 +515,7 @@ class GuifinetStudio:
 			g.destroy()
 		
 
-	def on_imagemenuitem10_activate(self, widget, data=None):
+	def on_aboutimagemenuitem_activate(self, widget, data=None):
 		dialog = Gtk.AboutDialog()
 		dialog.set_program_name('Guifi·net Studio')
 		dialog.set_version('v1.0')
@@ -535,9 +550,9 @@ class GuifinetStudio:
 		self.notebook1.set_current_page(2)
 		
 		
-	def on_button5_clicked(self, widget, data=None):
+	def on_closesidepanebutton_clicked(self, widget, data=None):
 		self.box1.hide()
-		self.menuitem6.set_active(False)
+		self.viewsidepanemenuitem.set_active(False)
 
 			
 	def on_treeview1_button_release_event(self, widget, data=None):
@@ -552,7 +567,7 @@ class GuifinetStudio:
 		if data.button == 3: # Right button
 			if col is self.t6 and model.get_value(it, 5) is not None: 
 				#user clicked on a node
-				self.menu1.popup(None, None, None, None, data.button, data.time)
+				self.nodemenu.popup(None, None, None, None, data.button, data.time)
 	
 
 	def on_treeview2_button_release_event(self, widget, data=None):
