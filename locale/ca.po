@@ -1,0 +1,1137 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# 
+# Translators:
+#   <al@blogmail.cc>, 2012.
+#   <cbk914@riseup.net>, 2012.
+# Pablo Castellano <pablo@anche.no>, 2012.
+msgid ""
+msgstr ""
+"Project-Id-Version: Guifi.net Studio\n"
+"Report-Msgid-Bugs-To: http://trac.guifi.net/\n"
+"POT-Creation-Date: 2012-08-17 12:00+0200\n"
+"PO-Revision-Date: 2012-08-28 22:11+0000\n"
+"Last-Translator: Pablo Castellano <pablo@anche.no>\n"
+"Language-Team: Catalan (http://www.transifex.com/projects/p/guifinetstudio/language/ca/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ca\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: configmanager.py:37
+msgid "Use GNOME Keyring:"
+msgstr "Fer servir l'Anell de claus de GNOME"
+
+#: configmanager.py:40
+msgid "GNOME Keyring dependency not available"
+msgstr "La dependència Anell de claus de GNOME no està disponible"
+
+#: configmanager.py:41
+msgid "Using plain text configuration files instead"
+msgstr "Al seu lloc es faran servir arxius de configuració en text pla"
+
+#: configmanager.py:59
+msgid "No configuration found. Creating a default one in"
+msgstr "No s'ha trobat una configuració. Creant una per defecte a"
+
+#: configmanager.py:66
+msgid "No cache folder found. Creating"
+msgstr "No s'ha trobat el directori de memòria cau. Creant un"
+
+#: configmanager.py:79
+msgid "Error reading file:"
+msgstr "Error llegint l'arxiu:"
+
+#: configmanager.py:121
+msgid "Error reading username in GNOME Keyring :-("
+msgstr "Error llegint el nom d'usuària a l'Anell de claus de GNOME :-("
+
+#: configmanager.py:161
+msgid "Error reading password in GNOME Keyring :-("
+msgstr "Error llegint la contrasenya a l'Anell de claus de GNOME :-("
+
+#: configmanager.py:231
+msgid "Key doesn't exist in GNOME Keyring. Creating again..."
+msgstr "La clau no existeix al clauer GNOME. Creant-la de nou..."
+
+#: guifinet_studio.py:105
+msgid "No default zone. Please choose one"
+msgstr "Cap zona per defecte. Si us plau selecciona una"
+
+#: guifinet_studio.py:116
+#, python-format
+msgid "Loaded \"%s\" successfully"
+msgstr "Carregat \"%s\" satisfactoriament"
+
+#: guifinet_studio.py:120
+msgid "Error loading CNML"
+msgstr "Error carregant CNML"
+
+#: guifinet_studio.py:121 guifinet_studio.py:177 guifinet_studio.py:336
+#: guifinet_studio.py:423
+#, python-format
+msgid "CNML file \"%s\" couldn't be loaded"
+msgstr "L'arxiu CNML \"%s\" no es pot carregar"
+
+#: guifinet_studio.py:128
+msgid "Some required data to initialize Guifi.net API is not available."
+msgstr "Algunes dades necessaries per inicialitzar l'API de Guifi.net no son disponibles."
+
+#: guifinet_studio.py:129
+msgid "Please check username, password and host in preferences"
+msgstr "Si us plau comprova el nom d'usuari, la contrassenya y les preferencies del host"
+
+#: guifinet_studio.py:139
+msgid "Export to GML"
+msgstr "Exportar a GML"
+
+#: guifinet_studio.py:144
+msgid "Save KML file"
+msgstr "Desar arxiu KML"
+
+#: guifinet_studio.py:154
+msgid "Export to KML"
+msgstr "Exportar a KML"
+
+#: guifinet_studio.py:165
+msgid "Error loading cnml guifiworld zone:"
+msgstr "Error carregant la zona cnml guifiworld"
+
+#: guifinet_studio.py:166
+msgid ""
+"Guifi.net Studio will run normally but note that some features are disabled"
+msgstr "Guifi.net Studio s'executara normalment, pero teniu en compte que algunes caracteristiques hi son deshabilitades"
+
+#: guifinet_studio.py:167
+msgid ""
+"To solve it, just download the Guifi.net World zones CNML going to Tools -> "
+"Update zones"
+msgstr "Per solucionar-ho, descarrega les zones CNML de Guifi.net World des de Eines -> Actualitzar zones"
+
+#: guifinet_studio.py:169
+msgid ""
+"Error loading Guifi.net World zone\n"
+"\n"
+msgstr "Error carregant la zona Guifi.net World\\n \\n"
+
+#: guifinet_studio.py:170
+msgid ""
+"Guifi.net Studio will run normally but note that some features are "
+"disabled\n"
+msgstr "Guifi.net Studio s'executarà amb normalitat pero tingues en compte que\ncertes característiques estan deshabilitades\\n"
+
+#: guifinet_studio.py:171
+msgid "To solve it, just download the Guifi.net World zones CNML again\n"
+msgstr "Per solucionar-ho, hauràs de descarregar les zones CNML de Guifi.net World de nou\\n"
+
+#: guifinet_studio.py:172
+msgid "You can go to Tools -> Update zones"
+msgstr "Ves-hi a Eines-> Actualitzar zones"
+
+#: guifinet_studio.py:174
+#, python-format
+msgid "File not found: %s"
+msgstr "No es troba l'arxiu: %s"
+
+#: guifinet_studio.py:208
+msgid "CNML loaded successfully"
+msgstr "CNML carregat satisfactoriament"
+
+#: guifinet_studio.py:302
+msgid ""
+"Couldn't generate unsolclick.\n"
+"The node doesn't have any device defined."
+msgstr "No es pot generar l'unsolclic.⏎ El node no te cap dispositiu definit."
+
+#: guifinet_studio.py:303
+msgid "Error generating unsolclic"
+msgstr "Error generant l'unsolclic"
+
+#: guifinet_studio.py:309
+msgid "Several devices in this node. Generating just the first one."
+msgstr "Varis dispositius a aquest node. Generant nomes el primer."
+
+#: guifinet_studio.py:310
+msgid "Warning generating unsolclic"
+msgstr "Advertencia generant unsolclic"
+
+#: guifinet_studio.py:321
+msgid "Open CNML file"
+msgstr "Obrir arxiu CNML"
+
+#: guifinet_studio.py:346
+msgid "Closed CNML file"
+msgstr "Arxiu CNML tancat"
+
+#: guifinet_studio.py:438
+msgid "Zone saved successfully to"
+msgstr "Zona desada satisfactoriament a "
+
+#: guifinet_studio.py:441
+msgid "Error accessing to the Internets:"
+msgstr "Error accedint a Internet:"
+
+#: guifinet_studio.py:443
+msgid "Error accessing to the Internets:\n"
+msgstr "Error accedint a Internet:\\n"
+
+#: guifinet_studio.py:444
+msgid "Error downloading CNML"
+msgstr "Error descarregant CNML"
+
+#: guifinet_studio.py:454
+msgid "Grow your own Internets!"
+msgstr "Fes creixer la teva propia Internet!"
+
+#: guifinet_studio.py:456
+msgid "Author's blog"
+msgstr "Blog de l'autor"
+
+#: guifinet_studio.py:576
+msgid "Reusing valid auth token:"
+msgstr "Reutilitzant la fitxa d'autenticacio:"
+
+#: guifinet_studio.py:579
+msgid "not valid token -> authenticating..."
+msgstr "Fitxa no valida -> Autenticant..."
+
+#: guifinet_studio.py:586
+msgid "Logged into Guifi.net"
+msgstr "Sessio iniciada a Guifi.net"
+
+#: guifinet_studio.py:588
+msgid "Couldn't login into Guifi.net: check your Internet connection"
+msgstr "No es pot iniciar sessio a Guifi.net: comprova la teva conexio a Internet"
+
+#: guifinet_studio.py:591
+msgid "Couldn't login into Guifi.net:\n"
+msgstr "No es pot iniciar sessió a Guifi.net\\n"
+
+#: ui.py:45
+msgid "Unsolclic for node "
+msgstr "Unsolclic pel node"
+
+#: ui.py:60
+msgid "Autoload configuration"
+msgstr "Configuracio de carrega automatica"
+
+#: ui.py:63
+msgid "Copy usc to clipboard"
+msgstr "Copiar usc al portapapers"
+
+#: ui.py:98 ui/editnodedialog.ui:11 ui/mainwindow.ui:241
+msgid "Create new Guifi.net node"
+msgstr "Crear nou node de Guifi.net"
+
+#: ui.py:172 ui.py:266 ui.py:359 ui.py:472
+msgid "There's some invalid data"
+msgstr "Hi han algunes dades no valides"
+
+#: ui.py:325 ui/editdevicedialog.ui:7 ui/mainwindow.ui:263
+msgid "Create new Guifi.net device"
+msgstr "Crear nou dispositiu de Guifi.net"
+
+#: ui.py:458 ui/editinterfacedialog.ui:7 ui/mainwindow.ui:274
+msgid "Create new Guifi.net radio"
+msgstr "Crear nova radio de Guifi.net"
+
+#: ui.py:564 ui/editradiodialog.ui:19 ui/mainwindow.ui:285
+msgid "Create new Guifi.net interface"
+msgstr "Crear nova interficies de Guifi.net"
+
+#: ui.py:611 ui/editlinkdialog.ui:7 ui/mainwindow.ui:296
+msgid "Create new Guifi.net link"
+msgstr "Crear nou enllaç de Guifi.net"
+
+#: ui.py:686
+msgid "Error: there's no guifi.net world zones cnml"
+msgstr "Error: no hi ha cap zona cnml de guifi.net world"
+
+#: ui.py:687
+msgid ""
+"Guifi.net World zones CNML file couldn't be found\n"
+"\n"
+"You have to download it first by going to Tools -> Update zones"
+msgstr "No es pot trovar l'arxiu de zona CNML de Guifi.net World⏎⏎ El pots descarregar des d'Eines -> Actualitzar zones"
+
+#: ui.py:689
+msgid "File not found"
+msgstr "Arxiu no trovat"
+
+#: ui.py:701
+msgid "Downloading zone:"
+msgstr "Descarregant zona:"
+
+#: ui.py:708
+#, python-format
+msgid "CNML (%s) saved successfully to"
+msgstr "CNML (%s) desat satisfactoriament a"
+
+#: ui.py:753
+msgid "Error: there's no Guifi.net world zones CNML"
+msgstr "Error: No hi han zones CNML de Guifi.net World"
+
+#: ui.py:781
+msgid "Information about node"
+msgstr "Informació sobre el node"
+
+#: ui.py:847
+msgid "Most recently used"
+msgstr "Recentment més utilitzades"
+
+#: ui.py:913
+#, python-format
+msgid ""
+"Error %d: %s\n"
+"\n"
+"Error message:\n"
+"%s"
+msgstr "Error %d: %s⏎ ⏎ Missatge d'error:⏎ %s"
+
+#: ui.py:915 ui.py:969
+msgid "Response from server"
+msgstr "Resposta del servidor"
+
+#: ui.py:923
+#, python-format
+msgid ""
+"You are about to create a new %s.\n"
+"Please choose where you want to create it"
+msgstr "Estas a punt de crear un nou %s:⏎ Si us plau selecciona on el vols crear"
+
+#: ui.py:925
+#, python-format
+msgid ""
+"You are about to create the %s named \"%s\".\n"
+"Please choose where you want to create it"
+msgstr "Estas a punt de crear el %s de nom \"%s\". ⏎ Si us plau selecciona on el vols crear"
+
+#: ui.py:939
+#, python-format
+msgid ""
+"%s successfully created with id %d\n"
+"\n"
+"Information:\n"
+msgstr "%s creat satisfactòriament amb id %d\\n \\n  Informació: \\n"
+
+#: ui.py:945 ui.py:962
+#, python-format
+msgid ""
+"\n"
+"You can view it in the following url:\n"
+"%s"
+msgstr "\nPots veure'l a la següent url:\n%s "
+
+#: ui.py:949
+#, python-format
+msgid ""
+"Radio successfully created with id %d\n"
+"\n"
+"Information:\n"
+msgstr "Ràdio creada satisfactòriament amb id %d\\n \\n Informació: \\n"
+
+#: ui.py:965
+#, python-format
+msgid ""
+"%s succesfully created with id %d\n"
+"\n"
+"You can view it in the following url:\n"
+"%s"
+msgstr "%s creat satisfactòriament amb id %d⏎ ⏎ Pots veure'l a la següent url:⏎ %s"
+
+#: ui.py:968
+msgid "Open in web browser"
+msgstr "Obrir al navegador web"
+
+#: ui.py:991
+msgid "ERROR: Zone title not found!"
+msgstr "ERROR: No s'ha trobat l'arxiu de zona!"
+
+#: unsolclic.py:42
+msgid "Supported devices:"
+msgstr "Dispositius suportats:"
+
+#: utils.py:55
+msgid "Opening in web browser:"
+msgstr "Obrint al navegador web:"
+
+#: utils.py:64
+msgid "CNML2KML: function not available. kmldom module not found"
+msgstr "CNML2KML: funció no disponible. No s'ha trobat el módul kmldom "
+
+#: ui/calc.ui:9
+msgid "Wireless links calculator"
+msgstr "Calculador d'enllaços inalàmbrics"
+
+#: ui/calc.ui:61
+msgid "Unit converter"
+msgstr "Conversor d'unitats"
+
+#: ui/calc.ui:77
+msgid "Cable attenuation"
+msgstr "Atenuació del cable"
+
+#: ui/calc.ui:93
+msgid "Power emission"
+msgstr "Potència d'emissió"
+
+#: ui/calc.ui:133
+msgid "Value:  "
+msgstr "Valor:"
+
+#: ui/calc.ui:161
+msgid ".... mW"
+msgstr "... mW"
+
+#: ui/calc.ui:174 ui/calc.ui:187
+msgid "... dBm"
+msgstr "... dBm"
+
+#: ui/calc.ui:200
+msgid "... mW"
+msgstr "... mW"
+
+#: ui/calc.ui:226
+msgid "dBm / mW"
+msgstr "dBm / mW"
+
+#: ui/calc.ui:235 ui/editradiodialog.ui:544 ui/mainwindow.ui:823
+msgid "page 1"
+msgstr "pàgina 1"
+
+#: ui/calc.ui:270
+msgid "Coaxial cable:"
+msgstr "Cable coaxial:"
+
+#: ui/calc.ui:283
+msgid "Length (cm): "
+msgstr "Longitud (cm):"
+
+#: ui/calc.ui:296
+msgid "Frequency (MHz): "
+msgstr "Freqüència (MHz):"
+
+#: ui/calc.ui:310
+msgid "Loss:"
+msgstr "Pèrdua:"
+
+#: ui/calc.ui:327 ui/calc.ui:507
+msgid "300"
+msgstr "300"
+
+#: ui/calc.ui:342 ui/calc.ui:522
+msgid "2445"
+msgstr "2445"
+
+#: ui/calc.ui:356
+msgid "some dB"
+msgstr "alguns dB"
+
+#: ui/calc.ui:377 ui/editradiodialog.ui:564 ui/mainwindow.ui:939
+msgid "page 2"
+msgstr "pàgina 2"
+
+#: ui/calc.ui:392
+msgid "Radio power (mW): "
+msgstr "Potència de la ràdio (mW):"
+
+#: ui/calc.ui:405
+msgid "Coaxial cable: "
+msgstr "Cable coaxial:"
+
+#: ui/calc.ui:418
+msgid "Length (cm):"
+msgstr "Longitud (cm):"
+
+#: ui/calc.ui:431
+msgid "Frequency (MHz):"
+msgstr "Freqüència (MHz):"
+
+#: ui/calc.ui:444
+msgid "Other losses:"
+msgstr "Altres pèrdues:"
+
+#: ui/calc.ui:458
+msgid "65"
+msgstr "65"
+
+#: ui/calc.ui:493
+msgid "Antenna gain:"
+msgstr "Ganància de l'antena:"
+
+#: ui/calc.ui:537
+msgid "0"
+msgstr "0"
+
+#: ui/calc.ui:552
+msgid "3"
+msgstr "3"
+
+#: ui/calc.ui:566
+msgid "Emitted power:"
+msgstr "Potència d'emissió:"
+
+#: ui/calc.ui:582
+msgid "EiRP:"
+msgstr "EiRP"
+
+#: ui/calc.ui:598
+msgid "some mW"
+msgstr "algun mW"
+
+#: ui/calc.ui:614
+msgid "some W"
+msgstr "algun W"
+
+#: ui/calc.ui:635 ui/editradiodialog.ui:578 ui/mainwindow.ui:953
+msgid "page 3"
+msgstr "pagina 3"
+
+#: ui/changezonedialog.ui:74 ui/changezonedialog.ui:75
+msgid "Select the zone that you want to change to:"
+msgstr "Selecciona la zona que vols canviar:"
+
+#: ui/cnmldialog.ui:23
+msgid "CNML data"
+msgstr "Dades CNML"
+
+#: ui/cnmldialog.ui:49
+msgid "ID"
+msgstr "ID"
+
+#: ui/cnmldialog.ui:60
+msgid "Title"
+msgstr "Titol"
+
+#: ui/cnmldialog.ui:71 ui/mainwindow.ui:527
+msgid "Nodes"
+msgstr "Nodes"
+
+#: ui/cnmldialog.ui:82 ui/mainwindow.ui:758
+msgid "Zones"
+msgstr "Zones"
+
+#: ui/cnmldialog.ui:93
+msgid "Detail"
+msgstr "Detall"
+
+#: ui/cnmldialog.ui:119
+msgid "Download a new zone: "
+msgstr "Descarrega una nova zona:"
+
+#: ui/cnmldialog.ui:143
+msgid "Download"
+msgstr "Descarrega"
+
+#: ui/editdevicedialog.ui:35 ui/editinterfacedialog.ui:78
+#: ui/editradiodialog.ui:95
+msgid "Node:"
+msgstr "Node:"
+
+#: ui/editdevicedialog.ui:70
+msgid "Device type:"
+msgstr "Tipus de dispositiu:"
+
+#: ui/editdevicedialog.ui:86 ui/editradiodialog.ui:166
+msgid "MAC address:"
+msgstr "Adreça MAC:"
+
+#: ui/editdevicedialog.ui:137 ui/editzonedialog.ui:96
+msgid "Nick:"
+msgstr "Nick:"
+
+#: ui/editdevicedialog.ui:150 ui/editzonedialog.ui:307
+msgid "Contact:"
+msgstr "Contacte:"
+
+#: ui/editdevicedialog.ui:163
+msgid "Comment:"
+msgstr "Comentari:"
+
+#: ui/editdevicedialog.ui:176
+msgid "Status:"
+msgstr "Estat:"
+
+#: ui/editdevicedialog.ui:255
+msgid "Device settings"
+msgstr "Ajustaments de dispositius"
+
+#: ui/editdevicedialog.ui:274
+msgid "Graphs server:  "
+msgstr "Servidor de grafiques:"
+
+#: ui/editdevicedialog.ui:408
+msgid "Model:"
+msgstr "Model:"
+
+#: ui/editdevicedialog.ui:421
+msgid "Firmware: "
+msgstr "Firmware:"
+
+#: ui/editdevicedialog.ui:436
+msgid "Radio"
+msgstr "Radio"
+
+#: ui/editdevicedialog.ui:450
+msgid "Download: "
+msgstr "Descarrega:"
+
+#: ui/editdevicedialog.ui:463
+msgid "Upload: "
+msgstr "Puja:"
+
+#: ui/editdevicedialog.ui:476
+msgid "MRTG index: "
+msgstr "Index MRTG:"
+
+#: ui/editdevicedialog.ui:531
+msgid "ADSL"
+msgstr "ADSL"
+
+#: ui/editdevicedialog.ui:546
+msgid "MRTG config: "
+msgstr "Configuracio MRTG:"
+
+#: ui/editdevicedialog.ui:577
+msgid "Generic"
+msgstr "Generic"
+
+#: ui/editdevicedialog.ui:592
+msgid "-- No specific settings for this device type --"
+msgstr "-- No s'han especificat ajustaments per aquest tipus de dispositiu"
+
+#: ui/editdevicedialog.ui:610
+msgid "Nothing"
+msgstr "Res"
+
+#: ui/editdevicedialog.ui:625
+msgid "Specific settings"
+msgstr "Ajustaments especifics"
+
+#: ui/editinterfacedialog.ui:131
+msgid "Device:  "
+msgstr "Dispositiu:"
+
+#: ui/editinterfacedialog.ui:147
+msgid "Radio:"
+msgstr "Radio:"
+
+#: ui/editinterfacedialog.ui:167
+msgid "Interface settings"
+msgstr "Ajustaments d'interficie"
+
+#: ui/editlinkdialog.ui:87 ui/editlinkdialog.ui:206
+msgid "Node: "
+msgstr "Node:"
+
+#: ui/editlinkdialog.ui:100 ui/editlinkdialog.ui:219
+msgid "Device: "
+msgstr "Dispositiu:"
+
+#: ui/editlinkdialog.ui:113 ui/editlinkdialog.ui:232
+msgid "Radio: "
+msgstr "Radio:"
+
+#: ui/editlinkdialog.ui:176
+msgid "Source interface"
+msgstr "Interficie d'origen"
+
+#: ui/editlinkdialog.ui:295
+msgid "Destination interface"
+msgstr "Interficie de destinacio"
+
+#: ui/editlinkdialog.ui:351
+msgid "Status:  "
+msgstr "Estat:"
+
+#: ui/editlinkdialog.ui:364
+msgid "IPv4:  "
+msgstr "IPv4:"
+
+#: ui/editlinkdialog.ui:394
+msgid "Link settings"
+msgstr "Ajustaments d'enllaç"
+
+#: ui/editnodedialog.ui:88
+msgid "Coordinates: "
+msgstr "Coordinades:"
+
+#: ui/editnodedialog.ui:120
+msgid "Name of the location: "
+msgstr "Nom de l'ubicacio:"
+
+#: ui/editnodedialog.ui:151
+msgid "Nick:  "
+msgstr "Nick:"
+
+#: ui/editnodedialog.ui:178 ui/preferencesdialog.ui:328
+msgid "Contact:  "
+msgstr "Contacte:"
+
+#: ui/editnodedialog.ui:206
+msgid "Zone: "
+msgstr "Zona:"
+
+#: ui/editnodedialog.ui:245 ui/editzonedialog.ui:260
+msgid " ... or ... "
+msgstr "... o ..."
+
+#: ui/editnodedialog.ui:279
+msgid "Zone description:  "
+msgstr "Descripció de zona:"
+
+#: ui/editnodedialog.ui:307
+msgid "Antenna elevation:  "
+msgstr "Elevació de l'antena:"
+
+#: ui/editnodedialog.ui:337
+msgid "Information about this location: "
+msgstr "Informació sobre aquesta ubicació:"
+
+#: ui/editnodedialog.ui:384
+msgid "Default Graphs Server:  "
+msgstr "Servidor de gràfiques per defecte:"
+
+#: ui/editnodedialog.ui:407
+msgid "Take from parents"
+msgstr "Agafar dels pares"
+
+#: ui/editnodedialog.ui:437
+msgid "This node is supposed to be a stable and online"
+msgstr "Aquest node es supossadament estable i en línia"
+
+#: ui/editnodedialog.ui:469
+msgid "Advanced node settings"
+msgstr "Ajustaments avançats del node"
+
+#: ui/editnodedialog.ui:487
+msgid "Node settings"
+msgstr "Ajustaments del node"
+
+#: ui/editnodedialog.ui:522
+msgid ""
+"I know and agree to the \"XOLN\" Commons of the Open, Libre and Neutral Network, which act as a contract of adhesion to the network and states the terms and conditions for its use.\n"
+"I know and agree to the Legal warning concerning data protection and information society"
+msgstr "Conec i estic d'acord amb els Comuns de la \"XOLN\", Xarxa Oberta Lliure i Neutral, el qual serveix com a contracte d'adhesió a la xarxa i estableix els termes i condicions pel seu ús.⏎ Conec i estic d'acord amb l'Avís Legal referit a la protecció de dades i la societat de l'informació"
+
+#: ui/editnodedialog.ui:537
+msgid "Yes, I have read this and accepted."
+msgstr "Sí, ho he llegit i acceptat"
+
+#: ui/editnodedialog.ui:561
+msgid "License"
+msgstr "Llicència"
+
+#: ui/editradiodialog.ui:150
+msgid "Radio mode:"
+msgstr "Mode de ràdio:"
+
+#: ui/editradiodialog.ui:217
+msgid "Device:"
+msgstr "Dispositiu:"
+
+#: ui/editradiodialog.ui:237
+msgid "Radio settings"
+msgstr "Ajustaments de ràdio"
+
+#: ui/editradiodialog.ui:267
+msgid "Angle:  "
+msgstr "Angle:"
+
+#: ui/editradiodialog.ui:280
+msgid "Gain:  "
+msgstr "Ganància:"
+
+#: ui/editradiodialog.ui:293
+msgid "Azimuth:  "
+msgstr "Azimuth:"
+
+#: ui/editradiodialog.ui:306
+msgid "Mode:  "
+msgstr "Mode:"
+
+#: ui/editradiodialog.ui:394
+msgid "Antenna settings"
+msgstr "Ajustaments de l'antena"
+
+#: ui/editradiodialog.ui:428
+msgid "SSID:"
+msgstr "SSID:"
+
+#: ui/editradiodialog.ui:441
+msgid "Protocol:"
+msgstr "Protocol"
+
+#: ui/editradiodialog.ui:454
+msgid "Channel"
+msgstr "Canal"
+
+#: ui/editradiodialog.ui:518
+msgid "This radio accepts clients"
+msgstr "Aquesta ràdio accepta clients"
+
+#: ui/editradiodialog.ui:554
+msgid "-- No specific settings for this mode --"
+msgstr "-- No hi han ajustaments específics per aquest node --"
+
+#: ui/editradiodialog.ui:593
+msgid "Specific mode settings"
+msgstr "Ajustaments específics del node"
+
+#: ui/editzonedialog.ui:7 ui/mainwindow.ui:252
+msgid "Create new Guifi.net zone"
+msgstr "Crear nova zona Guifi.net"
+
+#: ui/editzonedialog.ui:34
+msgid "Name of the zone:"
+msgstr "Nom de la zona:"
+
+#: ui/editzonedialog.ui:64
+msgid "Parent zone:"
+msgstr "Zona pare:"
+
+#: ui/editzonedialog.ui:78
+msgid "Select"
+msgstr "Seleccionar"
+
+#: ui/editzonedialog.ui:123
+msgid "Mode:"
+msgstr "Mode:"
+
+#: ui/editzonedialog.ui:156
+msgid "Timezone:"
+msgstr "Zona horària:"
+
+#: ui/editzonedialog.ui:169
+msgid "Description:"
+msgstr "Descripció:"
+
+#: ui/editzonedialog.ui:194
+msgid "Zone in map:"
+msgstr "Zona al mapa:"
+
+#: ui/editzonedialog.ui:210
+msgid "Homepage:"
+msgstr "Plana principal:"
+
+#: ui/editzonedialog.ui:338
+msgid "Zone settings"
+msgstr "Ajustaments de zona"
+
+#: ui/editzonedialog.ui:412
+msgid "DNS server:  "
+msgstr "Servidor DNS"
+
+#: ui/editzonedialog.ui:456
+msgid "NTP server:  "
+msgstr "Servidor NTP"
+
+#: ui/editzonedialog.ui:469
+msgid "OSPF zone ID:  "
+msgstr "ID de zona OSPF:"
+
+#: ui/editzonedialog.ui:500
+msgid "Zone global network settings"
+msgstr "Ajustaments globals de xarxa de la zona"
+
+#: ui/editzonedialog.ui:530
+msgid "Graph server:  "
+msgstr "Servidor de gràfiques:"
+
+#: ui/editzonedialog.ui:543
+msgid "Proxy server:  "
+msgstr "Servidor proxy:"
+
+#: ui/editzonedialog.ui:585 ui/mainwindow.ui:544
+msgid "Services"
+msgstr "Dispositius"
+
+#: ui/mainwindow.ui:7
+msgid "View in website"
+msgstr "Veure al lloc web"
+
+#: ui/mainwindow.ui:13
+msgid "Properties"
+msgstr "Propietats"
+
+#: ui/mainwindow.ui:19
+msgid "View in map"
+msgstr "Veure al mapa"
+
+#: ui/mainwindow.ui:25
+msgid "Unsolclic"
+msgstr "Unsolclic"
+
+#: ui/mainwindow.ui:99
+msgid "Guifi·net Studio"
+msgstr "Guifi·net Studio"
+
+#: ui/mainwindow.ui:114
+msgid "_File"
+msgstr "_Arxiu"
+
+#: ui/mainwindow.ui:122 ui/changezonedialog.ui:15
+msgid "Change zone"
+msgstr "Canviar zona"
+
+#: ui/mainwindow.ui:169
+msgid "Export to..."
+msgstr "Exportar a..."
+
+#: ui/mainwindow.ui:181
+msgid "KML"
+msgstr "KML"
+
+#: ui/mainwindow.ui:192
+msgid "GML"
+msgstr "GML"
+
+#: ui/mainwindow.ui:233
+msgid "_Edit"
+msgstr "_Editar"
+
+#: ui/mainwindow.ui:332
+msgid "_View"
+msgstr "_Veure"
+
+#: ui/mainwindow.ui:343
+msgid "Statusbar"
+msgstr "Barra d'estat"
+
+#: ui/mainwindow.ui:354
+msgid "Side Pane"
+msgstr "Panel lateral"
+
+#: ui/mainwindow.ui:372
+msgid "Fullscreen"
+msgstr "Pantalla completa"
+
+#: ui/mainwindow.ui:414
+msgid "_Tools"
+msgstr "_Eines"
+
+#: ui/mainwindow.ui:422
+msgid "_Download CNML"
+msgstr "_Descarregar CNML"
+
+#: ui/mainwindow.ui:434
+msgid "_Update zones"
+msgstr "_Actualitzar zones"
+
+#: ui/mainwindow.ui:453
+msgid "_Wireless links calculator"
+msgstr "_Calculador d'enllaços inalambrics"
+
+#: ui/mainwindow.ui:472
+msgid "_Help"
+msgstr "_Ajuda"
+
+#: ui/mainwindow.ui:511
+msgid "Map"
+msgstr "Mapa"
+
+#: ui/mainwindow.ui:587
+msgid "Buscar:"
+msgstr "Cercar:"
+
+#: ui/mainwindow.ui:662
+msgid "Name"
+msgstr "Nom"
+
+#: ui/mainwindow.ui:702
+msgid "Points"
+msgstr "Punts"
+
+#: ui/mainwindow.ui:721
+msgid "Labels"
+msgstr "Etiquetes"
+
+#: ui/mainwindow.ui:740
+msgid "Links"
+msgstr "Enllaços"
+
+#: ui/mainwindow.ui:846
+msgid "Zona"
+msgstr "Zona"
+
+#: ui/mainwindow.ui:860
+msgid "Operativos"
+msgstr "Operatius"
+
+#: ui/mainwindow.ui:874
+msgid "En construcción"
+msgstr "En construccio"
+
+#: ui/mainwindow.ui:888
+msgid "En pruebas"
+msgstr "En proves"
+
+#: ui/mainwindow.ui:902
+msgid "Proyectados"
+msgstr "Projectats"
+
+#: ui/mainwindow.ui:916
+msgid "Nodo"
+msgstr "Node:"
+
+#: ui/nodedialog.ui:48
+msgid ""
+"Información sobre el nodo:\n"
+"            ZZZCalleTres1"
+msgstr "Informació sobre el node:⏎ZZZCalleTres1"
+
+#: ui/nodedialog.ui:76
+msgid "Número de nodo:"
+msgstr "Numero de node:"
+
+#: ui/nodedialog.ui:83
+msgid "Estado:"
+msgstr "Estat:"
+
+#: ui/nodedialog.ui:94
+msgid "Zona:"
+msgstr "Zona:"
+
+#: ui/nodedialog.ui:105
+msgid "Localización:"
+msgstr "Ubicació"
+
+#: ui/nodedialog.ui:116
+msgid "414141"
+msgstr "414141"
+
+#: ui/nodedialog.ui:127
+msgid "Operativo"
+msgstr "Operatiu"
+
+#: ui/nodedialog.ui:143
+msgid ""
+"Málaga, Andalucía\n"
+"Iberian Peninsula"
+msgstr "Málaga, Andalusia⏎ Península Ibèrica"
+
+#: ui/nodedialog.ui:155
+msgid "-3.4898, 36.7878"
+msgstr "-3.4898, 36.7878"
+
+#: ui/nodedialog.ui:161
+msgid "Ver localización en el mapa"
+msgstr "Veure ubicació al mapa"
+
+#: ui/nodedialog.ui:212
+msgid "Número de dispositivo:"
+msgstr "Numero de dispositiu"
+
+#: ui/nodedialog.ui:219
+msgid "1 de 2"
+msgstr "1 de 2"
+
+#: ui/nodedialog.ui:230
+msgid "Nombre:"
+msgstr "Nom:"
+
+#: ui/nodedialog.ui:241
+msgid "Tipo:"
+msgstr "Tipus:"
+
+#: ui/nodedialog.ui:252
+msgid "guifi.net-CalleTresAP1"
+msgstr "guifi.net-CalleTresAP1"
+
+#: ui/nodedialog.ui:265
+msgid "Nanostation Loco M2"
+msgstr "Nanostation Loco M2"
+
+#: ui/nodedialog.ui:282
+msgid "<b>Dispositivos</b> (2)"
+msgstr "<b>Dispositius</b> (2)"
+
+#: ui/nodedialog.ui:1229
+msgid "label"
+msgstr "etiqueta"
+
+#: ui/nodedialog.ui:1240
+msgid "<b>Enlaces</b> (1)"
+msgstr "<b>Enllaços</b> (1)"
+
+#: ui/preferencesdialog.ui:19
+msgid "Preferences"
+msgstr "Preferències"
+
+#: ui/preferencesdialog.ui:99 ui/preferencesdialog.ui:406
+msgid "Username:"
+msgstr "Nom d'usuari:"
+
+#: ui/preferencesdialog.ui:112 ui/preferencesdialog.ui:419
+msgid "Password:"
+msgstr "Contrassenya:"
+
+#: ui/preferencesdialog.ui:152
+msgid "Save data in gnome-keyring"
+msgstr "Desar dades al clauer-gnome"
+
+#: ui/preferencesdialog.ui:179
+msgid "Authentication"
+msgstr "Autentificació"
+
+#: ui/preferencesdialog.ui:209
+msgid "Guifi.net server host: "
+msgstr "Host servidor Guifi.net"
+
+#: ui/preferencesdialog.ui:239
+msgid "URL"
+msgstr "URL"
+
+#: ui/preferencesdialog.ui:256
+msgid "API"
+msgstr "API"
+
+#: ui/preferencesdialog.ui:275
+msgid "Zone:  "
+msgstr "Zona:"
+
+#: ui/preferencesdialog.ui:300
+msgid "Update list of zones"
+msgstr "Actualitzar llista de zones"
+
+#: ui/preferencesdialog.ui:365
+msgid "Default options"
+msgstr "Opcions per defecte"
+
+#: ui/preferencesdialog.ui:380
+msgid "Use proxy:"
+msgstr "Fer servir proxy:"
+
+#: ui/preferencesdialog.ui:393
+msgid "Host:"
+msgstr "Host:"
+
+#: ui/preferencesdialog.ui:471
+msgid "Proxy type:"
+msgstr "Tipus de proxy:"
+
+#: ui/preferencesdialog.ui:494
+msgid "Use system proxy"
+msgstr "Fer servir el proxy del sistema"
+
+#: ui/preferencesdialog.ui:544
+msgid "Network"
+msgstr "Xarxa"
+
+#: ui/uscdialog.ui:5
+msgid "unsolclic configuration"
+msgstr "configuració unsolclic"
+
+#: ui/uscdialog.ui:27
+msgid "Save to file"
+msgstr "Desar a arxiu"
+
+#: ui/uscdialog.ui:42
+msgid "Copy to clipboard"
+msgstr "Copiar al portapapers"
+
+#: ui/uscdialog.ui:57
+msgid "Auto-load to device"
+msgstr "Auto-carregar al dispositiu"
