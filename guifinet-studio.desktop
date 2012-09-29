@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Guifi.net Studio
+Comment=Grow your own Internets!
+Icon=guifinet-studio
+Exec=/usr/bin/guifinet-studio
+Terminal=false
+Type=Application
+Categories=GNOME;GTK;
+X-Ubuntu-Gettext-Domain=guifinet-studio
+X-GNOME-Settings-Panel=guifinet-studio
