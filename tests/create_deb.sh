@@ -6,6 +6,7 @@ A_PYSHARED='calc.py champlainguifinet.py configmanager.py ui.py unsolclic.py uti
 A_DOC='README AUTHORS COPYING'
 LIBCNML='__init__.py libcnml.py'
 GUIFIAPI='__init__.py api.py constants.py error.py'
+LOCALES='ca es eu gl'
 
 alias cp='cp -v'
 
@@ -18,6 +19,7 @@ mkdir -p $DST_DIR/usr/share/applications
 mkdir -p $DST_DIR/usr/share/doc/guifinet-studio
 mkdir -p $DST_DIR/usr/lib/python2.7/dist-packages/libcnml
 mkdir -p $DST_DIR/usr/lib/python2.7/dist-packages/pyGuifiAPI
+mkdir -p $DST_DIR/usr/share/locale/
 
 
 cat > $DST_DIR/DEBIAN/changelog << "EOF"
@@ -122,6 +124,12 @@ done
 # guifinet_studio.py: cambiar os.chdir y sys.path.append
 grep -v "sys.path.append('lib')" $SRC_DIR/champlainguifinet.py | grep -v "os.chdir(os.path.dirname(os.path.abspath(__file__)))" > $DST_DIR/usr/share/pyshared/guifinet-studio/champlainguifinet.py
 sed "s|os.chdir(os.path.dirname(os.path.abspath(__file__)))|os.chdir('/usr/share/guifinet-studio')|" $SRC_DIR/guifinet_studio.py  | sed "s|sys.path.append('lib')|sys.path.append('/usr/share/pyshared/guifinet-studio')|" | sed 's|with open("AUTHORS") as f:|with open("/usr/share/doc/guifinet-studio/AUTHORS") as f:|' | sed 's|with open("COPYING") as f:|with open("/usr/share/doc/guifinet-studio/COPYING") as f:|' > $DST_DIR/usr/bin/guifinet-studio
+sed "s|I18N_APP_NAME = 'guifinetstudio'|I18N_APP_NAME = 'guifinet-studio'|" $SRC_DIR/utils.py | sed "s|LOCALE_DIR = 'locale'|LOCALE_DIR = '/usr/share/locale'|" > $DST_DIR/usr/share/pyshared/guifinet-studio/utils.py
+
+for l in $LOCALES
+do
+	mkdir -p "$DST_DIR/usr/share/locale/$l/LC_MESSAGES" && msgfmt $SRC_DIR/locale/$l.po -o "$DST_DIR/usr/share/locale/$l/LC_MESSAGES/guifinet-studio.mo"
+done
 
 #BUILD!
 fakeroot dpkg --build $DST_DIR guifinet-studio_0.7-1_all.deb
