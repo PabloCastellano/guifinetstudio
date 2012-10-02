@@ -29,7 +29,7 @@ from constants import *
 import urllib
 import json
 
-class GuifiAPI:
+class GuifiAPI(object):
 		
 	def __init__(self, username=None, passwd=None, host='test.guifi.net', 
 				secure=True, retry_count=0, retry_delay=0, retry_errors=None,
