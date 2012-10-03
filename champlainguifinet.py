@@ -102,7 +102,29 @@ class GtkGuifinetMap(GtkChamplain.Embed):
 		p.set_draw_background(False)
 		self.labels_layer.add_marker(p)
 		
-
+	def start_traceroute_path(self):
+		self.tr_points_layer = Champlain.MarkerLayer()
+		self.tr_path_layer = Champlain.PathLayer()
+		self.view.add_layer(self.tr_points_layer)
+		self.view.add_layer(self.tr_path_layer)
+			
+	def add_traceroute_path(self, lat, lon):
+		p = Champlain.Point.new()
+		p.set_location(lat, lon)
+		p.set_size(12)
+		color = Clutter.Color.new(0, 0, 255, 255)
+		p.set_color(color)
+		self.tr_points_layer.add_marker(p)
+		self.tr_path_layer.add_node(p)
+			
+	def end_traceroute_path(self):
+		self.view.remove_layer(self.tr_points_layer)
+		self.view.remove_layer(self.tr_path_layer)
+		try:
+			del self.tr_points_layer, self.tr_path_layer
+		except:
+			pass
+	
 	# nodes = self.cnmlp.getNodes()
 	def paintMap(self, nodes):
 		for n in nodes:

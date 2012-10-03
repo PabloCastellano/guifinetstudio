@@ -220,7 +220,12 @@ class GuifinetStudio:
 	def on_calcimagemenuitem_activate(self, widget, data=None):
 		Calculator()
 
-		
+	def on_findipmenuitem_activate(self, widget, data=None):
+		FindIPDialog(self.configmanager, self.zonecnmlp)
+
+	def on_traceroutemenuitem_activate(self, widget, data=None):
+		TracerouteDialog(self.guifinetmap, self.configmanager)
+	
 	def on_searchentry_changed(self, widget, data=None):
 		print widget, data
 		print widget.get_text()

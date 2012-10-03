@@ -22,29 +22,26 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import json
 import operator
 import os
 import socket
 import struct
-import sys
 import time
-import random
 
 from twisted.internet import defer
 from twisted.internet import reactor
-from twisted.internet import threads
-from twisted.python import usage
-from twisted.web.client import getPage
+
+HOPS = []
 
 class iphdr(object):
     """
     This represents an IP packet header.
-
+	ICMP Protocol and source 0.0.0.0
+	
     @assemble packages the packet
     @disassemble disassembles the packet
     """
-    def __init__(self, proto=socket.IPPROTO_ICMP, src="0.0.0.0", dst=None):
+    def __init__(self, dst=None):
         self.version = 4
         self.hlen = 5
         self.tos = 0
@@ -52,10 +49,10 @@ class iphdr(object):
         self.id = os.getpid()
         self.frag = 0
         self.ttl = 255
-        self.proto = proto
+        self.proto = socket.IPPROTO_ICMP
         self.cksum = 0
-        self.src = src
-        self.saddr = socket.inet_aton(src)
+        self.src = "0.0.0.0"
+        self.saddr = socket.inet_aton(self.src)
         self.dst = dst or "0.0.0.0"
         self.daddr = socket.inet_aton(self.dst)
         self.data = ""
@@ -83,84 +80,6 @@ class iphdr(object):
         ip.dst = socket.inet_ntoa(ip.daddr)
         return ip
 
-    def __repr__(self):
-        return "IP (tos %s, ttl %s, id %s, frag %s, proto %s, length %s) " \
-               "%s -> %s" % \
-               (self.tos, self.ttl, self.id, self.frag, self.proto,
-                self.length, self.src, self.dst)
-
-class tcphdr(object):
-    def __init__(self, data="", dport=4242, sport=4242):
-        self.seq = 0
-        self.hlen = 44
-        self.flags = 2
-        self.wsize = 200
-        self.cksum = 123
-        self.options = 0
-        self.mss = 1460
-        self.dport = dport
-        self.sport = sport
-
-    def assemble(self):
-        header = struct.pack("!HHL", self.sport, self.dport, self.seq)
-        header += '\x00\x00\x00\x00'
-        header += struct.pack("!HHH", (self.hlen & 0xff) << 10 | (self.flags &
-            0xff), self.wsize, self.cksum)
-        header += "\x00\x00"
-        options = '\x02\x04\x05\xb4\x01\x03\x03\x01\x01\x01\x08\x0a'
-        options += '\x4d\xcf\x52\x33\x00\x00\x00\x00\x04\x02\x00\x00'
-        # XXX There is something wrong here fixme
-        # options = struct.pack("!LBBBBBB", self.mss, 1, 3, 3, 1, 1, 1)
-        # options += struct.pack("!BBL", 8, 10, 1209452188)
-        # options += '\00'*4
-        # options += struct.pack("!BB", 4, 2)
-        # options += '\00'
-        self._raw = header+options
-        return self._raw
-
-    @classmethod
-    def checksum(self, data):
-        pass
-
-    def disassemble(self, data):
-        self._raw = data
-        tcp = tcphdr()
-        pkt = struct.unpack("!HHLH", data[:20])
-        tcp.sport, tcp.dport, tcp.seq = pkt[:3]
-        tcp.hlen = (pkt[4] >> 10 ) & 0xff
-        tcp.flags = pkf[4] & 0xff
-        tcp.wsize, tcp.cksum = struct.unpack("!HH", data[20:28])
-        return tcp
-
-class udphdr(object):
-    def __init__(self, data="", dport=4242, sport=4242):
-        self.dport = dport
-        self.sport = sport
-        self.cksum = 0
-        self.length = 0
-        self.data = data
-
-    def assemble(self):
-        self.length = len(self.data) + 8
-        part1 = struct.pack("!HHH", self.sport, self.dport, self.length)
-        cksum = self.checksum(self.data)
-        cksum = struct.pack("!H", cksum)
-
-        self._raw = part1 + cksum + self.data
-        return self._raw
-
-    @classmethod
-    def checksum(self, data):
-        # XXX implement proper checksum
-        cksum = 0
-        return cksum
-
-    def disassemble(self, data):
-        self._raw = udp
-        udp = udphdr()
-        pkt = struct.unpack("!HHHH", data)
-        udp.src_port, udp.dst_port, udp.length, udp.cksum = pkt
-        return udp
 
 class icmphdr(object):
     def __init__(self, data=""):
@@ -198,60 +117,10 @@ class icmphdr(object):
         icmp.type, icmp.code, icmp.cksum, icmp.id, icmp.sequence = pkt
         return icmp
 
-    def __repr__(self):
-        return "ICMP (type %s, code %s, id %s, sequence %s)" % \
-               (self.type, self.code, self.id, self.sequence)
-
-
-def pprintp(packet):
-    """
-    Used to pretty print packets.
-    """
-    lines = []
-    line = []
-    for i, byte in enumerate(packet):
-        line.append(("%.2x" % ord(byte), byte))
-        if (i + 1) % 8 == 0:
-            lines.append(line)
-            line = []
-
-    lines.append(line)
-
-    for row in lines:
-        left = ""
-        right = "   " * (8 - len(row))
-        for y in row:
-            left += "%s " % y[0]
-            right += "%s" % y[1]
-
-        print left + "     " + right
-
-@defer.inlineCallbacks
-def geoip_lookup(ip):
-    try:
-        r = yield getPage("http://freegeoip.net/json/%s" % ip)
-        d = json.loads(r)
-        items = [d["country_name"], d["region_name"], d["city"]]
-        text = ", ".join([s for s in items if s])
-        defer.returnValue(text.encode("utf-8"))
-    except Exception:
-        defer.returnValue("Unknown location")
-
-
-@defer.inlineCallbacks
-def reverse_lookup(ip):
-    try:
-        r = yield threads.deferToThread(socket.gethostbyaddr, ip)
-        defer.returnValue(r[0])
-    except Exception:
-        defer.returnValue(None)
-
 
 class Hop(object):
-    def __init__(self, target, ttl, proto, dport=None, sport=None):
-        self.proto = proto
-        self.dport = dport
-        self.sport = sport
+    def __init__(self, target, ttl):
+        self.proto = "icmp"
 
         self.found = False
         self.tries = 0
@@ -265,18 +134,10 @@ class Hop(object):
         self.ip = iphdr(dst=target)
         self.ip.ttl = ttl
         self.ip.id += ttl
-        if self.proto == "icmp":
-            self.icmp = icmphdr('\x00'*20)
-            self.icmp.id = self.ip.id
-            self.ip.data = self.icmp.assemble()
-        elif self.proto == "udp":
-            self.udp = udphdr('\x00'*20, self.dport, self.sport)
-            self.ip.data = self.udp.assemble()
-            self.ip.proto = socket.IPPROTO_UDP
-        else:
-            self.tcp = tcphdr('\x42'*20, self.dport, self.sport)
-            self.ip.data = self.tcp.assemble()
-            self.ip.proto = socket.IPPROTO_TCP
+
+        self.icmp = icmphdr('\x00'*20)
+        self.icmp.id = self.ip.id
+        self.ip.data = self.icmp.assemble()
 
         self._pkt = self.ip.assemble()
 
@@ -286,52 +147,25 @@ class Hop(object):
         self.last_try = time.time()
         return self._pkt
 
-    def get(self):
+    def __repr__(self):
         if self.found:
             if self.remote_host:
                 ip = self.remote_host
             else:
                 ip = self.remote_ip.src
-            ping = self.found - self.last_try
-        else:
-            ip = None
-            ping = None
-
-        location = self.location if self.location else None
-        return {'ttl': self.ttl, 'ping': ping, 'ip': ip, 'location': location}
-
-    def __repr__(self):
-        if self.found:
-            if self.remote_host:
-                ip = ":: %s" % self.remote_host
-            else:
-                ip = ":: %s" % self.remote_ip.src
-            ping = "%0.3fs" % (self.found - self.last_try)
         else:
             ip = "??"
-            ping = "-"
 
-        location = ":: %s" % self.location if self.location else ""
-        return "%02d. %s %s %s" % (self.ttl, ping, ip, location)
+        return ip
 
 
+# ICMP
 class TracerouteProtocol(object):
     def __init__(self, target, **settings):
         self.target = target
         self.settings = settings
-        self.verbose = settings.get("verbose")
-        self.proto = settings.get("proto")
-        self.rfd = socket.socket(socket.AF_INET, socket.SOCK_RAW,
-                                socket.IPPROTO_ICMP)
-        if self.proto == "icmp":
-            self.sfd = socket.socket(socket.AF_INET, socket.SOCK_RAW,
-                                    socket.IPPROTO_ICMP)
-        elif self.proto == "udp":
-            self.sfd = socket.socket(socket.AF_INET, socket.SOCK_RAW,
-                                    socket.IPPROTO_UDP)
-        elif self.proto == "tcp":
-            self.sfd = socket.socket(socket.AF_INET, socket.SOCK_RAW,
-                                    socket.IPPROTO_TCP)
+        self.rfd = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_ICMP)
+        self.sfd = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_ICMP)
 
         self.rfd.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1)
         self.sfd.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1)
@@ -345,10 +179,7 @@ class TracerouteProtocol(object):
         reactor.addWriter(self)
 
         # send 1st probe packet
-        self.out_queue.append(Hop(self.target, 1,
-                                  settings.get("proto"),
-                                  self.settings.get("dport"),
-                                  self.settings.get("sport")))
+        self.out_queue.append(Hop(self.target, 1))
 
     def logPrefix(self):
         return "TracerouteProtocol(%s)" % self.target
@@ -363,11 +194,6 @@ class TracerouteProtocol(object):
 
         if (ip and icmp):
             hop.found = time.time()
-            if self.settings.get("geoip_lookup") is True:
-                hop.location = yield geoip_lookup(ip.src)
-
-            if self.settings.get("reverse_lookup") is True:
-                hop.remote_host = yield reverse_lookup(ip.src)
 
         ttl = hop.ttl + 1
         last = self.hops[-2:]
@@ -387,10 +213,7 @@ class TracerouteProtocol(object):
                 self.deferred.callback(self.hops)
                 self.deferred = None
         else:
-            self.out_queue.append(Hop(self.target, ttl,
-                                      self.settings.get("proto"),
-                                      self.settings.get("dport"),
-                                      self.settings.get("sport")))
+            self.out_queue.append(Hop(self.target, ttl))
 
     def doRead(self):
         if not self.waiting or not self.hops:
@@ -399,11 +222,6 @@ class TracerouteProtocol(object):
         pkt = self.rfd.recv(4096)
         # disassemble ip header
         ip = iphdr.disassemble(pkt[:20])
-
-        if self.verbose:
-            print "Got this packet:"
-            print "src %s" % ip.src
-            pprintp(pkt)
 
         if ip.proto != socket.IPPROTO_ICMP:
             return
@@ -461,110 +279,36 @@ def traceroute(target, **settings):
 def start_trace(target, **settings):
     hops = yield traceroute(target, **settings)
     last_hop = hops[-1]
-    last_stats = last_hop.get()
     if settings["hop_callback"] is None:
         print last_hop
 
-    if settings['serial']:
-        import serial
-        ser = serial.Serial(
-                port=settings['serial'],
-                baudrate=9600)
-        ser.open()
-        ser.write('?f')
-        ser.write(last_hop.remote_ip.src)
-        ser.write('?n')
-        ser.write("%0.3fs" % last_stats['ping'])
-        ser.close()
-
     reactor.stop()
 
-class Options(usage.Options):
-    optFlags = [
-        ["quiet", "q", "Only print results at the end."],
-        ["no-dns", "n", "Show numeric IPs only, not their host names."],
-        ["no-geoip", "g", "Do not collect and show GeoIP information"],
-        ["verbose", "v", "Be more verbose"],
-        ["help", "h", "Show this help"],
-    ]
-    optParameters = [
-        ["timeout", "t", 2, "Timeout for probe packets"],
-        ["tries", "r", 3, "How many tries before give up probing a hop"],
-        ["proto", "p", "icmp", "What protocol to use (tcp, udp, icmp)"],
-        ["dport", "d", random.randint(2**10, 2**16), "Destination port (TCP and UDP only)"],
-        ["sport", "s", random.randint(2**10, 2**16), "Source port (TCP and UDP only)"],
-        ["max_hops", "m", 30, "Max number of hops to probe"],
-        ["serial", "S", None, "Output last hop to serial"]
-    ]
 
-def main():
+def main(target):
     def show(hop):
-        print hop
+        HOPS.append(str(hop))
 
     defaults = dict(hop_callback=show,
-                    reverse_lookup=True,
-                    geoip_lookup=True,
-                    timeout=2,
-                    proto="icmp",
-                    dport=None,
-                    sport=None,
-                    serial=None,
-                    verbose=False,
+                    timeout=0.5,
                     max_tries=3,
                     max_hops=30)
 
-    if len(sys.argv) < 2:
-        print("Usage: %s [options] host" % (sys.argv[0]))
-        print("%s: Try --help for usage details." % (sys.argv[0]))
-        sys.exit(1)
-
-    target = sys.argv.pop(-1) if sys.argv[-1][0] != "-" else ""
-    config = Options()
-    try:
-        config.parseOptions()
-        if not target:
-            raise
-    except usage.UsageError, e:
-        print("%s: %s" % (sys.argv[0], e))
-        print("%s: Try --help for usage details." % (sys.argv[0]))
-        sys.exit(1)
-
     settings = defaults.copy()
-    if config.get("quiet"):
-        settings["hop_callback"] = None
-    if config.get("no-dns"):
-        settings["reverse_lookup"] = False
-    if config.get("no-geoip"):
-        settings["geoip_lookup"] = False
-    if config.get("verbose"):
-        settings["verbose"] = True
-    if "timeout" in config:
-        settings["timeout"] = config["timeout"]
-    if "tries" in config:
-        settings["max_tries"] = config["tries"]
-    if "proto" in config:
-        settings["proto"] = config["proto"]
-    if "max_hops" in config:
-        settings["max_hops"] = config["max_hops"]
-    if "dport" in config:
-        settings["dport"] = int(config["dport"])
-    if "sport" in config:
-        settings["sport"] = int(config["sport"])
-    if "serial" in config and config['serial']:
-        settings["serial"] = config["serial"]
 
     if os.getuid() != 0:
         print("traceroute needs root privileges for the raw socket")
-        sys.exit(1)
+        return []
     try:
         target = socket.gethostbyname(target)
     except Exception, e:
         print("could not resolve '%s': %s" % (target, str(e)))
-        sys.exit(1)
+        return []
 
     reactor.callWhenRunning(start_trace, target, **settings)
     reactor.run()
+    return HOPS
 
 if __name__ == "__main__":
-    main()
-
+    main('guifi.net')
+    

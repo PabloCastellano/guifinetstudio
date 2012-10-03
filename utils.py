@@ -34,6 +34,8 @@ _ = gettext.gettext
 ########
 re_email = re.compile("^.+@.+\..{2,4}$")
 re_mac = re.compile("[0-9a-f]{2}([-:][0-9a-f]{2}){5}$")
+re_ipv4 = re.compile("^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$")
+
 
 def valid_email_address(email):
 	if isinstance(email, str):
@@ -51,6 +53,9 @@ def valid_email_address(email):
 def valid_mac_address(mac):
 	return re_mac.match(mac.lower()) is not None
 
+def valid_ipv4_address(ip):
+	return re_ipv4.match(ip) is not None
+	
 def openUrl(url):
 	print _('Opening in web browser:'), url
 	systemstr = 'xdg-open %s' %url

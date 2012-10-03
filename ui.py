@@ -26,6 +26,10 @@ from unsolclic import UnSolClic
 
 from utils import *
 
+# Used for traceroute
+import libcnml
+import txtraceroute
+
 import locale, gettext
 gettext.bindtextdomain(APP_NAME, LOCALE_DIR)
 gettext.textdomain(APP_NAME)
@@ -840,6 +844,110 @@ class ChangeZoneDialog:
 		
 	def destroy(self):
 		self.changezonedialog.destroy()
+		
+		
+class FindIPDialog:
+	def __init__(self, configmanager, zonecnmlp):
+		self.ui = Gtk.Builder()
+		self.ui.set_translation_domain(APP_NAME)
+		self.ui.add_from_file('ui/findipdialog.ui')
+		self.ui.connect_signals(self)
+
+		self.configmanager = configmanager
+		self.findipdialog = self.ui.get_object('findipdialog')
+		self.ipentry = self.ui.get_object('ipentry')
+		self.searchbutton = self.ui.get_object('searchbutton')
+		self.zonescombobox = self.ui.get_object('zonescombobox')
+		self.treeview = self.ui.get_object('treeview')
+		
+		# FIXME
+		cnmlpath = self.configmanager.pathForCNMLCachedFile(GUIFI_NET_WORLD_ZONE_ID, 'detail')
+		self.cnmlp = libcnml.CNMLParser(cnmlpath)
+		
+		model = self.zonescombobox.get_model()
+		fillAvailableCNMLModel2(configmanager, model, zonecnmlp)
+		
+		self.findipdialog.show_all()
+	
+	def on_findipdialog_response(self, widget, response):
+		self.findipdialog.destroy()
+	
+	def on_searchbutton_clicked(self, widget, data=None):
+		ip = self.ipentry.get_text()
+		model = self.treeview.get_model()
+		model.clear()
+		
+		node = self.cnmlp.findNodefromIPv4(ip)
+		if node:
+			model.append((node.id, node.title, 'Node'))
+
+	
+class TracerouteDialog:
+	def __init__(self, guifinetmap, configmanager):
+		self.ui = Gtk.Builder()
+		self.ui.set_translation_domain(APP_NAME)
+		self.ui.add_from_file('ui/traceroutedialog.ui')
+		self.ui.connect_signals(self)
+
+		self.guifinetmap = guifinetmap
+		self.configmanager = configmanager
+		self.closebutton = self.ui.get_object('closebutton')
+		self.clearbutton = self.ui.get_object('clearbutton')
+		self.tracebutton = self.ui.get_object('tracebutton')
+		self.hostnameentry = self.ui.get_object('hostnameentry')
+		self.traceroutedialog = self.ui.get_object('traceroutedialog')
+
+		#create layers
+		self.guifinetmap.start_traceroute_path()
+		
+		self.traceroutedialog.show_all()
+		
+	def on_traceroutedialog_response(self, widget, response):
+		
+		if response in (Gtk.ResponseType.CLOSE, Gtk.ResponseType.DELETE_EVENT):
+			self.guifinetmap.end_traceroute_path()
+			self.clearbutton.set_sensitive(False)
+			self.traceroutedialog.destroy()
+			
+		elif response == -12:
+			hostname = self.hostnameentry.get_text()
+			
+			# A wrong argument like '1' or 'asd' passed to txtraceroute will freeze it
+			# TODO: Add support for hostnames
+			if not valid_ipv4_address(hostname):
+				print 'Error: %s is not a valid IP address' %hostname
+				return
+			
+			ret = txtraceroute.main(hostname)
+			# ret is a list of ips like ['192.168.1.20', '10.138.x.x', '172.35.y.y', '??', '10.139.x.x']
+			
+			if ret != []:
+				# FIXME
+				cnmlpath = self.configmanager.pathForCNMLCachedFile(GUIFI_NET_WORLD_ZONE_ID, 'detail')
+				cnmlp = libcnml.CNMLParser(cnmlpath)
+				i = 1
+				
+				self.clearbutton.set_sensitive(True)
+				
+				for r in ret:
+					if r == '??':
+						print "%d: UNKNOWN" %i
+					elif r.startswith('192.168'):
+						print "%d: %s (local network)" %(i, r)
+					else:
+						node = cnmlp.findNodefromIPv4(r)
+						if node:
+							print "%d: %s (%s) (%f, %f)" %(i, r, node.title, node.latitude, node.longitude)
+							self.guifinetmap.add_traceroute_path(node.latitude, node.longitude)
+						else:
+							print "%d: %s (NOT FOUND)" %(i, r)
+							
+					i += 1
+			
+		elif response == -13: #Clear button
+			self.guifinetmap.end_traceroute_path()
+			self.clearbutton.set_sensitive(False)
+	
 		
 ###################################################
 #self.cnmlp.getNodes()
