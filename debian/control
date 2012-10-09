@@ -1,0 +1,25 @@
+Source: guifinet-studio
+Section: net
+Priority: extra
+Maintainer: Pablo Castellano <pablo@anche.no>
+Build-Depends: cdbs, debhelper (>= 7.0.8)
+Standards-Version: 3.7.2
+
+Package: guifinet-studio
+Architecture: all
+Depends: ${misc:Depends}, python2.7, gir1.2-gtkchamplain-0.12, python-lxml, python-jinja2, libclutter-gtk-1.0-0
+Description: Guifi.net Studio
+ Guifi.net Studio aims to be the swiss army knife of wireless communities
+ .
+ It's focused on Guifi.net, the biggest telecommunications community network
+ in the world. It's mostly wireless but they also own fiber stretches.
+ .
+ Features:
+ * Explore CNML data files off-line using OpenStreetMaps
+ * Export CNML to other formats like KML
+ * Generate unsolclic configuration (templates method)
+ * Manage and download CNML files using the Graphic User Interface
+ * Create nodes/zones/devices... using Guifi.net API
+ * Support for different Guifi.net servers
+ * Wireless calculator
+ * Other tools like: traceroute, find IP in CNML...

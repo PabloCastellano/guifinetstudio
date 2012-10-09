@@ -1,0 +1,15 @@
+guifinet-studio (0.7-2) quantal; urgency=low
+
+  * Added missing dependency: libclutter-gtk-1.0-0
+  * Added missing files: unsolclic templates
+  * Updated description (debian/control) 
+  * Updated debian/copyright
+  * Use quilt patch system
+
+ -- Pablo Castellano <pablo@anche.no>  Tue, 09 Oct 2012 12:48:35 +0200
+
+guifinet-studio (0.7-1) unstable; urgency=low
+
+  * Initial release
+
+ -- Pablo Castellano <pablo@anche.no>  Sat, 22 Sep 2012 14:41:21 +0200

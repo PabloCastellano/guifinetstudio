@@ -1,0 +1,12 @@
+#!/usr/bin/make -f
+
+include /usr/share/cdbs/1/rules/debhelper.mk
+include /usr/share/cdbs/1/rules/patchsys-quilt.mk
+
+#/usr/lib/python2.7/dist-packages/libcnml
+#/usr/lib/python2.7/dist-packages/pyGuifiAPI
+#/usr/share/doc/guifinet-studio
+#/usr/share/guifinet-studio
+#/usr/share/guifinet-studio/ui
+#/usr/share/pyshared/guifinet-studio
+

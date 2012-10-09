@@ -1,0 +1,60 @@
+Index: guifinetstudio/champlainguifinet.py
+===================================================================
+--- guifinetstudio.orig/champlainguifinet.py	2012-10-03 12:03:29.679832867 +0200
++++ guifinetstudio/champlainguifinet.py	2012-10-09 11:54:57.665556938 +0200
+@@ -7,8 +7,6 @@
+ 
+ import os
+ import sys
+-os.chdir(os.path.dirname(os.path.abspath(__file__)))
+-sys.path.append('lib')
+ 
+ from libcnml import Status
+ 
+Index: guifinetstudio/guifinet-studio
+===================================================================
+--- guifinetstudio.orig/guifinet-studio	2012-10-03 12:03:29.735832866 +0200
++++ guifinetstudio/guifinet-studio	2012-10-09 11:56:24.161555043 +0200
+@@ -22,8 +22,8 @@
+ 
+ import os
+ import sys
+-os.chdir(os.path.dirname(os.path.abspath(__file__)))
+-sys.path.append('lib')
++os.chdir('/usr/share/guifinet-studio')
++sys.path.append('/usr/share/pyshared/guifinet-studio')
+ 
+ from libcnml import CNMLParser, Status
+ import pyGuifiAPI
+@@ -584,13 +584,13 @@
+ 		dialog.set_website_label(_("Author's blog"))
+ 		dialog.set_license_type(Gtk.License.GPL_3_0)
+ 	
+-		with open("AUTHORS") as f:
++		with open("/usr/share/doc/guifinet-studio/AUTHORS") as f:
+ 			authors_list = []
+ 			for line in f.readlines():
+ 				authors_list.append(line.strip())
+ 			dialog.set_authors(authors_list)
+ 		
+-		with open("COPYING") as f:
++		with open("/usr/share/doc/guifinet-studio/COPYING") as f:
+ 			dialog.set_license(f.read())
+ 		
+ 		dialog.run()
+Index: guifinetstudio/utils.py
+===================================================================
+--- guifinetstudio.orig/utils.py	2012-10-03 12:03:29.847832863 +0200
++++ guifinetstudio/utils.py	2012-10-09 11:56:56.689554335 +0200
+@@ -21,9 +21,9 @@
+ import os
+ 
+ GUIFI_NET_WORLD_ZONE_ID = 3671
+-I18N_APP_NAME = 'guifinetstudio'
++I18N_APP_NAME = 'guifinet-studio'
+ APP_NAME = I18N_APP_NAME
+-LOCALE_DIR = 'locale'
++LOCALE_DIR = '/usr/share/locale'
+ 
+ import gettext
+ gettext.bindtextdomain(APP_NAME, LOCALE_DIR)
