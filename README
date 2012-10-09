@@ -95,3 +95,10 @@ xgettext -j --language=Glade --output=locale/guifinetstudio.pot ui/*.ui
 Compile es.po:
 mkdir -p es/LC_MESSAGES && msgfmt es.po -o es/LC_MESSAGES/guifinetstudio.mo
 
+== Building Debian Package ==
+Run the following commands from the root directory:
+
+export QUILT_PATCHES=debian/patches
+dpkg-buildpackage -rfakeroot -k463F919C
+
+Don't forget to replace -k with your own PGP key ID or remove the parameter to leave the package unsigned.
