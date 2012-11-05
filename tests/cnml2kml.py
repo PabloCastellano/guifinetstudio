@@ -1,5 +1,13 @@
+#!/usr/bin/env python
+
+import os
 import sys
+
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+os.chdir('..')
+sys.path.append('.')
 sys.path.append('lib')
+
 from utils import CNML2KML
 from libcnml import CNMLParser
 
