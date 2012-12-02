@@ -30,6 +30,13 @@ gettext.bindtextdomain(APP_NAME, LOCALE_DIR)
 gettext.textdomain(APP_NAME)
 _ = gettext.gettext
 
+try:
+	import kmldom
+	KMLDOM_ENABLED = True
+except ImportError:
+	print _('WARNING: python kmldom dependency was not found')
+	print _('You need to install it in order to enable KML features')
+	KMLDOM_ENABLED = False
 
 ########
 re_email = re.compile("^.+@.+\..{2,4}$")
@@ -63,11 +70,9 @@ def openUrl(url):
 
 
 def CNML2KML(cnmlp, filename='mycnml.kml'):
-	try:
-		import kmldom
-	except ImportError:
+	if not KMLDOM_ENABLED:
 		print _('CNML2KML: function not available. kmldom module not found')
-		raise
+		return
 	
 	factory = kmldom.KmlFactory.GetFactory()
 	doc = factory.CreateDocument()

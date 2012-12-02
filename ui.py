@@ -22,13 +22,9 @@ from gi.repository import Gdk, Gtk
 
 from pyGuifiAPI.error import GuifiApiError
 
-from unsolclic import UnSolClic
-
 from utils import *
 
-# Used for traceroute
 import libcnml
-import txtraceroute
 
 import locale, gettext
 gettext.bindtextdomain(APP_NAME, LOCALE_DIR)
@@ -37,9 +33,33 @@ locale.setlocale(locale.LC_ALL, '')
 locale.bindtextdomain(APP_NAME, LOCALE_DIR)
 _ = gettext.gettext
 
+try:
+	# Used for traceroute
+	import txtraceroute
+	TRACEROUTE_ENABLED = True
+except ImportError:
+	print _('WARNING: python-twisted-core dependency was not found')
+	print _('You need to install it in order to enable traceroute features')
+	print
+	TRACEROUTE_ENABLED = False
+
+try:
+	from unsolclic import *
+	UNSOLCLIC_ENABLED = True
+except ImportError:
+	print _('WARNING: python jinja2 dependency was not found')
+	print _('You need to install it in order to enable unsolclic features')
+	print
+	UNSOLCLIC_ENABLED = False
+
 
 class UnsolclicDialog:
 	def __init__(self, node):
+		
+		if not UNSOLCLIC_ENABLED:
+			print _('Unsolclic features not available. python-jinja2 module not found')
+			return
+		
 		self.ui = Gtk.Builder()
 		self.ui.set_translation_domain(APP_NAME)
 		self.ui.add_from_file('ui/uscdialog.ui')

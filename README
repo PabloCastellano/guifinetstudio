@@ -14,11 +14,11 @@ In order to run Guifi.net Studio, you need to install the following packages:
 * Gtk Champlain (and GObject Introspection)
 * Git (necessary only if you want to deal with the repository)
 
-Under Ubuntu 12.04 (and surely most of the Ubuntu derivates) you can simply run:
+Under Ubuntu 12 (and surely most of the Ubuntu derivates) you can simply run:
 sudo apt-get install python2.7 gir1.2-gtkchamplain-0.12 gir1.2-gtkclutter-1.0
 
 optional:
-sudo apt-get install git python-lxml python-kml python-twisted-core python-jinja2 python-kml
+sudo apt-get install git python-lxml python-kml python-twisted-core python-jinja2
 
 git: Only necessary if you want to download Guifi.net Studio and deal with its repository
 python-lxml: it's faster than the default XML API. It's recommended and used if available

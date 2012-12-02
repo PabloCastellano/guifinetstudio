@@ -28,8 +28,12 @@ import socket
 import struct
 import time
 
-from twisted.internet import defer
-from twisted.internet import reactor
+try:
+	from twisted.internet import defer
+	from twisted.internet import reactor
+except ImportError:
+	raise
+
 
 HOPS = []
 

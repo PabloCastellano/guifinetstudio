@@ -101,6 +101,18 @@ class GuifinetStudio:
 		self.nodemenu = self.uimanager.get_widget("/KeyPopup1")
 
 		self.t6 = self.ui.get_object("treeviewcolumn6")
+		
+		if not TRACEROUTE_ENABLED:
+			traceroutemenuitem = self.ui.get_object('traceroutemenuitem')
+			traceroutemenuitem.set_sensitive(False)
+		
+		if not KMLDOM_ENABLED:
+			exportkmlimagemenuitem = self.ui.get_object('exportkmlimagemenuitem')
+			exportkmlimagemenuitem.set_sensitive(False)
+		
+		if not UNSOLCLIC_ENABLED:
+			unsolclicaction = self.ui.get_object('unsolclicaction')
+			unsolclicaction.set_sensitive(False)
 			
 		self.mainWindow.show_all()
 
