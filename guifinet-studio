@@ -344,8 +344,11 @@ class GuifinetStudio:
 
 				if len(ifs) > 1:
 					ip = 'Several IPs'
-				else:
+				elif len(ifs) == 1:
 					ip = ifs[0].ipv4
+				else:
+					print 'WARNING: no interfaces on service', s.title
+					ip = None
 			else:
 				ip = None
 
