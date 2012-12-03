@@ -1,4 +1,4 @@
-guifinet-studio (0.7-3) UNRELEASED; urgency=low
+guifinet-studio (0.7-3) guifi; urgency=low
 
   * Fixed missing dependencies
   * Added recommended dependencies
