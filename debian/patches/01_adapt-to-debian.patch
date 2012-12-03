@@ -1,7 +1,7 @@
-Index: guifinetstudio/champlainguifinet.py
+Index: b/champlainguifinet.py
 ===================================================================
---- guifinetstudio.orig/champlainguifinet.py	2012-10-03 12:03:29.679832867 +0200
-+++ guifinetstudio/champlainguifinet.py	2012-10-09 11:54:57.665556938 +0200
+--- a/champlainguifinet.py	2012-12-03 02:07:27.491500428 +0100
++++ b/champlainguifinet.py	2012-12-03 02:07:30.611389018 +0100
 @@ -7,8 +7,6 @@
  
  import os
@@ -11,12 +11,15 @@ Index: guifinetstudio/champlainguifinet.py
  
  from libcnml import Status
  
-Index: guifinetstudio/guifinet-studio
+Index: b/guifinet-studio
 ===================================================================
---- guifinetstudio.orig/guifinet-studio	2012-10-03 12:03:29.735832866 +0200
-+++ guifinetstudio/guifinet-studio	2012-10-09 11:56:24.161555043 +0200
-@@ -22,8 +22,8 @@
+--- a/guifinet-studio	2012-12-03 02:07:27.491500428 +0100
++++ b/guifinet-studio	2012-12-03 02:07:30.611389018 +0100
+@@ -20,10 +20,11 @@
  
+ from gi.repository import Gdk, Gtk
+ 
++import gzip
  import os
  import sys
 -os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -26,7 +29,7 @@ Index: guifinetstudio/guifinet-studio
  
  from libcnml import CNMLParser, Status
  import pyGuifiAPI
-@@ -584,13 +584,13 @@
+@@ -599,13 +600,13 @@
  		dialog.set_website_label(_("Author's blog"))
  		dialog.set_license_type(Gtk.License.GPL_3_0)
  	
@@ -38,14 +41,14 @@ Index: guifinetstudio/guifinet-studio
  			dialog.set_authors(authors_list)
  		
 -		with open("COPYING") as f:
-+		with open("/usr/share/doc/guifinet-studio/COPYING") as f:
++		with gzip.open("/usr/share/doc/guifinet-studio/COPYING.gz") as f:
  			dialog.set_license(f.read())
  		
  		dialog.run()
-Index: guifinetstudio/utils.py
+Index: b/utils.py
 ===================================================================
---- guifinetstudio.orig/utils.py	2012-10-03 12:03:29.847832863 +0200
-+++ guifinetstudio/utils.py	2012-10-09 11:56:56.689554335 +0200
+--- a/utils.py	2012-12-03 02:07:27.491500428 +0100
++++ b/utils.py	2012-12-03 02:07:30.611389018 +0100
 @@ -21,9 +21,9 @@
  import os
  
@@ -58,3 +61,16 @@ Index: guifinetstudio/utils.py
  
  import gettext
  gettext.bindtextdomain(APP_NAME, LOCALE_DIR)
+Index: b/lib/libcnml/libcnml.py
+===================================================================
+--- a/lib/libcnml/libcnml.py	2012-12-03 02:07:03.192368245 +0100
++++ b/lib/libcnml/libcnml.py	2012-12-03 02:07:47.566783606 +0100
+@@ -618,7 +618,7 @@
+ 
+ 	
+ 	def validateDTDLxml(self, tree):
+-		dtdfile = 'tests/cnml.dtd'
++		dtdfile = 'cnml.dtd'
+ 		try:
+ 			with open(dtdfile, 'rb') as dtdfp:
+ 				dtd = etree.DTD(dtdfp)

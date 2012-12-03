@@ -10,6 +10,7 @@ AUTHORS usr/share/doc/guifinet-studio/
 COPYING usr/share/doc/guifinet-studio/
 README usr/share/doc/guifinet-studio/
 guifinet_studio_menu.ui usr/share/guifinet-studio/
+tests/cnml.dtd usr/share/guifinet-studio/
 ui/calc.ui usr/share/guifinet-studio/ui/
 ui/changezonedialog.ui usr/share/guifinet-studio/ui/
 ui/cnmldialog.ui usr/share/guifinet-studio/ui/
