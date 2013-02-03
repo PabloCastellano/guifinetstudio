@@ -235,10 +235,10 @@ class GuifiAPI(object):
         lang = 'es'
         return self.base_device_url % (lang, did)
 
-    def updateNode(self, nid, title=None, nick=None, body=None,
-                   zone_id=None, zone_desc=None, notification=None,
-                   lat=None, lon=None, elevation=None, stable=None,
-                   graph_server=None, status=None):
+    def updateNode(self, nid, title=None, nick=None, body=None, zone_id=None,
+                   zone_description=None, notification=None, lat=None,
+                   lon=None, elevation=None, stable=None, graph_server=None,
+                   status=None):
 
         if not self.is_authenticated():
             raise GuifiApiError('You have to be authenticated to run this action')
@@ -246,6 +246,26 @@ class GuifiAPI(object):
         data = {'command': 'guifi.node.update', 'node_id': nid}
         if title is not None:
             data['title'] = title
+        if nick is not None:
+            data['nick'] = nick
+        if body is not None:
+            data['body'] = body
+        if zone_id is not None:
+            data['zone_id'] = zone_id
+        if zone_description is not None:
+            data['zone_description'] = zone_description
+        if notification is not None:
+            data['notification'] = notification
+        if lat is not None:
+            data['lat'] = lat
+        if lon is not None:
+            data['lon'] = lon
+        if elevation is not None:
+            data['elevation'] = elevation
+        if stable is not None:
+            data['stable'] = stable
+        if status is not None:
+            data['status'] = status
 
         params = urllib.urlencode(data)
         (codenum, response) = self.sendRequest(params)
