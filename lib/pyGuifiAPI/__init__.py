@@ -18,7 +18,7 @@ __version__ = '1.0'
 __author__ = 'Pablo Castellano <pablo@anche.no>'
 __license__ = 'GPLv3+'
 
-__all__ = ['api', 'constants', 'error'] 
+__all__ = ['api', 'constants', 'error']
 
 from api import GuifiAPI
 from error import GuifiApiError

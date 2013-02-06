@@ -37,11 +37,12 @@ except ImportError:
 
 HOPS = []
 
+
 class iphdr(object):
     """
     This represents an IP packet header.
-	ICMP Protocol and source 0.0.0.0
-	
+    ICMP Protocol and source 0.0.0.0
+
     @assemble packages the packet
     @disassemble disassembles the packet
     """
@@ -139,7 +140,7 @@ class Hop(object):
         self.ip.ttl = ttl
         self.ip.id += ttl
 
-        self.icmp = icmphdr('\x00'*20)
+        self.icmp = icmphdr('\x00' * 20)
         self.icmp.id = self.ip.id
         self.ip.data = self.icmp.assemble()
 
@@ -315,4 +316,3 @@ def main(target):
 
 if __name__ == "__main__":
     main('guifi.net')
-    

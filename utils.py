@@ -31,12 +31,12 @@ gettext.textdomain(APP_NAME)
 _ = gettext.gettext
 
 try:
-	import kmldom
-	KMLDOM_ENABLED = True
+    import kmldom
+    KMLDOM_ENABLED = True
 except ImportError:
-	print _('WARNING: python kmldom dependency was not found')
-	print _('You need to install it in order to enable KML features')
-	KMLDOM_ENABLED = False
+    print _('WARNING: python kmldom dependency was not found')
+    print _('You need to install it in order to enable KML features')
+    KMLDOM_ENABLED = False
 
 ########
 re_email = re.compile("^.+@.+\..{2,4}$")
@@ -45,57 +45,59 @@ re_ipv4 = re.compile("^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([
 
 
 def valid_email_address(email):
-	if isinstance(email, str):
-		return re_email.match(email) is not None
-	else:
-		# list of email addresses separated by commas
-		for e in email.split(','):
-			if e == '':
-				continue
-			em = e.strip()
-			if valid_email_address(em) is False:
-				return False
-		return True
+    if isinstance(email, str):
+        return re_email.match(email) is not None
+    else:
+        # list of email addresses separated by commas
+        for e in email.split(','):
+            if e == '':
+                continue
+            em = e.strip()
+            if valid_email_address(em) is False:
+                return False
+        return True
+
 
 def valid_mac_address(mac):
-	return re_mac.match(mac.lower()) is not None
+    return re_mac.match(mac.lower()) is not None
+
 
 def valid_ipv4_address(ip):
-	return re_ipv4.match(ip) is not None
-	
+    return re_ipv4.match(ip) is not None
+
+
 def openUrl(url):
-	print _('Opening in web browser:'), url
-	systemstr = 'xdg-open %s' %url
-	os.system(systemstr)
+    print _('Opening in web browser:'), url
+    systemstr = 'xdg-open %s' % url
+    os.system(systemstr)
 
 
 def CNML2KML(cnmlp, filename='mycnml.kml'):
-	if not KMLDOM_ENABLED:
-		print _('CNML2KML: function not available. kmldom module not found')
-		return
-	
-	factory = kmldom.KmlFactory.GetFactory()
-	doc = factory.CreateDocument()
-	
-	for node in cnmlp.getNodes():
-		coordinates = factory.CreateCoordinates()
-		coordinates.add_latlng(node.latitude, node.longitude)
-		point = factory.CreatePoint()
-		point.set_coordinates(coordinates)
-		placemark = factory.CreatePlacemark()
-		placemark.set_name(node.title)
-		placemark.set_geometry(point)
-		doc.add_feature(placemark)
+    if not KMLDOM_ENABLED:
+        print _('CNML2KML: function not available. kmldom module not found')
+        return
 
-	xml = kmldom.SerializePretty(doc)
-	with open(filename, 'w') as kmlfp:
-		kmlfp.write(xml)
-        
-    
+    factory = kmldom.KmlFactory.GetFactory()
+    doc = factory.CreateDocument()
+
+    for node in cnmlp.getNodes():
+        coordinates = factory.CreateCoordinates()
+        coordinates.add_latlng(node.latitude, node.longitude)
+        point = factory.CreatePoint()
+        point.set_coordinates(coordinates)
+        placemark = factory.CreatePlacemark()
+        placemark.set_name(node.title)
+        placemark.set_geometry(point)
+        doc.add_feature(placemark)
+
+    xml = kmldom.SerializePretty(doc)
+    with open(filename, 'w') as kmlfp:
+        kmlfp.write(xml)
+
 
 # GtkTreeModelFilterVisibleFunc
 # Case insensitive :)
 def filterbyname_func(model, it, entry):
-	haystack = model.get_value(it, 0).lower()
-	needle = entry.get_text().lower()	
-	return needle in haystack
+    haystack = model.get_value(it, 0).lower()
+    needle = entry.get_text().lower()
+    return needle in haystack

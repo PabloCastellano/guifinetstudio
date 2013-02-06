@@ -8,9 +8,9 @@ from guifiConfig import *
 from api import *
 
 if len(sys.argv) != 3:
-	print 'Create a new interface'
-	print 'Usage: %s <device_id> <radio>' %sys.argv[0]
-	sys.exit(1)
+    print 'Create a new interface'
+    print 'Usage: %s <device_id> <radio>' % sys.argv[0]
+    sys.exit(1)
 
 g = GuifiAPI(USERNAME, PASSWORD, secure=SECURE)
 g.auth()
@@ -28,4 +28,4 @@ Queda per implementar el suport de les connexions per cable.
 print 'Interface id:', iid
 
 for settings in ipv4[0].items():
-	print '  %s - %s' %settings
+    print '  %s - %s' % settings

@@ -12,4 +12,4 @@ protocols = g.getProtocols()
 print 'Total protocols:', len(protocols)
 print 'Title\tDescription'
 for protocol in protocols:
-	print '%s\t%s' %(protocol['title'], protocol['description'])
+    print '%s\t%s' % (protocol['title'], protocol['description'])

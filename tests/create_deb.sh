@@ -96,7 +96,7 @@ EOF
 
 for f in $A_PYSHARED
 do
-	cp $SRC_DIR/$f $DST_DIR/usr/share/pyshared/guifinet-studio/
+    cp $SRC_DIR/$f $DST_DIR/usr/share/pyshared/guifinet-studio/
 done
 
 cp $SRC_DIR/guifinet_studio.py $DST_DIR/usr/bin/guifinet-studio
@@ -106,17 +106,17 @@ cp $SRC_DIR/guifinet-studio.desktop $DST_DIR/usr/share/applications/
 
 for f in $A_DOC
 do
-	cp $SRC_DIR/$f $DST_DIR/usr/share/doc/guifinet-studio/
+    cp $SRC_DIR/$f $DST_DIR/usr/share/doc/guifinet-studio/
 done
 
 for f in $LIBCNML
 do
-	cp $SRC_DIR/lib/libcnml/$f $DST_DIR/usr/lib/python2.7/dist-packages/libcnml/
+    cp $SRC_DIR/lib/libcnml/$f $DST_DIR/usr/lib/python2.7/dist-packages/libcnml/
 done
 
 for f in $GUIFIAPI
 do
-	cp $SRC_DIR/lib/pyGuifiAPI/$f $DST_DIR/usr/lib/python2.7/dist-packages/pyGuifiAPI/
+    cp $SRC_DIR/lib/pyGuifiAPI/$f $DST_DIR/usr/lib/python2.7/dist-packages/pyGuifiAPI/
 done
 
 # Otros cambios:
@@ -128,7 +128,7 @@ sed "s|I18N_APP_NAME = 'guifinetstudio'|I18N_APP_NAME = 'guifinet-studio'|" $SRC
 
 for l in $LOCALES
 do
-	mkdir -p "$DST_DIR/usr/share/locale/$l/LC_MESSAGES" && msgfmt $SRC_DIR/locale/$l.po -o "$DST_DIR/usr/share/locale/$l/LC_MESSAGES/guifinet-studio.mo"
+    mkdir -p "$DST_DIR/usr/share/locale/$l/LC_MESSAGES" && msgfmt $SRC_DIR/locale/$l.po -o "$DST_DIR/usr/share/locale/$l/LC_MESSAGES/guifinet-studio.mo"
 done
 
 #BUILD!

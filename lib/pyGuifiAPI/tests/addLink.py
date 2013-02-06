@@ -6,9 +6,9 @@ from guifiConfig import *
 from api import *
 
 if len(sys.argv) != 5:
-	print 'Create a new device'
-	print 'Usage: %s <device_from> <radio_from> <device_to> <radio_to>' %sys.argv[0]
-	sys.exit(1)
+    print 'Create a new device'
+    print 'Usage: %s <device_from> <radio_from> <device_to> <radio_to>' % sys.argv[0]
+    sys.exit(1)
 
 g = GuifiAPI(USERNAME, PASSWORD, secure=SECURE)
 g.auth()
@@ -21,4 +21,4 @@ g.auth()
 print 'Interface id:', lid
 
 for settings in ipv4[0].items():
-	print '  %s - %s' %settings
+    print '  %s - %s' % settings

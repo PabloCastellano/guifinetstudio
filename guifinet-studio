@@ -43,7 +43,8 @@ from champlainguifinet import GtkGuifinetMap
 
 from calc import Calculator
 
-import locale, gettext
+import locale
+import gettext
 gettext.bindtextdomain(APP_NAME, LOCALE_DIR)
 gettext.textdomain(APP_NAME)
 locale.setlocale(locale.LC_ALL, '')
@@ -52,715 +53,663 @@ _ = gettext.gettext
 
 
 class GuifinetStudio:
-	def __init__(self, cnmlFile=None):
-		self.ui = Gtk.Builder()
-		self.ui.set_translation_domain(APP_NAME)
-		self.ui.add_from_file('ui/mainwindow.ui')
-		self.ui.connect_signals(self)
+    def __init__(self, cnmlFile=None):
+        self.ui = Gtk.Builder()
+        self.ui.set_translation_domain(APP_NAME)
+        self.ui.add_from_file('ui/mainwindow.ui')
+        self.ui.connect_signals(self)
 
-		self.mainWindow = self.ui.get_object('mainWindow')
-		self.listNodesWindow = self.ui.get_object('listNodesWindow')
-		
-		self.nodesList = self.ui.get_object("scrolledwindow1")
-		self.treestore = self.ui.get_object("treestore1")
-		self.treestore2 = self.ui.get_object("treestore2")
-		self.treestore3 = self.ui.get_object('treestore3')
-		self.treeview = self.ui.get_object("treeview1")
-		self.treeview2 = self.ui.get_object("treeview2")
-		self.treeview4 = self.ui.get_object('treeview4')
-		self.treemodelfilter2 = self.ui.get_object('treemodelfilter2')
-		searchentry = self.ui.get_object('searchentry')
-		self.treemodelfilter2.set_visible_func(filterbyname_func, searchentry)
-		self.statusbar = self.ui.get_object("statusbar1")
-		self.viewsidepanemenuitem = self.ui.get_object('viewsidepanemenuitem')
+        self.mainWindow = self.ui.get_object('mainWindow')
+        self.listNodesWindow = self.ui.get_object('listNodesWindow')
 
-		# File menu
-		self.closecnmlmenuitem = self.ui.get_object('closecnmlmenuitem')
-		
-		# Edit menu
-		self.createnodemenuitem = self.ui.get_object('createnodemenuitem')
-		self.createzonemenuitem = self.ui.get_object('createzonemenuitem')
-		self.createdevicemenuitem = self.ui.get_object('createdevicemenuitem')
-		self.createradiomenuitem = self.ui.get_object('createradiomenuitem')
-		self.createinterfacemenuitem = self.ui.get_object('createinterfacemenuitem')
-		self.createlinkmenuitem = self.ui.get_object('createlinkmenuitem')
-		
-		self.notebook1 = self.ui.get_object("notebook1")
-		self.notebook1.set_show_tabs(False)
-		
-		self.guifinetmap = GtkGuifinetMap(self)
-		
-		self.box1 = self.ui.get_object('box1')
-		self.paned = self.ui.get_object("paned1")
-		self.paned.pack2(self.guifinetmap, True, True)
-		
-		self.uimanager = Gtk.UIManager()
-		self.uimanager.add_ui_from_file("guifinet_studio_menu.ui")
-		nodeactiongroup = self.ui.get_object("nodeactiongroup")
-		self.uimanager.insert_action_group(nodeactiongroup)
-		self.nodemenu = self.uimanager.get_widget("/KeyPopup1")
+        self.nodesList = self.ui.get_object("scrolledwindow1")
+        self.treestore = self.ui.get_object("treestore1")
+        self.treestore2 = self.ui.get_object("treestore2")
+        self.treestore3 = self.ui.get_object('treestore3')
+        self.treeview = self.ui.get_object("treeview1")
+        self.treeview2 = self.ui.get_object("treeview2")
+        self.treeview4 = self.ui.get_object('treeview4')
+        self.treemodelfilter2 = self.ui.get_object('treemodelfilter2')
+        searchentry = self.ui.get_object('searchentry')
+        self.treemodelfilter2.set_visible_func(filterbyname_func, searchentry)
+        self.statusbar = self.ui.get_object("statusbar1")
+        self.viewsidepanemenuitem = self.ui.get_object('viewsidepanemenuitem')
 
-		self.t6 = self.ui.get_object("treeviewcolumn6")
-		
-		if not TRACEROUTE_ENABLED:
-			traceroutemenuitem = self.ui.get_object('traceroutemenuitem')
-			traceroutemenuitem.set_sensitive(False)
-		
-		if not KMLDOM_ENABLED:
-			exportkmlimagemenuitem = self.ui.get_object('exportkmlimagemenuitem')
-			exportkmlimagemenuitem.set_sensitive(False)
-		
-		if not UNSOLCLIC_ENABLED:
-			unsolclicaction = self.ui.get_object('unsolclicaction')
-			unsolclicaction.set_sensitive(False)
-			
-		self.mainWindow.show_all()
+        # File menu
+        self.closecnmlmenuitem = self.ui.get_object('closecnmlmenuitem')
 
-		# configuration
-		self.configmanager = GuifinetStudioConfig()
+        # Edit menu
+        self.createnodemenuitem = self.ui.get_object('createnodemenuitem')
+        self.createzonemenuitem = self.ui.get_object('createzonemenuitem')
+        self.createdevicemenuitem = self.ui.get_object('createdevicemenuitem')
+        self.createradiomenuitem = self.ui.get_object('createradiomenuitem')
+        self.createinterfacemenuitem = self.ui.get_object('createinterfacemenuitem')
+        self.createlinkmenuitem = self.ui.get_object('createlinkmenuitem')
 
-		if not cnmlFile:
-			# Load default zone cnml
-			defaultzone = self.configmanager.getDefaultZone()
-			if defaultzone is not None:
-				# FIXME:
-				#ztype = self.configmanager.getDefaultZoneType()
-				ztype = 'detail'
-				cnmlFile = self.configmanager.pathForCNMLCachedFile(defaultzone, ztype)
-			else:
-				# no default zone
-				self.cnmlp = None
-				msg = _('No default zone. Please choose one')
-				print msg
-				self.statusbar.push(0, msg)
-				self.cnmlp = None
-				self.cnmlFile = None
-		
-		if cnmlFile:
-			# CNMLParser
-			try:
-				self.cnmlp = CNMLParser(cnmlFile)
-				# FIXME: only if necessary (there's a zone loaded already)
-				self.statusbar.push(0, _('Loaded "%s" successfully') %cnmlFile)
-				self.fillTreeViews()
-				self.guifinetmap.paintMap(self.cnmlp.getNodes())
-				self.cnmlFile = cnmlFile
-			except IOError:
-				print _('Error loading CNML')
-				self.statusbar.push(0, _('CNML file "%s" couldn\'t be loaded') %cnmlFile)
-				self.cnmlp = None
-				self.cnmlFile = None
-		
-		if not self.cnmlp:
-			# Disable menus
-			self.closecnmlmenuitem.set_sensitive(False)
-			self.enable_api_menuitems(False)
-			
-		# Guifi.net API
-		if self.configmanager.getUsername() is None or self.configmanager.getPassword() is None or self.configmanager.getHost() is None:
-			print _('Some required data to initialize Guifi.net API is not available.')
-			print _('Please check username, password and host in preferences')
-		self.guifiAPI = pyGuifiAPI.GuifiAPI(self.configmanager.getUsername(), self.configmanager.getPassword(), self.configmanager.getHost(), secure=False)
-		self.authAPI()
-		
-		# TODO: Generate an intermediary file for allZones instead of loading the cnml everytime
-		self.allZones = []
-		self.rebuildAllZones()
+        self.notebook1 = self.ui.get_object("notebook1")
+        self.notebook1.set_show_tabs(False)
+
+        self.guifinetmap = GtkGuifinetMap(self)
+
+        self.box1 = self.ui.get_object('box1')
+        self.paned = self.ui.get_object("paned1")
+        self.paned.pack2(self.guifinetmap, True, True)
+
+        self.uimanager = Gtk.UIManager()
+        self.uimanager.add_ui_from_file("guifinet_studio_menu.ui")
+        nodeactiongroup = self.ui.get_object("nodeactiongroup")
+        self.uimanager.insert_action_group(nodeactiongroup)
+        self.nodemenu = self.uimanager.get_widget("/KeyPopup1")
+
+        self.t6 = self.ui.get_object("treeviewcolumn6")
+
+        if not TRACEROUTE_ENABLED:
+            traceroutemenuitem = self.ui.get_object('traceroutemenuitem')
+            traceroutemenuitem.set_sensitive(False)
+
+        if not KMLDOM_ENABLED:
+            exportkmlimagemenuitem = self.ui.get_object('exportkmlimagemenuitem')
+            exportkmlimagemenuitem.set_sensitive(False)
+
+        if not UNSOLCLIC_ENABLED:
+            unsolclicaction = self.ui.get_object('unsolclicaction')
+            unsolclicaction.set_sensitive(False)
+
+        self.mainWindow.show_all()
+
+        # configuration
+        self.configmanager = GuifinetStudioConfig()
+
+        if not cnmlFile:
+            # Load default zone cnml
+            defaultzone = self.configmanager.getDefaultZone()
+            if defaultzone is not None:
+                # FIXME:
+                #ztype = self.configmanager.getDefaultZoneType()
+                ztype = 'detail'
+                cnmlFile = self.configmanager.pathForCNMLCachedFile(defaultzone, ztype)
+            else:
+                # no default zone
+                self.cnmlp = None
+                msg = _('No default zone. Please choose one')
+                print msg
+                self.statusbar.push(0, msg)
+                self.cnmlp = None
+                self.cnmlFile = None
+
+        if cnmlFile:
+            # CNMLParser
+            try:
+                self.cnmlp = CNMLParser(cnmlFile)
+                # FIXME: only if necessary (there's a zone loaded already)
+                self.statusbar.push(0, _('Loaded "%s" successfully') % cnmlFile)
+                self.fillTreeViews()
+                self.guifinetmap.paintMap(self.cnmlp.getNodes())
+                self.cnmlFile = cnmlFile
+            except IOError:
+                print _('Error loading CNML')
+                self.statusbar.push(0, _('CNML file "%s" couldn\'t be loaded') % cnmlFile)
+                self.cnmlp = None
+                self.cnmlFile = None
+
+        if not self.cnmlp:
+            # Disable menus
+            self.closecnmlmenuitem.set_sensitive(False)
+            self.enable_api_menuitems(False)
+
+        # Guifi.net API
+        if self.configmanager.getUsername() is None or self.configmanager.getPassword() is None or self.configmanager.getHost() is None:
+            print _('Some required data to initialize Guifi.net API is not available.')
+            print _('Please check username, password and host in preferences')
+        self.guifiAPI = pyGuifiAPI.GuifiAPI(self.configmanager.getUsername(), self.configmanager.getPassword(), self.configmanager.getHost(), secure=False)
+        self.authAPI()
+
+        # TODO: Generate an intermediary file for allZones instead of loading the cnml everytime
+        self.allZones = []
+        self.rebuildAllZones()
+
+    def enable_api_menuitems(self, enable):
+        self.createnodemenuitem.set_sensitive(enable)
+        self.createzonemenuitem.set_sensitive(enable)
+        self.createdevicemenuitem.set_sensitive(enable)
+        self.createradiomenuitem.set_sensitive(enable)
+        self.createinterfacemenuitem.set_sensitive(enable)
+        self.createlinkmenuitem.set_sensitive(enable)
+
+    def on_fullscreenmenuitem_toggled(self, widget, data=None):
+        isActive = widget.get_active()
+
+        if isActive:
+            self.mainWindow.fullscreen()
+        else:
+            self.mainWindow.unfullscreen()
+
+    def on_exportgmlimagemenuitem_activate(self, widget, data=None):
+        print _('Export to GML')
+        raise NotImplementedError
+
+    def on_exportkmlimagemenuitem_activate(self, widget, data=None):
+        dialog = Gtk.FileChooserDialog(_('Save KML file'), self.mainWindow,
+                                       Gtk.FileChooserAction.SAVE,
+                                       (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_SAVE, Gtk.ResponseType.ACCEPT))
+
+        if dialog.run() == Gtk.ResponseType.ACCEPT:
+            filename = dialog.get_filename()
+            print filename
+
+        dialog.destroy()
+
+        print _('Export to KML')
+        CNML2KML(self.cnmlp, filename)
+
+    def rebuildAllZones(self):
+        cnmlGWfile = self.configmanager.pathForCNMLCachedFile(GUIFI_NET_WORLD_ZONE_ID, 'zones')
+        try:
+            self.zonecnmlp = CNMLParser(cnmlGWfile)
+            for z in self.zonecnmlp.getZones():
+                self.allZones.append((z.id, z.title))
+        except IOError:
+            print _('Error loading cnml guifiworld zone:'), cnmlGWfile
+            print _('Guifi.net Studio will run normally but note that some features are disabled')
+            print _('To solve it, just download the Guifi.net World zones CNML going to Tools -> Update zones')
+
+            message = _('Error loading Guifi.net World zone\n\n')
+            message += _('Guifi.net Studio will run normally but note that some features are disabled\n')
+            message += _('To solve it, just download the Guifi.net World zones CNML again\n')
+            message += _('You can go to Tools -> Update zones')
+            g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.WARNING, Gtk.ButtonsType.CLOSE, message)
+            g.set_title(_('File not found: %s') % cnmlGWfile)
+            g.run()
+            g.destroy()
+            self.statusbar.push(0, _('CNML file "%s" couldn\'t be loaded') % cnmlGWfile)
+            self.zonecnmlp = None
+
+    def on_calcimagemenuitem_activate(self, widget, data=None):
+        Calculator()
+
+    def on_findipmenuitem_activate(self, widget, data=None):
+        FindIPDialog(self.configmanager, self.zonecnmlp)
+
+    def on_traceroutemenuitem_activate(self, widget, data=None):
+        TracerouteDialog(self.guifinetmap, self.configmanager)
+
+    def on_searchentry_changed(self, widget, data=None):
+        print widget, data
+        print widget.get_text()
+
+        nodesfilter = self.treeview2.get_model()
+        nodesfilter.refilter()
+        return False
+
+    def fillTreeViews(self):
+        self.fillNodesTreeView()
+        #self.fillSidePane()
+        self.fillServicesTreeView()
+
+    def fillServicesTreeView(self):
+        self.treestore3.clear()
+        self.treestore3.set_sort_column_id(0, Gtk.SortType.ASCENDING)
+
+        self.__addServicesFromZoneToTree(self.cnmlp.rootzone)
+
+        self.treeview4.expand_all()
+
+    # Clears TreeView and adds a hierarchy of zones and nodes
+    # It uses __addZoneToTree(), __addNodesFromZoneToTree and __fillNodesTreeView_recursive()
+    def fillNodesTreeView(self):
+        # Init - Reset
+        self.treestore.clear()
+        self.treestore2.clear()
+
+        self.treestore.set_sort_column_id(5, Gtk.SortType.ASCENDING)
+        self.treestore2.set_sort_column_id(0, Gtk.SortType.ASCENDING)
+
+        # Add root zone and its nodes first
+        parenttree = self.__addZoneToTree(self.cnmlp.rootzone, None)
+        self.__addNodesFromZoneToTree(self.cnmlp.rootzone, parenttree)
+
+        #### Iter for every zone (except root, which is already added)
+        #### and adds them and their nodes to the TreeView
+        self.__fillNodesTreeView_recursive(self.cnmlp.rootzone, parenttree)
+        ####
+
+        # Finish
+        self.treeview.expand_all()
+        self.statusbar.push(0, _('CNML loaded successfully'))
+
+    # Recursive fillNodesTreeView()
+    def __fillNodesTreeView_recursive(self, parentzid, parenttree):
+        zones = self.cnmlp.getSubzonesFromZone(parentzid)
+
+        # For every zone, add it to the treeview and then add its nodes and subzones
+        for z in zones:
+            tree = self.__addZoneToTree(z.id, parenttree)
+            self.__addNodesFromZoneToTree(z.id, tree)
+            self.__fillNodesTreeView_recursive(z.id, tree)
+
+    # Adds a row with the name of the zone and the number of nodes for each status (working, planned...)
+    def __addZoneToTree(self, zid, parentzone):
+
+        # Given a list of node ids, counts how many of them are for each status (working, planned...)
+        # TODO: Rewrite this part
+        def countNodes(nodes):
+            nodescount = dict()
+            nodescount[Status.RESERVED] = 0
+            nodescount[Status.PLANNED] = 0
+            nodescount[Status.WORKING] = 0
+            nodescount[Status.TESTING] = 0
+            nodescount[Status.BUILDING] = 0
+            nodescount[Status.DROPPED] = 0
+
+            for n in nodes:
+                nodescount[n.status] += 1
+
+            return (nodescount[Status.PLANNED], nodescount[Status.WORKING], nodescount[Status.TESTING], nodescount[Status.BUILDING])
+
+        zone = self.cnmlp.getZone(zid)
+        nodes = zone.getNodes()
+
+        col1 = "%s (%d)" % (zone.title, len(nodes))
+        (nplanned, nworking, ntesting, nbuilding) = countNodes(nodes)
+
+        # Add the new row for the zone
+        row = (col1, str(nworking), str(nbuilding), str(ntesting), str(nplanned), None, None)
+        tree = self.treestore.append(parentzone, row)
+        return tree
+
+    # Hacky function
+    # Services are associated to a device.
+    # However, that device may not define an interface and the interface being used by a working service
+    # can be defined in other places. Possibilities:
+    #  1- the interface is defined in the same device
+    #  2- the interface is defined in the first radio of the device
+    #  3- the interface is defined in sibling device
+    # If there are several devices, how can I know which one defines the correct IP. Or are both correct?
+    def __addServicesFromZoneToTree(self, zid):
+        services = self.cnmlp.getServices()
+
+        for s in services:
+            node = s.parentNode.parentNode
+            if s.status == Status.WORKING:  # FIXME, any other value? testing maybe?
+                ifs = s.parentNode.getInterfaces()
+                if ifs == []:
+                    radios = s.parentNode.getRadios()
+                    if radios == [] or radios[0].getInterfaces() == []:
+                        # sibling device
+                        for devi in s.parentNode.parentNode.getDevices():
+                            for radio in devi.getRadios():
+                                ifs = radio.getInterfaces()
+                    else:
+                        ifs = s.parentNode.getRadios()[0].getInterfaces()
+
+                if len(ifs) > 1:
+                    ip = 'Several IPs'
+                elif len(ifs) == 1:
+                    ip = ifs[0].ipv4
+                else:
+                    print 'WARNING: no interfaces on service', s.title
+                    ip = None
+            else:
+                ip = None
+
+            self.treestore3.append(None, (s.id, s.type, s.title, node.title, ip, Status.statusToStr(s.status)))
+
+    # Adds a row with the name of the node to the list of nodes (first tab) and to the 'nodes treeview' (second tab)
+    def __addNodesFromZoneToTree(self, zid, parentzone):
+        nodes = self.cnmlp.getNodesFromZone(zid)
+        for n in nodes:
+            row = (None, None, None, None, None, n.title, n.id)
+            self.treestore.append(parentzone, row)
+            self.treestore2.append(None, (n.title, n.id))
+
+    # Shows the 'Create new node' dialog
+    def create_new_node(self, coords):
+        EditNodeDialog(self.guifiAPI, self.cnmlp.getZones(), self.zonecnmlp, self.allZones, coords)
+
+    # Shows the 'Node' dialog
+    def on_nodepropertiesaction_activate(self, action, data=None):
+        NodeDialog()
+
+    def on_viewnodeinwebsiteaction_activate(self, action, data=None):
+        # get node id
+        sel = self.treeview.get_selection()
+        (model, it) = sel.get_selected()
+        nid = model.get_value(it, 6)
+
+        Gtk.show_uri(None, self.guifiAPI.urlForNode(nid), Gtk.get_current_event_time())
+
+    def on_viewnodeinmapaction_activate(self, action, data=None):
+        self.notebook1.set_current_page(0)
+
+        # get node id
+        sel = self.treeview.get_selection()
+        (model, it) = sel.get_selected()
+        nid = model.get_value(it, 6)
+
+        lat = self.cnmlp.getNode(nid).latitude
+        lon = self.cnmlp.getNode(nid).longitude
+
+        self.guifinetmap.getView().center_on(lat, lon)
+
+    def on_unsolclicaction_activate(self, action, data=None):
+        # get node id
+        sel = self.treeview.get_selection()
+        (model, it) = sel.get_selected()
+        nid = model.get_value(it, 6)
+
+        # Varias interfaces - varios unsolclic
+        # TODO: Ventana con la interfaz seleccionable que quieras generar
+        devices = self.cnmlp.nodes[nid].devices
+
+        if devices == {}:
+            g = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE,
+                                  _("Couldn't generate unsolclick.\nThe node doesn't have any device defined."))
+            g.set_title(_('Error generating unsolclic'))
+            g.run()
+            g.destroy()
+            return
+        elif len(devices) > 1:
+            g = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.WARNING, Gtk.ButtonsType.CLOSE,
+                                  _('Several devices in this node. Generating just the first one.'))
+            g.set_title(_('Warning generating unsolclic'))
+            g.run()
+            g.destroy()
+
+        node = self.cnmlp.nodes[nid]
+
+        UnsolclicDialog(node)
+        ########
+
+    def on_opencnmlmenuitem_activate(self, widget, data=None):
+        dialog = Gtk.FileChooserDialog(_('Open CNML file'), self.mainWindow,
+                                       Gtk.FileChooserAction.OPEN,
+                                       (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.ACCEPT))
+
+        if dialog.run() == Gtk.ResponseType.ACCEPT:
+            filename = dialog.get_filename()
+
+            try:
+                self.cnmlp = CNMLParser(filename)
+                # FIXME: only if necessary (there's a zone loaded already)
+                self.reset()
+                self.fillTreeViews()
+                self.guifinetmap.paintMap(self.cnmlp.getNodes())
+                self.cnmlFile = filename
+                self.closecnmlmenuitem.set_sensitive(True)
+            except IOError:
+                self.statusbar.push(0, _('CNML file "%s" couldn\'t be loaded') % self.cnmlFile)
+                self.cnmlFile = None
+                self.cnmlp = None
+
+        self.enable_api_menuitems(self.cnmlp is not None)
+
+        dialog.destroy()
+
+    def reset(self):
+        self.treestore.clear()
+        self.treestore2.clear()
+        self.guifinetmap.reset()
+
+    def on_closecnmlmenuitem_activate(self, widget=None, data=None):
+        self.reset()
+        self.statusbar.push(0, _('Closed CNML file'))
+        self.closecnmlmenuitem.set_sensitive(False)
+        self.cnmlFile = None
+        self.cnmlp = None
+
+        self.enable_api_menuitems(False)
+
+    def gtk_main_quit(self, widget, data=None):
+        Gtk.main_quit()
+
+    def on_createnodemenuitem_activate(self, widget=None, data=None):
+        EditNodeDialog(self.guifiAPI, self.cnmlp.getZones(), self.zonecnmlp, self.allZones)
+
+    def on_createzonemenuitem_activate(self, widget, data=None):
+        EditZoneDialog(self.guifiAPI, self.cnmlp.getZones())
+
+    def on_createdevicemenuitem_activate(self, widget, data=None):
+        EditDeviceDialog(self.guifiAPI, self.cnmlp.getNodes())
+
+    def on_createradiomenuitem_activate(self, widget, data=None):
+        EditRadioDialog(self.guifiAPI, self.cnmlp)
+
+    def on_createinterfacemenuitem_activate(self, widget, data=None):
+        EditInterfaceDialog()
+
+    def on_createlinkmenuitem_activate(self, widget, data=None):
+        EditLinkDialog(self.cnmlp.getNodes())
+
+    def on_preferencesmenuitem_activate(self, widget, data=None):
+        PreferencesDialog(self.configmanager, self.zonecnmlp, self.allZones)
+
+    def on_viewstatusbarmenuitem_toggled(self, widget, data=None):
+        isActive = widget.get_active()
+
+        if isActive:
+            self.statusbar.show()
+        else:
+            self.statusbar.hide()
+
+    def on_viewsidepanemenuitem_toggled(self, widget, data=None):
+        isActive = widget.get_active()
+
+        if isActive:
+            self.box1.show()
+        else:
+            self.box1.hide()
+
+    def zoom_in(self, widget, data=None):
+        self.guifinetmap.zoom_in()
+
+    def zoom_out(self, widget, data=None):
+        self.guifinetmap.zoom_out()
+
+    def on_changezoneimagemenuitem_activate(self, widget, data=None):
+        dialog = ChangeZoneDialog(self.configmanager, self.zonecnmlp)
+
+        if dialog.run() == Gtk.ResponseType.ACCEPT:
+
+            zid = dialog.getSelectedZone()
+
+            if zid:
+                filename = self.configmanager.pathForCNMLCachedFile(zid, 'detail')
+
+                try:
+                    self.cnmlp = CNMLParser(filename)
+                    # FIXME: only if necessary (there's a zone loaded already)
+                    self.reset()
+                    self.fillTreeViews()
+                    self.guifinetmap.paintMap(self.cnmlp.getNodes())
+                    self.cnmlFile = filename
+
+                except IOError:
+                    self.statusbar.push(0, _('CNML file "%s" couldn\'t be loaded') % filename)
+                    self.cnmlFile = None
+                    self.cnmlp = None
+
+                active = self.cnmlp is not None
+                self.closecnmlmenuitem.set_sensitive(active)
+                self.enable_api_menuitems(active)
+
+        dialog.destroy()
+
+    def on_downloadcnmlmenuitem_activate(self, widget, data=None):
+        CNMLDialog(self.configmanager, self.zonecnmlp, self.allZones, self.guifiAPI)
+
+    def on_updatezonesmenuitem_activate(self, widget, data=None):
+        try:
+            fp = self.guifiAPI.downloadCNML(GUIFI_NET_WORLD_ZONE_ID, 'zones')
+            filename = self.configmanager.pathForCNMLCachedFile(GUIFI_NET_WORLD_ZONE_ID, 'zones')
+            with open(filename, 'w') as zonefile:
+                zonefile.write(fp.read())
+            print _('Zone saved successfully to'), filename
+            self.rebuildAllZones()
+        except URLError, e:
+            print _('Error accessing to the Internets:'), str(e.reason)
+            g = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE,
+                                  _('Error accessing to the Internets:\n') + str(e.reason))
+            g.set_title(_('Error downloading CNML'))
+            g.run()
+            g.destroy()
+
+    def on_aboutimagemenuitem_activate(self, widget, data=None):
+        dialog = Gtk.AboutDialog()
+        dialog.set_program_name('Guifi·net Studio')
+        dialog.set_version('v1.0')
+        dialog.set_copyright('Copyright © 2011-2012 Pablo Castellano')
+        dialog.set_comments(_('Grow your own Internets!'))
+        dialog.set_website('http://lainconscienciadepablo.net')
+        dialog.set_website_label(_("Author's blog"))
+        dialog.set_license_type(Gtk.License.GPL_3_0)
+
+        with open("AUTHORS") as f:
+            authors_list = []
+            for line in f.readlines():
+                authors_list.append(line.strip())
+            dialog.set_authors(authors_list)
+
+        with open("COPYING") as f:
+            dialog.set_license(f.read())
+
+        dialog.run()
+        dialog.destroy()
+
+    def on_maptoolbutton_clicked(self, widget, data=None):
+        self.notebook1.set_current_page(0)
+
+    def on_nodestoolbutton_clicked(self, widget, data=None):
+        self.notebook1.set_current_page(1)
+
+    def on_servicestoolbutton_clicked(self, widget, data=None):
+        self.notebook1.set_current_page(2)
+
+    def on_closesidepanebutton_clicked(self, widget, data=None):
+        self.box1.hide()
+        self.viewsidepanemenuitem.set_active(False)
+
+    def on_treeview1_button_release_event(self, widget, data=None):
+        sel = widget.get_selection()
+        (model, it) = sel.get_selected()
+
+        if it is None:  # treeview is clear
+            return True
+
+        col = widget.get_path_at_pos(int(data.x), int(data.y))[1]
+
+        if data.button == 3:  # Right button
+            if col is self.t6 and model.get_value(it, 5) is not None:
+                #user clicked on a node
+                self.nodemenu.popup(None, None, None, None, data.button, data.time)
+
+    def on_treeview2_button_release_event(self, widget, data=None):
+        sel = widget.get_selection()
+        (model, it) = sel.get_selected()
+
+        if it is None:  # treeview is clear
+            return True
+
+        if data.button == 1:  # Right button
+            nid = model.get_value(it, 1)
+            lat = float(self.cnmlp.getNode(nid).latitude)
+            lon = float(self.cnmlp.getNode(nid).longitude)
+            self.guifinetmap.getView().center_on(lat, lon)
+            #self.view.go_to(lat, lon)
+
+    def on_treeview2_key_press_event(self, widget, data=None):
+        sel = widget.get_selection()
+        (model, it) = sel.get_selected()
+
+        if data.keyval == Gdk.KEY_space or data.keyval == Gdk.KEY_KP_Space or data.keyval == Gdk.KEY_Return or data.keyval == Gdk.KEY_KP_Enter:
+            nid = model.get_value(it, 1)
+            lat = float(self.cnmlp.getNode(nid).latitude)
+            lon = float(self.cnmlp.getNode(nid).longitude)
+            self.view.center_on(lat, lon)
+            #self.view.go_to(lat, lon)
+
+    def on_showPointsButton_toggled(self, widget, data=None):
+        self.guifinetmap.show_points(widget.get_active())
+
+    def on_showLabelsButton_toggled(self, widget, data=None):
+        self.guifinetmap.show_labels(widget.get_active())
+
+    def on_showLinksButton_toggled(self, widget, data=None):
+        raise NotImplementedError
+
+    def on_showZonesButton_toggled(self, widget, data=None):
+        raise NotImplementedError
+
+    def on_treeviewcolumn11_clicked(self, action, data=None):
+        #print action.get_sort_column_id()
+        (column_id, sorttype) = self.treestore3.get_sort_column_id()
+        name = action.get_name()
+
+        if sorttype == Gtk.SortType.ASCENDING:
+            sorttype = Gtk.SortType.DESCENDING
+        else:
+            sorttype = Gtk.SortType.ASCENDING
+
+        # 'treeviewcolumn1, treeviewcolumn, treeviewcolumn, ..., treeviewcolumn
+        #FIXME: really hacky
+        column_id = int(name[-1]) - 1
+
+        self.treestore3.set_sort_column_id(column_id, sorttype)
+
+    def on_treeviewcolumn6_clicked(self, action, data=None):
+        #print action.get_sort_column_id()
+        (column_id, sorttype) = self.treestore.get_sort_column_id()
+        name = action.get_name()
+
+        if sorttype == Gtk.SortType.ASCENDING:
+            sorttype = Gtk.SortType.DESCENDING
+        else:
+            sorttype = Gtk.SortType.ASCENDING
+
+        # 'treeviewcolumn1, treeviewcolumn, treeviewcolumn, ..., treeviewcolumn
+        #FIXME: really hacky
+        column_id = int(name[-1]) - 1
+
+        self.treestore.set_sort_column_id(column_id, sorttype)
+
+    def authAPI(self):
+        # TO DO
+        tokendate = self.configmanager.getAuthTokenDate()
+
+        now = datetime.now()
+        yesterday = now - timedelta(1)
+
+        if now - yesterday <= timedelta(1):
+            # auth token is still valid (if it hasn't been requested by another application)
+            authToken = self.configmanager.getAuthToken()
+        else:
+            authToken = None
+
+        if authToken:
+            print _('Reusing valid auth token:'), authToken
+            self.guifiAPI.setAuthToken(authToken)
+        else:
+            print _('not valid token -> authenticating...')
+
+            try:
+                self.guifiAPI.auth()
+                self.configmanager.setAuthToken(self.guifiAPI.getAuthToken())
+                self.configmanager.setAuthTokenDate()  # update with now()
+                self.configmanager.save()
+                self.statusbar.push(0, _('Logged into Guifi.net'))
+            except URLError, e:  # Not connected to the Internets
+                self.statusbar.push(0, _("Couldn't login into Guifi.net: check your Internet connection"))
+            except GuifiApiError, e:
+                g = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE,
+                                      _("Couldn't login into Guifi.net:\n") + e.reason)
+                g.run()
+                g.destroy()
 
 
-	def enable_api_menuitems(self, enable):
-		self.createnodemenuitem.set_sensitive(enable)
-		self.createzonemenuitem.set_sensitive(enable)
-		self.createdevicemenuitem.set_sensitive(enable)
-		self.createradiomenuitem.set_sensitive(enable)
-		self.createinterfacemenuitem.set_sensitive(enable)
-		self.createlinkmenuitem.set_sensitive(enable)
-		
-		
-	def on_fullscreenmenuitem_toggled(self, widget, data=None):
-		isActive = widget.get_active()
-
-		if isActive:
-			self.mainWindow.fullscreen()
-		else:
-			self.mainWindow.unfullscreen()
-
-
-	def on_exportgmlimagemenuitem_activate(self, widget, data=None):
-		print _('Export to GML')
-		raise NotImplementedError
-		
-		
-	def on_exportkmlimagemenuitem_activate(self, widget, data=None):
-		dialog = Gtk.FileChooserDialog(_('Save KML file'), self.mainWindow,
-				Gtk.FileChooserAction.SAVE,
-				(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_SAVE, Gtk.ResponseType.ACCEPT))
-
-		if dialog.run() == Gtk.ResponseType.ACCEPT:
-			filename = dialog.get_filename()
-			print filename
-		
-		dialog.destroy()
-		
-		print _('Export to KML')
-		CNML2KML(self.cnmlp, filename)
-		
-		
-	def rebuildAllZones(self):
-		cnmlGWfile = self.configmanager.pathForCNMLCachedFile(GUIFI_NET_WORLD_ZONE_ID, 'zones')
-		try:
-			self.zonecnmlp = CNMLParser(cnmlGWfile)
-			for z in self.zonecnmlp.getZones():
-				self.allZones.append((z.id, z.title))
-		except IOError:
-			print _('Error loading cnml guifiworld zone:'), cnmlGWfile
-			print _('Guifi.net Studio will run normally but note that some features are disabled')
-			print _('To solve it, just download the Guifi.net World zones CNML going to Tools -> Update zones')
-			
-			message = _('Error loading Guifi.net World zone\n\n')
-			message += _('Guifi.net Studio will run normally but note that some features are disabled\n')
-			message += _('To solve it, just download the Guifi.net World zones CNML again\n')
-			message += _('You can go to Tools -> Update zones')
-			g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.WARNING, Gtk.ButtonsType.CLOSE, message)
-			g.set_title(_('File not found: %s') %cnmlGWfile)
-			g.run()
-			g.destroy()
-			self.statusbar.push(0, _('CNML file "%s" couldn\'t be loaded') %cnmlGWfile)
-			self.zonecnmlp = None
-
-
-	def on_calcimagemenuitem_activate(self, widget, data=None):
-		Calculator()
-
-	def on_findipmenuitem_activate(self, widget, data=None):
-		FindIPDialog(self.configmanager, self.zonecnmlp)
-
-	def on_traceroutemenuitem_activate(self, widget, data=None):
-		TracerouteDialog(self.guifinetmap, self.configmanager)
-	
-	def on_searchentry_changed(self, widget, data=None):
-		print widget, data
-		print widget.get_text()
-		
-		nodesfilter = self.treeview2.get_model()
-		nodesfilter.refilter()   
-		return False
-	
-
-	def fillTreeViews(self):
-		self.fillNodesTreeView()
-		#self.fillSidePane()
-		self.fillServicesTreeView()
-
-
-	def fillServicesTreeView(self):
-		self.treestore3.clear()
-		self.treestore3.set_sort_column_id (0, Gtk.SortType.ASCENDING)
-
-		self.__addServicesFromZoneToTree(self.cnmlp.rootzone)
-
-		self.treeview4.expand_all()
-
-		
-	# Clears TreeView and adds a hierarchy of zones and nodes
-	# It uses __addZoneToTree(), __addNodesFromZoneToTree and __fillNodesTreeView_recursive()
-	def fillNodesTreeView(self):
-		# Init - Reset
-		self.treestore.clear()
-		self.treestore2.clear()
-
-		self.treestore.set_sort_column_id (5, Gtk.SortType.ASCENDING)
-		self.treestore2.set_sort_column_id (0, Gtk.SortType.ASCENDING)
-		
-
-		# Add root zone and its nodes first
-		parenttree = self.__addZoneToTree(self.cnmlp.rootzone, None)
-		self.__addNodesFromZoneToTree(self.cnmlp.rootzone, parenttree)
-		
-		#### Iter for every zone (except root, which is already added)
-		#### and adds them and their nodes to the TreeView
-		self.__fillNodesTreeView_recursive(self.cnmlp.rootzone, parenttree)
-		####
-		
-		# Finish
-		self.treeview.expand_all()
-		self.statusbar.push(0, _('CNML loaded successfully'))
-
-
-	# Recursive fillNodesTreeView()
-	def __fillNodesTreeView_recursive(self, parentzid, parenttree):
-		zones = self.cnmlp.getSubzonesFromZone(parentzid)
-		
-		# For every zone, add it to the treeview and then add its nodes and subzones
-		for z in zones:
-			tree = self.__addZoneToTree(z.id, parenttree)
-			self.__addNodesFromZoneToTree(z.id, tree)
-			self.__fillNodesTreeView_recursive(z.id, tree)
-		
-	
-	# Adds a row with the name of the zone and the number of nodes for each status (working, planned...)
-	def __addZoneToTree(self, zid, parentzone):
-		
-		# Given a list of node ids, counts how many of them are for each status (working, planned...)
-		# TODO: Rewrite this part
-		def countNodes(nodes):
-			nodescount = dict()
-			nodescount[Status.RESERVED] = 0
-			nodescount[Status.PLANNED] = 0
-			nodescount[Status.WORKING] = 0
-			nodescount[Status.TESTING] = 0
-			nodescount[Status.BUILDING] = 0
-			nodescount[Status.DROPPED] = 0
-			
-			for n in nodes:
-				nodescount[n.status] += 1
-			
-			return (nodescount[Status.PLANNED], nodescount[Status.WORKING], nodescount[Status.TESTING], nodescount[Status.BUILDING])
-		
-		zone = self.cnmlp.getZone(zid)
-		nodes = zone.getNodes()
-		
-		col1 = "%s (%d)" %(zone.title, len(nodes))
-		(nplanned, nworking, ntesting, nbuilding) = countNodes(nodes)
-		
-		# Add the new row for the zone
-		row = (col1, str(nworking), str(nbuilding), str(ntesting), str(nplanned), None, None)
-		tree = self.treestore.append(parentzone, row)
-		return tree
-		
-
-	# Hacky function
-	# Services are associated to a device.
-	# However, that device may not define an interface and the interface being used by a working service
-	# can be defined in other places. Possibilities:
-	#  1- the interface is defined in the same device
-	#  2- the interface is defined in the first radio of the device
-	#  3- the interface is defined in sibling device
-	# If there are several devices, how can I know which one defines the correct IP. Or are both correct?
-	def __addServicesFromZoneToTree(self, zid):
-		services = self.cnmlp.getServices()
-
-		for s in services:
-			node = s.parentNode.parentNode
-			if s.status == Status.WORKING: # FIXME, any other value? testing maybe?
-				ifs = s.parentNode.getInterfaces()
-				if ifs == []:
-					radios = s.parentNode.getRadios()
-					if radios == [] or radios[0].getInterfaces() == []:
-						# sibling device
-						for devi in s.parentNode.parentNode.getDevices():
-							for radio in devi.getRadios():
-								ifs = radio.getInterfaces()
-					else:
-						ifs = s.parentNode.getRadios()[0].getInterfaces()
-
-				if len(ifs) > 1:
-					ip = 'Several IPs'
-				elif len(ifs) == 1:
-					ip = ifs[0].ipv4
-				else:
-					print 'WARNING: no interfaces on service', s.title
-					ip = None
-			else:
-				ip = None
-
-			self.treestore3.append(None, (s.id, s.type, s.title, node.title, ip, Status.statusToStr(s.status)))
-
-
-	# Adds a row with the name of the node to the list of nodes (first tab) and to the 'nodes treeview' (second tab)
-	def __addNodesFromZoneToTree(self, zid, parentzone):
-		nodes = self.cnmlp.getNodesFromZone(zid)
-		for n in nodes:
-			row = (None, None, None, None, None, n.title, n.id)
-			self.treestore.append(parentzone, row)
-			self.treestore2.append(None, (n.title, n.id))
-
-
-	# Shows the 'Create new node' dialog
-	def create_new_node(self, coords):
-		EditNodeDialog(self.guifiAPI, self.cnmlp.getZones(), self.zonecnmlp, self.allZones, coords)
-
-	
-	# Shows the 'Node' dialog
-	def on_nodepropertiesaction_activate(self, action, data=None):
-		NodeDialog()
-	
-	
-	def on_viewnodeinwebsiteaction_activate(self, action, data=None):
-		# get node id
-		sel = self.treeview.get_selection()
-		(model, it) = sel.get_selected()
-		nid = model.get_value(it, 6)
-
-		Gtk.show_uri(None, self.guifiAPI.urlForNode(nid), Gtk.get_current_event_time())
-
-
-	def on_viewnodeinmapaction_activate(self, action, data=None):
-		self.notebook1.set_current_page(0)		
-
-		# get node id
-		sel = self.treeview.get_selection()
-		(model, it) = sel.get_selected()
-		nid = model.get_value(it, 6)
-		
-		lat = self.cnmlp.getNode(nid).latitude
-		lon = self.cnmlp.getNode(nid).longitude	
-	
-		self.guifinetmap.getView().center_on(lat, lon)
-		
-	
-	def on_unsolclicaction_activate(self, action, data=None):
-		# get node id
-		sel = self.treeview.get_selection()
-		(model, it) = sel.get_selected()
-		nid = model.get_value(it, 6)
-			
-		# Varias interfaces - varios unsolclic
-		# TODO: Ventana con la interfaz seleccionable que quieras generar
-		devices = self.cnmlp.nodes[nid].devices
-		
-		if devices == {}:
-			g = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, 
-								_("Couldn't generate unsolclick.\nThe node doesn't have any device defined."))
-			g.set_title(_('Error generating unsolclic'))
-			g.run()
-			g.destroy()
-			return
-		elif len(devices) > 1:
-			g = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.WARNING, Gtk.ButtonsType.CLOSE, 
-								_('Several devices in this node. Generating just the first one.'))
-			g.set_title(_('Warning generating unsolclic'))
-			g.run()
-			g.destroy()
-		
-		node = self.cnmlp.nodes[nid]
-		
-		UnsolclicDialog(node)
-		########
-			
-	
-	def on_opencnmlmenuitem_activate(self, widget, data=None):
-		dialog = Gtk.FileChooserDialog(_('Open CNML file'), self.mainWindow,
-				Gtk.FileChooserAction.OPEN,
-				(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.ACCEPT))
-
-		if dialog.run() == Gtk.ResponseType.ACCEPT:
-			filename = dialog.get_filename()
-		
-			try:
-				self.cnmlp = CNMLParser(filename)
-				# FIXME: only if necessary (there's a zone loaded already)
-				self.reset()
-				self.fillTreeViews()
-				self.guifinetmap.paintMap(self.cnmlp.getNodes())
-				self.cnmlFile = filename
-				self.closecnmlmenuitem.set_sensitive(True)
-			except IOError:
-				self.statusbar.push(0, _('CNML file "%s" couldn\'t be loaded') %self.cnmlFile)
-				self.cnmlFile = None
-				self.cnmlp = None
-		
-		self.enable_api_menuitems(self.cnmlp is not None)
-			
-		dialog.destroy()
-				
-		
-	def reset(self):
-		self.treestore.clear()
-		self.treestore2.clear()
-		self.guifinetmap.reset()
-		
-	
-	def on_closecnmlmenuitem_activate(self, widget=None, data=None):
-		self.reset()
-		self.statusbar.push(0, _('Closed CNML file'))
-		self.closecnmlmenuitem.set_sensitive(False)
-		self.cnmlFile = None
-		self.cnmlp = None
-		
-		self.enable_api_menuitems(False)
-		
-	
-	def gtk_main_quit(self, widget, data=None):
-		Gtk.main_quit()
-	
-	
-	def on_createnodemenuitem_activate(self, widget=None, data=None):
-		EditNodeDialog(self.guifiAPI, self.cnmlp.getZones(), self.zonecnmlp, self.allZones)
-	
-	
-	def on_createzonemenuitem_activate(self, widget, data=None):
-		EditZoneDialog(self.guifiAPI, self.cnmlp.getZones())
-		
-	def on_createdevicemenuitem_activate(self, widget, data=None):
-		EditDeviceDialog(self.guifiAPI, self.cnmlp.getNodes())
-		
-		
-	def on_createradiomenuitem_activate(self, widget, data=None):
-		EditRadioDialog(self.guifiAPI, self.cnmlp)
-		
-		
-	def on_createinterfacemenuitem_activate(self, widget, data=None):
-		EditInterfaceDialog()
-	
-	
-	def on_createlinkmenuitem_activate(self, widget, data=None):
-		EditLinkDialog(self.cnmlp.getNodes())
-
-	
-	def on_preferencesmenuitem_activate(self, widget, data=None):
-		PreferencesDialog(self.configmanager, self.zonecnmlp, self.allZones)
-		
-				
-	def on_viewstatusbarmenuitem_toggled(self, widget, data=None):
-		isActive = widget.get_active()
-		
-		if isActive:
-			self.statusbar.show()
-		else:
-			self.statusbar.hide()
-
-
-	def on_viewsidepanemenuitem_toggled(self, widget, data=None):
-		isActive = widget.get_active()
-		
-		if isActive:
-			self.box1.show()
-		else:
-			self.box1.hide()
-
-		
-	def zoom_in(self, widget, data=None):
-		self.guifinetmap.zoom_in()
-		
-		
-	def zoom_out(self, widget, data=None):
-		self.guifinetmap.zoom_out()
-		
-
-	def on_changezoneimagemenuitem_activate(self, widget, data=None):
-		dialog = ChangeZoneDialog(self.configmanager, self.zonecnmlp)
-
-		if dialog.run() == Gtk.ResponseType.ACCEPT:
-			
-			zid = dialog.getSelectedZone()
-			
-			if zid:
-				filename = self.configmanager.pathForCNMLCachedFile(zid, 'detail')
-			
-				try:
-					self.cnmlp = CNMLParser(filename)
-					# FIXME: only if necessary (there's a zone loaded already)
-					self.reset()
-					self.fillTreeViews()
-					self.guifinetmap.paintMap(self.cnmlp.getNodes())
-					self.cnmlFile = filename
-					
-				except IOError:
-					self.statusbar.push(0, _('CNML file "%s" couldn\'t be loaded') %filename)
-					self.cnmlFile = None
-					self.cnmlp = None
-					
-				active = self.cnmlp is not None
-				self.closecnmlmenuitem.set_sensitive(active)
-				self.enable_api_menuitems(active)
-			
-		dialog.destroy()
-		
-		
-	def on_downloadcnmlmenuitem_activate(self, widget, data=None):
-		CNMLDialog(self.configmanager, self.zonecnmlp, self.allZones, self.guifiAPI)
-	
-	
-	def on_updatezonesmenuitem_activate(self, widget, data=None):
-		try:
-			fp = self.guifiAPI.downloadCNML(GUIFI_NET_WORLD_ZONE_ID, 'zones')
-			filename = self.configmanager.pathForCNMLCachedFile(GUIFI_NET_WORLD_ZONE_ID, 'zones')
-			with open(filename, 'w') as zonefile:
-				zonefile.write(fp.read())
-			print _('Zone saved successfully to'), filename
-			self.rebuildAllZones()
-		except URLError, e:
-			print _('Error accessing to the Internets:'), str(e.reason)
-			g = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, 
-								_('Error accessing to the Internets:\n') + str(e.reason))
-			g.set_title(_('Error downloading CNML'))
-			g.run()
-			g.destroy()
-		
-
-	def on_aboutimagemenuitem_activate(self, widget, data=None):
-		dialog = Gtk.AboutDialog()
-		dialog.set_program_name('Guifi·net Studio')
-		dialog.set_version('v1.0')
-		dialog.set_copyright('Copyright © 2011-2012 Pablo Castellano')
-		dialog.set_comments(_('Grow your own Internets!'))
-		dialog.set_website('http://lainconscienciadepablo.net')
-		dialog.set_website_label(_("Author's blog"))
-		dialog.set_license_type(Gtk.License.GPL_3_0)
-	
-		with open("AUTHORS") as f:
-			authors_list = []
-			for line in f.readlines():
-				authors_list.append(line.strip())
-			dialog.set_authors(authors_list)
-		
-		with open("COPYING") as f:
-			dialog.set_license(f.read())
-		
-		dialog.run()
-		dialog.destroy()
-		
-
-	def on_maptoolbutton_clicked(self, widget, data=None):
-		self.notebook1.set_current_page(0)
-		
-		
-	def on_nodestoolbutton_clicked(self, widget, data=None):
-		self.notebook1.set_current_page(1)
-		
-		
-	def on_servicestoolbutton_clicked(self, widget, data=None):
-		self.notebook1.set_current_page(2)
-		
-		
-	def on_closesidepanebutton_clicked(self, widget, data=None):
-		self.box1.hide()
-		self.viewsidepanemenuitem.set_active(False)
-
-			
-	def on_treeview1_button_release_event(self, widget, data=None):
-		sel = widget.get_selection()
-		(model, it) = sel.get_selected()
-
-		if it is None: # treeview is clear
-			return True
-			
-		col = widget.get_path_at_pos(int(data.x), int(data.y))[1]
-		
-		if data.button == 3: # Right button
-			if col is self.t6 and model.get_value(it, 5) is not None: 
-				#user clicked on a node
-				self.nodemenu.popup(None, None, None, None, data.button, data.time)
-	
-
-	def on_treeview2_button_release_event(self, widget, data=None):
-		sel = widget.get_selection()
-		(model, it) = sel.get_selected()
-		
-		if it is None: # treeview is clear
-			return True
-		
-		if data.button == 1: # Right button
-			nid = model.get_value(it, 1)
-			lat = float(self.cnmlp.getNode(nid).latitude)
-			lon = float(self.cnmlp.getNode(nid).longitude)
-			self.guifinetmap.getView().center_on(lat, lon)
-			#self.view.go_to(lat, lon)
-		
-	
-	def on_treeview2_key_press_event(self, widget, data=None):
-		sel = widget.get_selection()
-		(model, it) = sel.get_selected()
-		
-		if data.keyval == Gdk.KEY_space or data.keyval == Gdk.KEY_KP_Space	or data.keyval == Gdk.KEY_Return or data.keyval == Gdk.KEY_KP_Enter:
-			nid = model.get_value(it, 1)
-			lat = float(self.cnmlp.getNode(nid).latitude)
-			lon = float(self.cnmlp.getNode(nid).longitude)
-			self.view.center_on(lat, lon)
-			#self.view.go_to(lat, lon)
-			
-			
-	def on_showPointsButton_toggled(self, widget, data=None):
-		self.guifinetmap.show_points(widget.get_active())
-		
-		
-	def on_showLabelsButton_toggled(self, widget, data=None):
-		self.guifinetmap.show_labels(widget.get_active())
-	
-	
-	def on_showLinksButton_toggled(self, widget, data=None):
-		raise NotImplementedError
-	
-
-	def on_showZonesButton_toggled(self, widget, data=None):
-		raise NotImplementedError
-		
-		
-	def on_treeviewcolumn11_clicked(self, action, data=None):
-		#print action.get_sort_column_id()
-		(column_id, sorttype) = self.treestore3.get_sort_column_id()
-		name = action.get_name()
-
-		if sorttype == Gtk.SortType.ASCENDING:
-			sorttype = Gtk.SortType.DESCENDING
-		else:
-			sorttype = Gtk.SortType.ASCENDING
-
-		# 'treeviewcolumn1, treeviewcolumn, treeviewcolumn, ..., treeviewcolumn
-		#FIXME: really hacky
-		column_id = int(name[-1]) -1
-
-		self.treestore3.set_sort_column_id (column_id, sorttype)
-
-
-	def on_treeviewcolumn6_clicked(self, action, data=None):
-		#print action.get_sort_column_id()
-		(column_id, sorttype) = self.treestore.get_sort_column_id()
-		name = action.get_name()
-		
-		if sorttype == Gtk.SortType.ASCENDING:
-			sorttype = Gtk.SortType.DESCENDING
-		else:
-			sorttype = Gtk.SortType.ASCENDING
-			
-		# 'treeviewcolumn1, treeviewcolumn, treeviewcolumn, ..., treeviewcolumn
-		#FIXME: really hacky
-		column_id = int(name[-1]) -1
-		
-		self.treestore.set_sort_column_id (column_id, sorttype)
-
-				
-	def authAPI(self):
-		# TO DO
-		tokendate = self.configmanager.getAuthTokenDate()
-
-		now = datetime.now()
-		yesterday = now - timedelta(1)
-		
-		if now-yesterday <= timedelta(1):
-			# auth token is still valid (if it hasn't been requested by another application)
-			authToken = self.configmanager.getAuthToken()
-		else:
-			authToken = None
-		
-		if authToken:
-			print _('Reusing valid auth token:'), authToken
-			self.guifiAPI.setAuthToken(authToken)
-		else:
-			print _('not valid token -> authenticating...')
-			
-			try:
-				self.guifiAPI.auth()
-				self.configmanager.setAuthToken(self.guifiAPI.getAuthToken())
-				self.configmanager.setAuthTokenDate() #update with now()
-				self.configmanager.save()
-				self.statusbar.push(0, _('Logged into Guifi.net'))
-			except URLError, e: # Not connected to the Internets
-				self.statusbar.push(0, _("Couldn't login into Guifi.net: check your Internet connection"))
-			except GuifiApiError, e:
-				g = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, 
-									_("Couldn't login into Guifi.net:\n") + e.reason)
-				g.run()
-				g.destroy()
-		
-
-		
 if __name__ == "__main__":
 
-	if len(sys.argv) > 1:
-		main = GuifinetStudio(sys.argv[1])
-	else:
-		main = GuifinetStudio()
+    if len(sys.argv) > 1:
+        main = GuifinetStudio(sys.argv[1])
+    else:
+        main = GuifinetStudio()
 
-	Gtk.main()
+    Gtk.main()

@@ -31,141 +31,139 @@ _ = gettext.gettext
 
 
 class UnSolClic:
-	
-	NANOSTATION2 = 0
-	NANOSTATION_LOCO2 = 1
-	NANOSTATION5 = 2
-	NANOSTATION_LOCO5 = 3
-	#"AirMaxM2 Bullet/PwBrg/AirGrd/NanoBr"
-	
-	def __init__(self):
-		self.env = jinja2.Environment(loader=jinja2.FileSystemLoader('unsolclic'), extensions=['jinja2.ext.i18n'])
-		self.test1()
 
-		print _('Supported devices:')
-		print '\n'.join(self.getSupportedDevices())
-		print
-		
-	def getSupportedDevices(self):
-		return self.env.list_templates()
+    NANOSTATION2 = 0
+    NANOSTATION_LOCO2 = 1
+    NANOSTATION5 = 2
+    NANOSTATION_LOCO5 = 3
+    #"AirMaxM2 Bullet/PwBrg/AirGrd/NanoBr"
 
-	def test1(self):
-		#Templates stuff
-		# jinja2
-		# {{ wireless1ssid }}
-		# {{ ipv4_ip }}
-		# {{ ipv4_netmask }}
-		# {{ wangateway }}
-		# {{ zone_primary_dns }}
-		# {{ zone_secondary_dns }}
-		# {{ dev.nick }}
-		# {{ node_nick }}
-		# {{ radio1txpower }}
-		context = {'wireless1ssid':'myessid', 'ipv4_ip':'192.168.33.33', \
-			   'ipv4_netmask':'255.0', 'wangateway':'gateee', \
-			   'zone_primary_dns':'dns1', 'zone_secondary_dns':'dns2', \
-			   'dev':{'nick':'mYnick'}, 'node_nick':'nicker',
-			   'radio1txpower':'8W'
-			   }
-		t = self.env.get_template('AirOsv30')
-		r = t.render(context)
-		#print r
-		return r
-		
+    def __init__(self):
+        self.env = jinja2.Environment(loader=jinja2.FileSystemLoader('unsolclic'), extensions=['jinja2.ext.i18n'])
+        self.test1()
 
-	def generateContextAirOSv30(self, node, deviceid):
-		device = node.devices[deviceid]
-		
-		assert len(device.radios) <= 1
-			
-		for radio in device.getRadios():
-			assert len(radio.interfaces) <= 1
-				
-			for iface in radio.getInterfaces():
-				assert len(iface.links) <= 1
-					
-				ipv4_ip = iface.ipv4			##
-				ipv4_netmask = iface.mask		##
-				
-				for link in iface.getLinks():
-					remote_if = link.interfaceB
-					if remote_if.ipv4 == ipv4_ip:
-						remote_if = link.interfaceA
-						
-					gateway = remote_if.ipv4
-					
-					remote_radio = remote_if.parentRadio
-					ssid = remote_radio.ssid
-					
-		
-		print device.name
-		if device.name == 'NanoStation2':
-			(net_mode, rate_max, txpower, ack, ext_antenna, mcastrate) = ('b', '11M', '6', '45', 'disabled', '11')
-		elif device.name == 'NanoStation5':
-			(net_mode, rate_max, txpower, ack, ext_antenna, mcastrate) = ('a', '54M', '6', '25', 'disabled', '54')
-		elif device.name == 'NanoStation Loco2':
-			(net_mode, rate_max, txpower, ack, ext_antenna, mcastrate) = ('b', '11M', '6', '44', 'enabled', '11')
-		elif device.name == 'NanoStation Loco5':
-			(net_mode, rate_max, txpower, ack, ext_antenna, mcastrate) = ('a', '54M', '6', '25', 'disabled', '54')
-		else:
-			# 'AirMaxM2 Bullet/PwBrg/AirGrd/NanoBr'
-			(net_mode, rate_max, txpower, ack, ext_antenna, mcastrate) = ('a', '54M', '6', '25', 'disabled', '54')
-			#raise NotImplementedError
-		
-		radio1txpower = '6'
-		dev = {'nick':device.title}
-		node_nick = node.title
-		radio_rx = radio_tx = 2 #antenna_mode is not available in CNML, what is this for?
-		
-		# -- AirOsv30 --
-		# zone_primary_dns, zone_secondary_dns
-		context = {'wireless1ssid':ssid, 'ipv4_ip':ipv4_ip, 'ipv4_netmask':ipv4_netmask,
-				'wangateway':gateway, 'zone_primary_dns':'', 'zone_secondary_dns':'',
-				'dev':dev, 'node_nick':node_nick, 'radio1txpower':radio1txpower, 'net_mode':net_mode,
-				'rate_max':rate_max, 'ack':ack, 'ext_antenna':ext_antenna, 'mcastrate':mcastrate,
-				'radio_rx':radio_rx, 'radio_tx':radio_tx
-				}
-		
-		return context
-	
-	
-	def generateContext(self, node, deviceid, template_name):
-		
-		if template_name in ('AirOsv30',):
-			context = self.generateContextAirOSv30(node, deviceid)
-		else:
-			raise NotImplementedError
-		
-		return context
-	
-	
-	# En el cnml
-	# en Nanostation clientes <radio ssid="MlagaMLGnvsbltmpRd1CPE0"> no se usa
-	# solo se usa el ssid de la antena a la que se conecta.
-	def generate(self, node):
-		
-		for dev in node.getDevices():
-			
-			if dev.type != 'radio': # server, ...
-				continue
-				
-			print 'Firmware:', dev.firmware
-			if dev.firmware in ('AirOsv3.6+','AirOsv52'):
-				template_name = 'AirOsv30'
-			else:
-				#if dev.firmware not in self.getSupportedDevices():
-				raise NotImplementedError
-				
-			t = self.env.get_template(template_name)
-			
-			context = self.generateContext(node, dev.id, template_name)
-		#if device.name = NANOSTATION2...
-		#elif device.name= NANONSTATION_LOCO5...
-		
-		r = t.render(context)
-		
-		# print r
-		return r
+        print _('Supported devices:')
+        print '\n'.join(self.getSupportedDevices())
+        print
+
+    def getSupportedDevices(self):
+        return self.env.list_templates()
+
+    def test1(self):
+        #Templates stuff
+        # jinja2
+        # {{ wireless1ssid }}
+        # {{ ipv4_ip }}
+        # {{ ipv4_netmask }}
+        # {{ wangateway }}
+        # {{ zone_primary_dns }}
+        # {{ zone_secondary_dns }}
+        # {{ dev.nick }}
+        # {{ node_nick }}
+        # {{ radio1txpower }}
+        context = {'wireless1ssid': 'myessid', 'ipv4_ip': '192.168.33.33',
+                   'ipv4_netmask': '255.0', 'wangateway': 'gateee',
+                   'zone_primary_dns': 'dns1', 'zone_secondary_dns': 'dns2',
+                   'dev': {'nick': 'mYnick'}, 'node_nick': 'nicker',
+                   'radio1txpower': '8W'
+                   }
+        t = self.env.get_template('AirOsv30')
+        r = t.render(context)
+        #print r
+        return r
+
+    def generateContextAirOSv30(self, node, deviceid):
+        device = node.devices[deviceid]
+
+        assert len(device.radios) <= 1
+
+        for radio in device.getRadios():
+            assert len(radio.interfaces) <= 1
+
+            for iface in radio.getInterfaces():
+                assert len(iface.links) <= 1
+
+                ##
+                ipv4_ip = iface.ipv4
+                ipv4_netmask = iface.mask
+                ##
+
+                for link in iface.getLinks():
+                    remote_if = link.interfaceB
+                    if remote_if.ipv4 == ipv4_ip:
+                        remote_if = link.interfaceA
+
+                    gateway = remote_if.ipv4
+
+                    remote_radio = remote_if.parentRadio
+                    ssid = remote_radio.ssid
+
+        print device.name
+        if device.name == 'NanoStation2':
+            (net_mode, rate_max, txpower, ack, ext_antenna, mcastrate) = ('b', '11M', '6', '45', 'disabled', '11')
+        elif device.name == 'NanoStation5':
+            (net_mode, rate_max, txpower, ack, ext_antenna, mcastrate) = ('a', '54M', '6', '25', 'disabled', '54')
+        elif device.name == 'NanoStation Loco2':
+            (net_mode, rate_max, txpower, ack, ext_antenna, mcastrate) = ('b', '11M', '6', '44', 'enabled', '11')
+        elif device.name == 'NanoStation Loco5':
+            (net_mode, rate_max, txpower, ack, ext_antenna, mcastrate) = ('a', '54M', '6', '25', 'disabled', '54')
+        else:
+            # 'AirMaxM2 Bullet/PwBrg/AirGrd/NanoBr'
+            (net_mode, rate_max, txpower, ack, ext_antenna, mcastrate) = ('a', '54M', '6', '25', 'disabled', '54')
+            #raise NotImplementedError
+
+        radio1txpower = '6'
+        dev = {'nick': device.title}
+        node_nick = node.title
+        radio_rx = radio_tx = 2  # antenna_mode is not available in CNML, what is this for?
+
+        # -- AirOsv30 --
+        # zone_primary_dns, zone_secondary_dns
+        context = {'wireless1ssid': ssid, 'ipv4_ip': ipv4_ip, 'ipv4_netmask': ipv4_netmask,
+                   'wangateway': gateway, 'zone_primary_dns': '', 'zone_secondary_dns': '',
+                   'dev': dev, 'node_nick': node_nick, 'radio1txpower': radio1txpower, 'net_mode': net_mode,
+                   'rate_max': rate_max, 'ack': ack, 'ext_antenna': ext_antenna, 'mcastrate': mcastrate,
+                   'radio_rx': radio_rx, 'radio_tx': radio_tx
+                   }
+
+        return context
+
+    def generateContext(self, node, deviceid, template_name):
+
+        if template_name in ('AirOsv30',):
+            context = self.generateContextAirOSv30(node, deviceid)
+        else:
+            raise NotImplementedError
+
+        return context
+
+    # En el cnml
+    # en Nanostation clientes <radio ssid="MlagaMLGnvsbltmpRd1CPE0"> no se usa
+    # solo se usa el ssid de la antena a la que se conecta.
+    def generate(self, node):
+
+        for dev in node.getDevices():
+
+            if dev.type != 'radio':  # server, ...
+                continue
+
+            print 'Firmware:', dev.firmware
+            if dev.firmware in ('AirOsv3.6+', 'AirOsv52'):
+                template_name = 'AirOsv30'
+            else:
+                #if dev.firmware not in self.getSupportedDevices():
+                raise NotImplementedError
+
+            t = self.env.get_template(template_name)
+
+            context = self.generateContext(node, dev.id, template_name)
+        #if device.name = NANOSTATION2...
+        #elif device.name= NANONSTATION_LOCO5...
+
+        r = t.render(context)
+
+        # print r
+        return r
 
 # --- DD-guifi ---
 # dev.nick
@@ -197,7 +195,7 @@ class UnSolClic:
 # link.interface.mac
 # link.interface.ipv4.host_name
 # link.interface.ipv4.ipv4
-# link.interface.ipv4.netmask 
+# link.interface.ipv4.netmask
 # count
 #  dhcp_start
 # link.interface.device_id }}-{{ hostname
@@ -221,4 +219,3 @@ class UnSolClic:
 # radio.id, rmac, ospf_routerid, ospf_routerid
 
 # --- RouterOS5.0 ---
-

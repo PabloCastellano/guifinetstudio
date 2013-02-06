@@ -11,4 +11,4 @@ manufacturers = g.getManufacturers(secure=SECURE)
 print 'Total manufacturers:', len(manufacturers)
 print 'ID\tName\tURL'
 for manufacturer in manufacturers:
-	print '%s\t%s\t%s' %(manufacturer['fid'], manufacturer['name'], manufacturer['url'])
+    print '%s\t%s\t%s' % (manufacturer['fid'], manufacturer['name'], manufacturer['url'])

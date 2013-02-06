@@ -20,4 +20,3 @@ CODE_ERROR_FORBIDDEN = 501
 CODE_ERROR_FORBIDDEN_STR = 'You don\'t have the required permissions'
 CODE_ERROR_INVALID_TOKEN = 502
 CODE_ERROR_INVALID_TOKEN_STR = 'The given Auth token is invalid'
-
