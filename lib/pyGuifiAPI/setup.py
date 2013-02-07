@@ -12,6 +12,7 @@ setup(
     author='Pablo Castellano',
     author_email='pablo@anche.no',
     packages=['pyGuifiAPI'],
+    package_data={'': ['tests/*']},
     license='GPLv3+',
     data_files=[('', ['LICENSE.txt'])],
     include_package_data=True,

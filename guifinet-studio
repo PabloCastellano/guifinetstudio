@@ -558,7 +558,7 @@ class GuifinetStudio:
     def on_aboutimagemenuitem_activate(self, widget, data=None):
         dialog = Gtk.AboutDialog()
         dialog.set_program_name('Guifi·net Studio')
-        dialog.set_version('v1.0')
+        dialog.set_version('v0.7')
         dialog.set_copyright('Copyright © 2011-2012 Pablo Castellano')
         dialog.set_comments(_('Grow your own Internets!'))
         dialog.set_website('http://lainconscienciadepablo.net')

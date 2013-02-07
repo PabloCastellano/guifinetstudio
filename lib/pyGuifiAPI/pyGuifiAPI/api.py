@@ -51,7 +51,7 @@ class GuifiAPI(object):
         self.base_cnml_url = self.base_url + '/%s/guifi/cnml/%d/%s'
         self.base_device_url = self.base_url + '/%s/guifi/device/%d/view'
 
-        user_agent = 'pyGuifiAPI/1.0'
+        user_agent = 'pyGuifiAPI/0.7'
         self.headers = {'User-Agent': user_agent}
 
         if authToken:
