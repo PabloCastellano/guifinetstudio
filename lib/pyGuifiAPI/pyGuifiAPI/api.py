@@ -434,6 +434,21 @@ class GuifiAPI(object):
             raise GuifiApiError('You have to be authenticated to run this action')
 
         data = {'command': 'guifi.device.update', 'device_id': did}
+
+        # TODO: update nid. Is it safe to change it directly in the database?
+        if nick is not None:
+            data['nick'] = nick
+        if notification is not None:
+            data['notification'] = notification
+        if mac is not None:
+            data['mac'] = mac
+        if comment is not None:
+            data['comment'] = comment
+        if status is not None:
+            data['flag'] = status
+        if graph_server is not None:
+            data['graph_server'] = graph_server
+
         params = urllib.urlencode(data)
         (codenum, response) = self.sendRequest(params)
 
