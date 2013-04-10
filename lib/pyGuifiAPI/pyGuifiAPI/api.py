@@ -265,7 +265,7 @@ class GuifiAPI(object):
         if stable is not None:
             data['stable'] = stable
         if status is not None:
-            data['status'] = status
+            data['status_flag'] = status
 
         params = urllib.urlencode(data)
         (codenum, response) = self.sendRequest(params)
