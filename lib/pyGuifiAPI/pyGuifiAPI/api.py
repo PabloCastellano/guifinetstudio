@@ -428,7 +428,9 @@ class GuifiAPI(object):
         return device_id
 
     def updateDevice(self, did, nid=None, nick=None, notification=None,
-                     mac=None, comment=None, status=None, graph_server=None):
+                     mac=None, comment=None, status=None, graph_server=None,
+                     model_id=None, firmware=None, download=None, upload=None,
+                     mrtg_index=None):
 
         if not self.is_authenticated():
             raise GuifiApiError('You have to be authenticated to run this action')
@@ -448,6 +450,16 @@ class GuifiAPI(object):
             data['flag'] = status
         if graph_server is not None:
             data['graph_server'] = graph_server
+        if model_id is not None:
+            data['model_id'] = model_id
+        if firmware is not None:
+            data['firmware'] = firmware
+        if download is not None:
+            data['download'] = download
+        if upload is not None:
+            data['upload'] = upload
+        if mrtg_index is not None:
+            data['mrtg_index'] = mrtg_index
 
         params = urllib.urlencode(data)
         (codenum, response) = self.sendRequest(params)
