@@ -625,12 +625,20 @@ class GuifiAPI(object):
 
         return (lid, ipv4)
 
-    def updateLink(self, lid, ipv4=None, status=None):
+    def updateLink(self, lid, ipv4=None, status=None, routing=None):
 
         if not self.is_authenticated():
             raise GuifiApiError('You have to be authenticated to run this action')
 
-        data = {'command': 'guifi.interface.add', 'link_id': lid}
+        data = {'command': 'guifi.link.update', 'link_id': lid}
+
+        if ipv4 is not None:
+            data['ipv4'] = ipv4
+        if status is not None:
+            data['status'] = status
+        if routing is not None:
+            data['routing'] = routing
+
         params = urllib.urlencode(data)
         (codenum, response) = self.sendRequest(params)
 
