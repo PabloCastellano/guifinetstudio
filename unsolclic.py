@@ -35,7 +35,7 @@ gettext.textdomain(APP_NAME)
 _ = gettext.gettext
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.NOTSET)
+logger.setLevel(logging.INFO)
 ch = logging.StreamHandler()
 logger.addHandler(ch)
 
