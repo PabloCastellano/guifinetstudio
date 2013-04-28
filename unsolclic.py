@@ -18,11 +18,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 try:
-	import jinja2
+    import jinja2
+    from jinja2.exceptions import TemplateSyntaxError
 except ImportError:
-	raise
+    raise
 
+from gi.repository import Gtk
 from utils import APP_NAME, LOCALE_DIR
+import os
+import re
 
 import gettext
 gettext.bindtextdomain(APP_NAME, LOCALE_DIR)
@@ -30,7 +34,56 @@ gettext.textdomain(APP_NAME)
 _ = gettext.gettext
 
 
+class UnsolclicUI:
+
+    def __init__(self):
+
+        self.ui = Gtk.Builder()
+        self.ui.add_from_file('ui/unsolclic.ui')
+        self.ui.connect_signals(self)
+
+        self.uscwindow = self.ui.get_object('unsolclicwindow')
+        self.uscwindow.show_all()
+
+
+class UscTemplate:
+    def __init__(self, template, name, desc, model, last_update, version):
+        self.template = template
+        self.name = name
+        self.description = desc
+        self.model = model
+        self.last_update = last_update
+        self.version = version
+
+    @staticmethod
+    def fromMetadata(source, name, template):
+        end_idx = source.find('#}')
+        if end_idx == -1:
+            raise Exception
+        metadata = source[:end_idx + 2]
+        assert metadata[:23] == '{#\n Unsolclic template\n'
+        print metadata
+        print
+        data = {}
+        for d in metadata.split('\n')[2:-1]:
+            print d
+            m = re.search('^ (Description|Model|Devices|Last update|Version): (.*)$', d)
+            if m is None:
+                print 'WARNING: Invalid attribute.', d
+                #raise KeyError
+                continue
+            data[m.group(1)] = m.group(2)
+
+        return UscTemplate(template, name, data['Description'], data['Model'],
+                           data['Last update'], data['Version'])
+
+    def __repr__(self):
+        r = '<USC %s>' % self.name
+        return r
+
+
 class UnSolClic:
+    templates = []
 
     NANOSTATION2 = 0
     NANOSTATION_LOCO2 = 1
@@ -39,38 +92,37 @@ class UnSolClic:
     #"AirMaxM2 Bullet/PwBrg/AirGrd/NanoBr"
 
     def __init__(self):
-        self.env = jinja2.Environment(loader=jinja2.FileSystemLoader('unsolclic'), extensions=['jinja2.ext.i18n'])
-        self.test1()
+        templates_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'unsolclic')
+        self.env = jinja2.Environment(loader=jinja2.FileSystemLoader(templates_path), extensions=['jinja2.ext.i18n'])
 
-        print _('Supported devices:')
-        print '\n'.join(self.getSupportedDevices())
+        valid = self.validate_templates()
+        print _('Unsolclic loaded %d/%d templates') % (valid, len(self.getSupportedDevices()))
         print
 
-    def getSupportedDevices(self):
-        return self.env.list_templates()
+    def validate_templates(self):
+        for template_name in self.env.list_templates():
+            source = self.env.loader.get_source(self.env, template_name)[0]
+            print 'Validating %s...' % template_name,
+            try:
+                t = self.env.get_template(template_name)
+            except TemplateSyntaxError, e:
+                print 'FAILED reading template'
+                print
+                continue
 
-    def test1(self):
-        #Templates stuff
-        # jinja2
-        # {{ wireless1ssid }}
-        # {{ ipv4_ip }}
-        # {{ ipv4_netmask }}
-        # {{ wangateway }}
-        # {{ zone_primary_dns }}
-        # {{ zone_secondary_dns }}
-        # {{ dev.nick }}
-        # {{ node_nick }}
-        # {{ radio1txpower }}
-        context = {'wireless1ssid': 'myessid', 'ipv4_ip': '192.168.33.33',
-                   'ipv4_netmask': '255.0', 'wangateway': 'gateee',
-                   'zone_primary_dns': 'dns1', 'zone_secondary_dns': 'dns2',
-                   'dev': {'nick': 'mYnick'}, 'node_nick': 'nicker',
-                   'radio1txpower': '8W'
-                   }
-        t = self.env.get_template('AirOsv30')
-        r = t.render(context)
-        #print r
-        return r
+            try:
+                usct = UscTemplate.fromMetadata(source, template_name, t)
+                self.templates.append(usct)
+                print 'OK'
+            except Exception, e:
+                print e
+                print 'FAILED'
+
+        return len(self.templates)
+
+    def getSupportedDevices(self):
+        # return self.env.list_templates()
+        return [t.name for t in self.templates]
 
     def generateContextAirOSv30(self, node, deviceid):
         device = node.devices[deviceid]
@@ -137,6 +189,15 @@ class UnSolClic:
 
         return context
 
+    def generateFromDev(self, template_name=None):
+        raise NotImplementedError
+
+    def generateFromContext(self, template_name, context):
+        t = self.env.get_template(template_name)
+        r = t.render(context)
+        # print r
+        return r
+
     # En el cnml
     # en Nanostation clientes <radio ssid="MlagaMLGnvsbltmpRd1CPE0"> no se usa
     # solo se usa el ssid de la antena a la que se conecta.
@@ -164,6 +225,16 @@ class UnSolClic:
 
         # print r
         return r
+
+if __name__ == '__main__':
+    usc = UnSolClic()
+    print _('Supported devices:')
+    print '\n'.join(usc.getSupportedDevices())
+
+    w = UnsolclicUI()
+    w.uscwindow.connect('destroy', Gtk.main_quit)
+    Gtk.main()
+
 
 # --- DD-guifi ---
 # dev.nick
