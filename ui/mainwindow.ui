@@ -67,6 +67,12 @@
     <property name="can_focus">False</property>
     <property name="stock">gtk-missing-image</property>
   </object>
+  <object class="GtkImage" id="image17">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="xalign">0.47999998927116394</property>
+    <property name="stock">gtk-cdrom</property>
+  </object>
   <object class="GtkImage" id="image2">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -136,7 +142,6 @@
             <property name="can_focus">False</property>
             <child>
               <object class="GtkMenuItem" id="filemenuitem">
-                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">_File</property>
@@ -148,7 +153,6 @@
                     <child>
                       <object class="GtkImageMenuItem" id="changezoneimagemenuitem">
                         <property name="label" translatable="yes">Change zone</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="image">image11</property>
@@ -158,7 +162,6 @@
                     </child>
                     <child>
                       <object class="GtkSeparatorMenuItem" id="separatormenuitem6">
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                       </object>
@@ -166,7 +169,6 @@
                     <child>
                       <object class="GtkImageMenuItem" id="opencnmlmenuitem">
                         <property name="label">gtk-open</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
@@ -177,7 +179,6 @@
                     <child>
                       <object class="GtkImageMenuItem" id="closecnmlmenuitem">
                         <property name="label">gtk-close</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
@@ -187,7 +188,6 @@
                     </child>
                     <child>
                       <object class="GtkSeparatorMenuItem" id="separatormenuitem1">
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                       </object>
@@ -195,7 +195,6 @@
                     <child>
                       <object class="GtkImageMenuItem" id="exportimagemenuitem">
                         <property name="label" translatable="yes">Export to...</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="image">image12</property>
@@ -207,7 +206,6 @@
                             <child>
                               <object class="GtkImageMenuItem" id="exportkmlimagemenuitem">
                                 <property name="label">KML</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="image">image13</property>
@@ -218,7 +216,6 @@
                             <child>
                               <object class="GtkImageMenuItem" id="exportgmlimagemenuitem">
                                 <property name="label">GML</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="sensitive">False</property>
                                 <property name="can_focus">False</property>
@@ -233,7 +230,6 @@
                     </child>
                     <child>
                       <object class="GtkSeparatorMenuItem" id="separatormenuitem7">
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                       </object>
@@ -241,7 +237,6 @@
                     <child>
                       <object class="GtkImageMenuItem" id="quitmenuitem">
                         <property name="label">gtk-quit</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
@@ -255,7 +250,6 @@
             </child>
             <child>
               <object class="GtkMenuItem" id="editmenuitem">
-                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">_Edit</property>
@@ -267,7 +261,6 @@
                     <child>
                       <object class="GtkImageMenuItem" id="createnodemenuitem">
                         <property name="label" translatable="yes">Create new Guifi.net node</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="image">image4</property>
@@ -278,7 +271,6 @@
                     <child>
                       <object class="GtkImageMenuItem" id="createzonemenuitem">
                         <property name="label" translatable="yes">Create new Guifi.net zone</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="image">image5</property>
@@ -289,7 +281,6 @@
                     <child>
                       <object class="GtkImageMenuItem" id="createdevicemenuitem">
                         <property name="label" translatable="yes">Create new Guifi.net device</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="image">image6</property>
@@ -300,7 +291,6 @@
                     <child>
                       <object class="GtkImageMenuItem" id="createradiomenuitem">
                         <property name="label" translatable="yes">Create new Guifi.net radio</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="image">image7</property>
@@ -311,7 +301,6 @@
                     <child>
                       <object class="GtkImageMenuItem" id="createinterfacemenuitem">
                         <property name="label" translatable="yes">Create new Guifi.net interface</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="image">image8</property>
@@ -322,7 +311,6 @@
                     <child>
                       <object class="GtkImageMenuItem" id="createlinkmenuitem">
                         <property name="label" translatable="yes">Create new Guifi.net link</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="image">image9</property>
@@ -332,7 +320,6 @@
                     </child>
                     <child>
                       <object class="GtkSeparatorMenuItem" id="separatormenuitem2">
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                       </object>
@@ -340,7 +327,6 @@
                     <child>
                       <object class="GtkImageMenuItem" id="preferencesmenuitem">
                         <property name="label">gtk-preferences</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
@@ -354,7 +340,6 @@
             </child>
             <child>
               <object class="GtkMenuItem" id="viewmenuitem">
-                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">_View</property>
@@ -365,7 +350,6 @@
                     <property name="can_focus">False</property>
                     <child>
                       <object class="GtkCheckMenuItem" id="viewstatusbarmenuitem">
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">Statusbar</property>
@@ -376,7 +360,6 @@
                     </child>
                     <child>
                       <object class="GtkCheckMenuItem" id="viewsidepanemenuitem">
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">Side Pane</property>
@@ -387,14 +370,12 @@
                     </child>
                     <child>
                       <object class="GtkSeparatorMenuItem" id="separatormenuitem3">
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkCheckMenuItem" id="fullscreenmenuitem">
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">Fullscreen</property>
@@ -404,7 +385,6 @@
                     </child>
                     <child>
                       <object class="GtkSeparatorMenuItem" id="separatormenuitem4">
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                       </object>
@@ -412,7 +392,6 @@
                     <child>
                       <object class="GtkImageMenuItem" id="zoominmenuitem">
                         <property name="label">gtk-zoom-in</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
@@ -423,7 +402,6 @@
                     <child>
                       <object class="GtkImageMenuItem" id="zoomoutmenuitem">
                         <property name="label">gtk-zoom-out</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
@@ -437,7 +415,6 @@
             </child>
             <child>
               <object class="GtkMenuItem" id="toolsmenuitem">
-                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">_Tools</property>
@@ -449,7 +426,6 @@
                     <child>
                       <object class="GtkImageMenuItem" id="downloadcnmlmenuitem">
                         <property name="label" translatable="yes">_Download CNML</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
@@ -461,7 +437,6 @@
                     <child>
                       <object class="GtkImageMenuItem" id="updatezonesmenuitem">
                         <property name="label" translatable="yes">_Update zones</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
@@ -472,7 +447,6 @@
                     </child>
                     <child>
                       <object class="GtkSeparatorMenuItem" id="separatormenuitem5">
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                       </object>
@@ -480,7 +454,6 @@
                     <child>
                       <object class="GtkImageMenuItem" id="findipmenuitem">
                         <property name="label" translatable="yes">_Find Node by IP</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
@@ -492,7 +465,6 @@
                     <child>
                       <object class="GtkImageMenuItem" id="traceroutemenuitem">
                         <property name="label" translatable="yes">_Traceroute</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
@@ -503,15 +475,24 @@
                     </child>
                     <child>
                       <object class="GtkSeparatorMenuItem" id="separatormenuitem8">
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                       </object>
                     </child>
                     <child>
+                      <object class="GtkImageMenuItem" id="uscimagemenuitem">
+                        <property name="label" translatable="yes">_Unsolclic</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="image">image17</property>
+                        <property name="use_stock">False</property>
+                        <signal name="activate" handler="on_uscimagemenuitem_activate" swapped="no"/>
+                      </object>
+                    </child>
+                    <child>
                       <object class="GtkImageMenuItem" id="calcimagemenuitem">
                         <property name="label" translatable="yes">_Wireless links calculator</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
@@ -526,7 +507,6 @@
             </child>
             <child>
               <object class="GtkMenuItem" id="helpmenuitem">
-                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">_Help</property>
@@ -538,7 +518,6 @@
                     <child>
                       <object class="GtkImageMenuItem" id="aboutimagemenuitem">
                         <property name="label">gtk-about</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
@@ -564,10 +543,8 @@
             <property name="toolbar_style">both</property>
             <child>
               <object class="GtkToolButton" id="maptoolbutton">
-                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">Map</property>
                 <property name="use_underline">True</property>
                 <property name="stock_id">gtk-disconnect</property>
@@ -580,10 +557,8 @@
             </child>
             <child>
               <object class="GtkToolButton" id="nodestoolbutton">
-                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">Nodes</property>
                 <property name="use_underline">True</property>
                 <property name="stock_id">gtk-dialog-warning</property>
@@ -596,10 +571,8 @@
             </child>
             <child>
               <object class="GtkToolButton" id="servicestoolbutton">
-                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">Services</property>
                 <property name="use_underline">True</property>
                 <property name="stock_id">gtk-page-setup</property>
@@ -669,11 +642,9 @@
                             </child>
                             <child>
                               <object class="GtkButton" id="closesidepanebutton">
-                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="relief">none</property>
                                 <property name="image_position">right</property>
                                 <signal name="clicked" handler="on_closesidepanebutton_clicked" swapped="no"/>
@@ -759,11 +730,9 @@
                     <child>
                       <object class="GtkCheckButton" id="showPointsButton">
                         <property name="label" translatable="yes">Points</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="xalign">0</property>
                         <property name="active">True</property>
                         <property name="draw_indicator">True</property>
@@ -778,11 +747,9 @@
                     <child>
                       <object class="GtkCheckButton" id="showLabelsButton">
                         <property name="label" translatable="yes">Labels</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="xalign">0</property>
                         <property name="active">True</property>
                         <property name="draw_indicator">True</property>
@@ -797,11 +764,9 @@
                     <child>
                       <object class="GtkCheckButton" id="showLinksButton">
                         <property name="label" translatable="yes">Links</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="xalign">0</property>
                         <property name="draw_indicator">True</property>
                         <signal name="toggled" handler="on_showLinksButton_toggled" swapped="no"/>
@@ -815,11 +780,9 @@
                     <child>
                       <object class="GtkCheckButton" id="showZonesButton">
                         <property name="label" translatable="yes">Zones</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="xalign">0</property>
                         <property name="draw_indicator">True</property>
                         <signal name="toggled" handler="on_showZonesButton_toggled" swapped="no"/>
@@ -833,11 +796,9 @@
                     <child>
                       <object class="GtkButton" id="zoominbutton">
                         <property name="label">gtk-zoom-out</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="use_stock">True</property>
                         <signal name="clicked" handler="zoom_out" swapped="no"/>
                       </object>
@@ -851,11 +812,9 @@
                     <child>
                       <object class="GtkButton" id="zoomoutbutton">
                         <property name="label">gtk-zoom-in</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="use_stock">True</property>
                         <signal name="clicked" handler="zoom_in" swapped="no"/>
                       </object>

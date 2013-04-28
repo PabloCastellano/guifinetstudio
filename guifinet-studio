@@ -44,6 +44,7 @@ from datetime import datetime, timedelta
 from champlainguifinet import GtkGuifinetMap
 
 from calc import Calculator
+from unsolclic import UnsolclicUI
 
 import locale
 import gettext
@@ -225,6 +226,9 @@ class GuifinetStudio:
             g.destroy()
             self.statusbar.push(0, _('CNML file "%s" couldn\'t be loaded') % cnmlGWfile)
             self.zonecnmlp = None
+
+    def on_uscimagemenuitem_activate(self, widget, data=None):
+        UnsolclicUI()
 
     def on_calcimagemenuitem_activate(self, widget, data=None):
         Calculator()
