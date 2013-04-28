@@ -25,6 +25,7 @@ except ImportError:
 
 from gi.repository import Gtk
 from utils import APP_NAME, LOCALE_DIR
+import logging
 import os
 import re
 
@@ -32,6 +33,11 @@ import gettext
 gettext.bindtextdomain(APP_NAME, LOCALE_DIR)
 gettext.textdomain(APP_NAME)
 _ = gettext.gettext
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.NOTSET)
+ch = logging.StreamHandler()
+logger.addHandler(ch)
 
 
 class UnsolclicUI:
@@ -62,11 +68,10 @@ class UscTemplate:
             raise Exception
         metadata = source[:end_idx + 2]
         assert metadata[:23] == '{#\n Unsolclic template\n'
-        print metadata
-        print
+        logger.debug(metadata)
         data = {}
         for d in metadata.split('\n')[2:-1]:
-            print d
+            logger.debug(d)
             m = re.search('^ (Description|Model|Devices|Last update|Version): (.*)$', d)
             if m is None:
                 print 'WARNING: Invalid attribute.', d
@@ -96,27 +101,25 @@ class UnSolClic:
         self.env = jinja2.Environment(loader=jinja2.FileSystemLoader(templates_path), extensions=['jinja2.ext.i18n'])
 
         valid = self.validate_templates()
-        print _('Unsolclic loaded %d/%d templates') % (valid, len(self.getSupportedDevices()))
-        print
+        logger.info(_('Unsolclic loaded %d/%d templates') % (valid, len(self.getSupportedDevices())))
 
     def validate_templates(self):
         for template_name in self.env.list_templates():
             source = self.env.loader.get_source(self.env, template_name)[0]
-            print 'Validating %s...' % template_name,
+            logger.debug('Validating %s...' % template_name,)
             try:
                 t = self.env.get_template(template_name)
             except TemplateSyntaxError, e:
-                print 'FAILED reading template'
-                print
+                logger.debug('FAILED reading template')
                 continue
 
             try:
                 usct = UscTemplate.fromMetadata(source, template_name, t)
                 self.templates.append(usct)
-                print 'OK'
+                logger.debug('OK')
             except Exception, e:
                 print e
-                print 'FAILED'
+                logger.debug('FAILED')
 
         return len(self.templates)
 
