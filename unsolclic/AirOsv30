@@ -1,3 +1,11 @@
+{#
+ Unsolclic template
+ Description: Ubiquity AirOS v3.x
+ Model: AirOS 3.x
+ Devices: NanoStation, NanoStation Loco
+ Last update: 14 April 2013
+ Version: 1.0
+#}
 aaa.1.status=disabled
 aaa.status=disabled
 bridge.1.devname=br0

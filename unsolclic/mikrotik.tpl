@@ -1,3 +1,10 @@
+{#
+ Unsolclic template
+ Description: Mikrotik
+ Model: Unknown
+ Last update: 14 April 2013
+ Version: 1.0
+#}
 # Generat per a:
 # {{ firmware_name }}
 :log info \"Unsolclic for {{ dev.id }}-{{ dev.nick }} going to be executed.\"

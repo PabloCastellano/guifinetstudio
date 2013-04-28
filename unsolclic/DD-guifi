@@ -1,3 +1,10 @@
+{#
+ Unsolclic template
+ Description: DD-guifi
+ Model: Unknown
+ Last update: 14 April 2013
+ Version: 1.0
+#}
     {% macro guifi_unsolclic_ospf(dev,zone, ospfzone,interfaceWlanLan) %}
                         # {{ ipv4Addr  }}
                         # Firewall disabled
