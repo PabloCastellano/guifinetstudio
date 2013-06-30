@@ -34,6 +34,9 @@ locale.setlocale(locale.LC_ALL, '')
 locale.bindtextdomain(APP_NAME, LOCALE_DIR)
 _ = gettext.gettext
 
+TRACEROUTE_ENABLED = False
+UNSOLCLIC_ENABLED = False
+
 try:
     # Used for traceroute
     import txtraceroute
@@ -42,7 +45,6 @@ except ImportError:
     print _('WARNING: python-twisted-core dependency was not found')
     print _('You need to install it in order to enable traceroute features')
     print
-    TRACEROUTE_ENABLED = False
 
 try:
     from unsolclic import *
@@ -51,7 +53,6 @@ except ImportError:
     print _('WARNING: python jinja2 dependency was not found')
     print _('You need to install it in order to enable unsolclic features')
     print
-    UNSOLCLIC_ENABLED = False
 
 
 class UnsolclicDialog:

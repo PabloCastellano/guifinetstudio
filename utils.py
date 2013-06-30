@@ -30,13 +30,13 @@ gettext.bindtextdomain(APP_NAME, LOCALE_DIR)
 gettext.textdomain(APP_NAME)
 _ = gettext.gettext
 
+KMLDOM_ENABLED = False
 try:
     import kmldom
     KMLDOM_ENABLED = True
 except ImportError:
     print _('WARNING: python kmldom dependency was not found')
     print _('You need to install it in order to enable KML features')
-    KMLDOM_ENABLED = False
 
 ########
 re_email = re.compile("^.+@.+\..{2,4}$")
