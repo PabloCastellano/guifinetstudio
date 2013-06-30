@@ -7,7 +7,7 @@
 #}
 # Generat per a:
 # {{ firmware_name }}
-:log info \"Unsolclic for {{ dev.id }}-{{ dev.nick }} going to be executed.\"
+:log info "Unsolclic for {{ dev.id }}-{{ dev.nick }} going to be executed."
 #
 # Configuration for {{ firmware_name }}
 # Trasto: {{  dev.id  }}-{{ dev.nick }}
@@ -19,9 +19,9 @@
 #    Then execute the script with:
 #      > /system script run script_name
 # 2.-Fitxer importat:
-#     Desa aquesta \"sortida\" a un fitxer, després puja''l al router
-#     fent servir FTP amb un nom de l''estil \"script_name.rsc\".
-#     (note, l''extensió \".rsc\" es un requisit)
+#     Desa aquesta "sortida" a un fitxer, després puja'l al router
+#     fent servir FTP amb un nom de l'estil "script_name.rsc".
+#     (note, l'extensió ".rsc" es un requisit)
 #     Executa el fitxer importat amb la comanda:
 #      > /import script_name
 # 3.-Telnet copia i enganxar:
@@ -33,7 +33,7 @@
 # -wlans should be enabled manually, be sure to set the correct antenna (a or b)
 #   according in how did you connect the cable to the miniPCI. Keep the
 #   power at the minimum possible and check the channel.
-# -The script doesn''t reset the router, you might have to do it manually
+# -The script doesn't reset the router, you might have to do it manually
 # -You must have write access to the router
 # -MAC access (winbox, MAC telnet...) method is recommended
 #   (the script reconfigures some IP addresses, so communication can be lost)
@@ -41,13 +41,13 @@
 # -A Read Only guest account with no password will be created to allow guest access
 #   to the router with no danger of damage but able to see the config.
 # -Be sure that all packages are activated.
-# -Don''t run the script from telnet and being connected through an IP connection at
+# -Don't run the script from telnet and being connected through an IP connection at
 #   the wLan/Lan interface: This interface will be destroyed during the script.
 #
 {% macro bgp_peer(id, host_name, ipv4, disabled) %}
 / routing bgp peer
 :foreach i in [find name={{ host_name }}] do={/routing bgp peer remove $i;}
-add name=\"{{ host_name }}\" instance=default remote-address={{ ipv4 }} remote-as={{ id }} \
+add name="{{ host_name }}" instance=default remote-address={{ ipv4 }} remote-as={{ id }} \
 multihop=no route-reflect=no ttl=default in-filter=ebgp-in out-filter=ebgp-out disabled={{ disabled }}
 {% endmacro %}
 {% macro ospf_interface(iname, netid, maskbits, ospf_name , ospf_zone, ospf_id, disabled) %}
@@ -58,35 +58,35 @@ add interface={{ iname }}
 :foreach i in [/routing ospf network find network={{ netid }}/{{ maskbits }}] do={/routing ospf network remove $i;}
 add network={{ netid }}/{{ maskbits }} area={{ ospf_name }} disabled={{ disabled }}
 {% endmacro %}
-{% macro firewall(ip) %}
 {% macro hotspot_code(radio, hotspot_ssid) %}
 #
 # HotSpot
 /interface wireless
 :foreach i in [find name=hotspot{{ radio.id+1 }}] do={remove $i}
-add name=\"hotspot{{ radio.id+1 }}\" arp=enabled master-interface=wlan{{ radio.id+1 }} ssid=\"guifi.net-{{ hotspot_ssid}}\" disabled=\"no\"
+add name="hotspot{{ radio.id+1 }}" arp=enabled master-interface=wlan{{ radio.id+1 }} ssid="guifi.net-{{ hotspot_ssid}}" disabled="no"
 /ip address'');
-:foreach i in [find address=\"192.168.{{ radio.id+100 }}.1/24\"] do={remove $i}
+:foreach i in [find address="192.168.{{ radio.id+100 }}.1/24"] do={remove $i}
 /ip address add address=192.168.{{ radio.id+100 }}.1/24 interface=hotspot{{ radio.id+1 }} disabled=no
 /ip pool
 :foreach i in [find name=hs-pool-{{ radio.id+100 }}] do={remove $i}
-add name=\"hs-pool-{{ radio.id+100 }}\" ranges=192.168.{{ radio.id+100 }}.2-192.168.{{ radio.id+100 }}.254
+add name="hs-pool-{{ radio.id+100 }}" ranges=192.168.{{ radio.id+100 }}.2-192.168.{{ radio.id+100 }}.254
 /ip dhcp-server
 :foreach i in [find name=hs-dhcp-{{ radio.id+100 }}] do={remove $i}
-add name=\"hs-dhcp-{{ radio.id+100 }}\" interface=hotspot{{ radio.id+1 }} lease-time=1h address-pool=hs-pool-{{ radio.id+100 }} bootp-support=static authoritative=after-2sec-delay disabled=no
+add name="hs-dhcp-{{ radio.id+100 }}" interface=hotspot{{ radio.id+1 }} lease-time=1h address-pool=hs-pool-{{ radio.id+100 }} bootp-support=static authoritative=after-2sec-delay disabled=no
 /ip dhcp-server network
-:foreach i in [find address=\"192.168.{{ radio.id+100 }}.0/24\"] do={remove $i}
+:foreach i in [find address="192.168.{{ radio.id+100 }}.0/24"] do={remove $i}
 add address=192.168.{{ radio.id+100 }}.0/24 gateway=192.168.{{ radio.id+100 }}.1 domain=guifi.net comment=dhcp-{{ radio.id }}
 /ip hotspot profile
 :foreach i in [find name=hsprof{{ radio.id+1 }}] do={remove $i}
-add name=\"hsprof{{ radio.id }}\" hotspot-address=192.168.{{ radio.id+100 }}.1 dns-name=\"guests.guifi.net\" html-directory=hotspot smtp-server=0.0.0.0 login-by=http-pap,trial split-user-domain=no trial-uptime=30m/1d trial-user-profile=default use-radius=no
+add name="hsprof{{ radio.id }}" hotspot-address=192.168.{{ radio.id+100 }}.1 dns-name="guests.guifi.net" html-directory=hotspot smtp-server=0.0.0.0 login-by=http-pap,trial split-user-domain=no trial-uptime=30m/1d trial-user-profile=default use-radius=no
 /ip hotspot user profile
-set default name=\"default\" advertise-url=http://guifi.net/trespassos/
+set default name="default" advertise-url=http://guifi.net/trespassos/
 /ip hotspot
 :foreach i in [find name=hotspot{{ radio.id+1 }}] do={remove $i}
-add name=\"hotspot{{ radio.id+1 }}\" interface=hotspot{{ radio.id+1 }} address-pool=hs-pool-{{ radio.id+100 }} profile=hsprof{{ radio.id+1 }} idle-timeout=5m keepalive-timeout=none addresses-per-mac=2 disabled=no
+add name="hotspot{{ radio.id+1 }}" interface=hotspot{{ radio.id+1 }} address-pool=hs-pool-{{ radio.id+100 }} profile=hsprof{{ radio.id+1 }} idle-timeout=5m keepalive-timeout=none addresses-per-mac=2 disabled=no
 # end of HotSpot
 {% endmacro %}
+{% macro firewall_macro(ip) %}
 #
 # Device has firewall (setting up as CPE)
 {# Setting gateway #}
@@ -95,23 +95,23 @@ add name=\"hotspot{{ radio.id+1 }}\" interface=hotspot{{ radio.id+1 }} address-p
 /interface ethernet set ether1 arp=proxy-arp
 /ip address
 {# Setting private network and DHCP  #}
-:foreach i in [find address=\"{{ address }}/{{ netmask }}\"] do={remove $i}
-/ip address add address={{ address }}/{{ netmask }} network={{ netwok }} broadcast={{ broadcast }} interface=ether1 comment=\"\" disabled=no
+:foreach i in [find address="{{ address }}/{{ netmask }}"] do={remove $i}
+/ip address add address={{ address }}/{{ netmask }} network={{ netwok }} broadcast={{ broadcast }} interface=ether1 comment="" disabled=no
 :delay 1
 /ip pool
 :foreach i in [find name=private] do={remove $i}
-add name=\"private\" ranges={{ poolstart }}-{{ poolend }}
+add name="private" ranges={{ poolstart }}-{{ poolend }}
 :delay 1
 /ip dhcp-server
 :foreach i in [find name=private] do={remove $i}
-add name=\"private\" interface=ether1 lease-time=3d address-pool=private bootp-support=static authoritative=after-2sec-delay disabled=no
+add name="private" interface=ether1 lease-time=3d address-pool=private bootp-support=static authoritative=after-2sec-delay disabled=no
 :delay 1
 /ip dhcp-server network
 :foreach i in [find] do={remove $i}
 {% if secondary_dns %}
-add address={{ network }}/{{ netmask }} gateway={{ address }} netmask={{ netmask }} dns-server={{ primary_dns }},{{ secondary_dns }} domain=\"guifi.net\" comment=\"\"
+add address={{ network }}/{{ netmask }} gateway={{ address }} netmask={{ netmask }} dns-server={{ primary_dns }},{{ secondary_dns }} domain="guifi.net" comment=""
 {% elif primary_dns %}
-add address={{ network }}/{{ netmask }} gateway={{ address }} netmask={{ netmask }} dns-server={{ primary_dns }} domain=\"guifi.net\" comment=\"\"
+add address={{ network }}/{{ netmask }} gateway={{ address }} netmask={{ netmask }} dns-server={{ primary_dns }} domain="guifi.net" comment=""
 {% endif %}
 :delay 1
 {# be sure that there is no dhcp client requests since having a static ip  #}
@@ -122,28 +122,28 @@ add address={{ network }}/{{ netmask }} gateway={{ address }} netmask={{ netmask
 /ip firewall nat
 :foreach i in [find] do={remove $i}
 :delay 1
-add chain=srcnat out-interface={{ interface_name }} action=masquerade comment=\"\" disabled=no
+add chain=srcnat out-interface={{ interface_name }} action=masquerade comment="" disabled=no
 {# Firewall enabled, allowing winbox, ssh and snmp  #}
 /ip firewall filter
 :foreach i in [find] do={remove $i}
-add chain=input connection-state=established action=accept comment=\"Allow Established connections\" disabled=no
-add chain=input protocol=udp action=accept comment=\"Allow UDP\" disabled=no
-add chain=input src-address=\"{{ netwok }}/{{ netmask }}\" action=accept comment=\"Allow access to router from known network\" disabled=no
-add chain=input protocol=tcp dst-port=22 action=accept comment=\"Allow remote ssh\" disabled=no
-add chain=input protocol=udp dst-port=161 action=accept comment=\"Allow snmp\" disabled=no
-add chain=input protocol=tcp dst-port=8291 action=accept comment=\"Allow remote winbox\" disabled=no
-add chain=input protocol=icmp action=accept comment=\"Allow ping\" disabled=no
-add chain=forward connection-state=established action=accept comment=\"Allow already established connections\" disabled=no
-add chain=forward connection-state=related action=accept comment=\"Allow related connections\" disabled=no
-add chain=forward src-address=\"{{ netwok }}/{{ netmask }}\" action=accept comment=\"Allow access to router from known network\" disabled=no
-add chain=input protocol=tcp connection-state=invalid action=drop comment=\"\" disabled=no
-add chain=forward protocol=tcp connection-state=invalid action=drop comment=\"Drop invalid connections\" disabled=no
-add chain=forward action=drop comment=\"Drop anything else\" disabled=no
-add chain=input action=drop comment=\"Drop anything else\" disabled=no
+add chain=input connection-state=established action=accept comment="Allow Established connections" disabled=no
+add chain=input protocol=udp action=accept comment="Allow UDP" disabled=no
+add chain=input src-address="{{ netwok }}/{{ netmask }}" action=accept comment="Allow access to router from known network" disabled=no
+add chain=input protocol=tcp dst-port=22 action=accept comment="Allow remote ssh" disabled=no
+add chain=input protocol=udp dst-port=161 action=accept comment="Allow snmp" disabled=no
+add chain=input protocol=tcp dst-port=8291 action=accept comment="Allow remote winbox" disabled=no
+add chain=input protocol=icmp action=accept comment="Allow ping" disabled=no
+add chain=forward connection-state=established action=accept comment="Allow already established connections" disabled=no
+add chain=forward connection-state=related action=accept comment="Allow related connections" disabled=no
+add chain=forward src-address="{{ netwok }}/{{ netmask }}" action=accept comment="Allow access to router from known network" disabled=no
+add chain=input protocol=tcp connection-state=invalid action=drop comment="" disabled=no
+add chain=forward protocol=tcp connection-state=invalid action=drop comment="Drop invalid connections" disabled=no
+add chain=forward action=drop comment="Drop anything else" disabled=no
+add chain=input action=drop comment="Drop anything else" disabled=no
 :delay 1
 {# End of Unsolclic #}
 #
-:log info \"Unsolclic for  {{ dev.id }}-{{ dev.nick }} executed.\"
+:log info "Unsolclic for  {{ dev.id }}-{{ dev.nick }} executed."
 /
 {# return;  #}
 {% endmacro %}
@@ -153,14 +153,14 @@ add chain=input action=drop comment=\"Drop anything else\" disabled=no
 # DNS (client & server cache) zone: {{ zone_id }}
 {% if zone_primary_dns %}
 {% if zone_secondary_dns %}
-/ip dns set servers={{ zone_primary_dns }}, {{ zone_secondary_dns }} allow-remote-requests=yes
+/ip dns set servers={{ zone_primary_dns }},{{ zone_secondary_dns }} allow-remote-requests=yes
 {% else %}
 /ip dns set servers={{ zone_primary_dns }} allow-remote-requests=yes
 {% endif %}
 {% endif %}
 :delay 1
 #
-# NTP (client & server cache) zone:  {{ zone_id }}
+# NTP (client & server cache) zone: {{ zone_id }}
 {% if zone_primary_ntp %}
 {% if zone_secondary_ntp %}
 /system ntp client set enabled=yes mode=unicast primary-ntp={{ zone_primary_ntp }} secondary-ntp={{ zone_secondary_ntp }}
@@ -174,12 +174,13 @@ add chain=input action=drop comment=\"Drop anything else\" disabled=no
 / tool bandwidth-server set enabled=yes authenticate=no allocate-udp-ports-from=2000
 #
 # SNMP
-/snmp set contact=\"{{ snmp_contact }}\" enabled=yes location=\"{{ dev.node_nick }}\"
+/snmp community set public addresses=0.0.0.0/0
+/snmp set contact="{{ snmp_contact }}" enabled=yes location="{{ dev.node_nick }}" trap-community=public
 #
 # Guest user
 /user
 :foreach i in [find group=read] do={/user remove $i;}
-add name=\"guest\" group=read address=0.0.0.0/0 comment=\"\" disabled=no
+add name="guest" group=read address=0.0.0.0/0 comment="" disabled=no
 #
 # Graphing
 /tool graphing interface add
@@ -204,7 +205,7 @@ do={/ip address remove $i;};};
 /interface bridge remove $i;}
 # Construct main bridge on wlan1 & ether1
 / interface bridge
-add name=\"wLan/Lan\"
+add name="wLan/Lan"
 / interface bridge port
 add interface=ether1 bridge=wLan/Lan
 add interface=wlan1 bridge=wLan/Lan
@@ -237,9 +238,9 @@ add interface=wlan1 bridge=wLan/Lan
     {% endif %}
 #
 # Radio#: {{ radio.radiodev_counter }} {{ radio.ssid }}
-/interface wireless set wlan{{ radio.radiodev_counter+1 }} name=\"wlan{{ radio.radiodev_counter+1 }}\" \
-radio-name=\"{{ radio.ssid }}\" mode={{ radio.mode }}-bridge ssid=\"guifi.net-{{ radio.ssid }}\" \
-band=\"{{ band }}\"{{ channel_width }}  \
+/interface wireless set wlan{{ radio.radiodev_counter+1 }} name="wlan{{ radio.radiodev_counter+1 }}" \
+radio-name="{{ radio.ssid }}" mode={{ radio.mode }} ssid="guifi.net-{{ radio.ssid }}" \
+band="{{ band }}" channel-width={{ channel_width }} \
 frequency-mode=regulatory-domain country=spain antenna-gain={{ radio.antenna_gain }} \
     {% set channel = radio.channel %}
     {% if radio.channel != 0 and radio.channel != 5000 %}
@@ -248,8 +249,8 @@ frequency-mode=regulatory-domain country=spain antenna-gain={{ radio.antenna_gai
       {% endif %}
 frequency={{ channel }} \
     {% endif %}
-    {% if ((radio.1.band == "5ghz" or "5ghz-a") and (channel == 5000 )) or
-         ((radio.1.band == "2ghz-b" or "2ghz-b") and (channel == 0 )) %}
+    {% if ((band == "5ghz" or "5ghz-a") and (channel == 5000 )) or
+         ((band == "2ghz-b" or "2ghz-b") and (channel == 0 )) %}
 dfs-mode=radar-detect \
     {% else %}
 dfs-mode=none \
@@ -292,8 +293,8 @@ do={/ip address remove $inum;};}; \
                           {% set link_mac = link.interface.mac %}
                         {% endif %}
 / interface wireless wds
-add name=\"wds_{{ link.interface.ipv4.host_name }}\" master-interface=wlan{{ radio_id+1 }} wds-address={{ link_mac }} disabled={{ disabled }}
-/ ip address add address={{ ipv4.ipv4 }}/{{ ipv4.maskbits }} network={{ ipv4.netid }} broadcast={{ ipv4.broadcast }} interface=wds_{{ link.interface.ipv4.host_name }} disabled={{ disabled }} comment=\"wds_{{ link.interface.ipv4.host_name }}\"
+add name="wds_{{ link.interface.ipv4.host_name }}" master-interface=wlan{{ radio_id+1 }} wds-address={{ link_mac }} disabled={{ disabled }}
+/ ip address add address={{ ipv4.ipv4 }}/{{ ipv4.maskbits }} network={{ ipv4.netid }} broadcast={{ ipv4.broadcast }} interface=wds_{{ link.interface.ipv4.host_name }} disabled={{ disabled }} comment="wds_{{ link.interface.ipv4.host_name }}"
                         {% if link.routing == "OSPF" %}
                           {{ ospf_interface("wds_" ~ link.interface.ipv4.host_name , ipv4.netid , ipv4.maskbits , ospf_name , ospf_zone, ospf_id, "no") }}
                           {{ bgp_peer(link.device_id, link.interface.ipv4.host_name, link.interface.ipv4.ipv4, "yes") }}
@@ -321,7 +322,7 @@ add name=\"wds_{{ link.interface.ipv4.host_name }}\" master-interface=wlan{{ rad
               {% if interface.interface_type == "Wan" %}
 :foreach i in [find interface={{ iname }}] do={remove $i}
               {% endif  %}
-:foreach i in [find address=\"{{ ipv4.ipv4 }}/{{ ipv4.maskbits }}\"] do={remove $i}
+:foreach i in [find address="{{ ipv4.ipv4 }}/{{ ipv4.maskbits }}"] do={remove $i}
 / ip address add address={{ ipv4.ipv4 }}/{{ ipv4.maskbits }} network={{ ipv4.netid }} broadcast={{ ipv4.broadcast }} interface={{ iname }} disabled=no
 / routing bgp network
 :foreach i in [/routing bgp network find network={{ ipv4.netid }}/{{ ipv4.maskbits }}] do={/routing bgp network remove $i;}
@@ -361,10 +362,10 @@ add network={{ ipv4.netid }}/{{ ipv4.maskbits }} area={{ ipv4.ospf_name }} disab
 /ip pool add name=dhcp-{{ iname }} ranges={{ long2ip(maxip) }}-{{ ipv4.netend }}
 :foreach i in [/ip dhcp-server find name=dhcp-{{ iname }}] do={/ip dhcp-server remove $i;}
 /ip dhcp-server add name=dhcp-{{ iname }} interface={{ iname }} address-pool=dhcp-{{ iname }} disabled={{ dhcpDisabled }}
-:foreach i in [/ip dhcp-server network find address=\"{{ ipv4.netid }}/{{ ipv4.maskbits }}\"] do={/ip dhcp-server network remove $i;}
+:foreach i in [/ip dhcp-server network find address="{{ ipv4.netid }}/{{ ipv4.maskbits }}"] do={/ip dhcp-server network remove $i;}
 /ip dhcp-server network add address={{ ipv4.netid }}/{{ ipv4.maskbits }} gateway={{ ipv4.netstart }} domain=guifi.net comment=dhcp-{{ iname }}
 /ip dhcp-server lease
-:foreach i in [find comment=\"\"] do={remove $i;}
+:foreach i in [find comment=""] do={remove $i;}
 :delay 1
                   {% if ipv4.links %}
                     {% for link_id, link in ipv4.links %}
@@ -392,12 +393,12 @@ add address={{ link.interface.ipv4.ipv4 }} mac-address={{ rmac }} client-id={{ l
   {% endfor %} {# end for radio #}
 {% endif %}
 {% if firewall %}
-{{ firewall(link.interface.ipv4.ipv4, "192.168.1.1", "/24", "192.168.1.0", "192.168.1.100", "192.168.1.200", zone_primary_dns, zone_secondary_dns, "wlan1") }}
+{{ firewall_macro(link.interface.ipv4.ipv4) }}
 {% endif %}
 #
 # Routed device
 #
-# Other cable connections
+# Altres connexions de cable
 {% if dev.interfaces %}
   {% for interface_i, interface in dev.interfaces %}
     {% if interface.interface_type == "vlan" %}
@@ -417,37 +418,37 @@ add address={{ link.interface.ipv4.ipv4 }} mac-address={{ rmac }} client-id={{ l
 {% endif  %}
 #
 # Internal addresses NAT
-:foreach i in [/ip firewall nat find src-address=\"172.16.0.0/12\"] do={/ip firewall nat remove $i;}
-:foreach i in [/ip firewall nat find src-address=\"192.168.0.0/16\"] do={/ip firewall nat remove $i;}
+:foreach i in [/ip firewall nat find src-address="172.16.0.0/12"] do={/ip firewall nat remove $i;}
+:foreach i in [/ip firewall nat find src-address="192.168.0.0/16"] do={/ip firewall nat remove $i;}
 /ip firewall nat
-add chain=srcnat src-address=\"192.168.0.0/16\" dst-address=!192.168.0.0/16 action=src-nat to-addresses={{ ospf_routerid }} comment=\"\" disabled=no
-add chain=srcnat src-address=\"172.16.0.0/12\" dst-address=!172.16.0.0/12 protocol=!ospf action=src-nat to-addresses={{ ospf_routerid }} comment=\"\" disabled=no
+add chain=srcnat src-address="192.168.0.0/16" dst-address=!192.168.0.0/16 action=src-nat to-addresses={{ ospf_routerid }} comment="" disabled=no
 #
-# BGP Routing
+# Enrutament BGP
 # BGP & OSPF Filters
 :foreach i in [/routing filter find chain=ospf-in] do={/routing filter remove $i;}
 :foreach i in [/routing filter find chain=ospf-out] do={/routing filter remove $i;}
 :foreach i in [/routing filter find chain=ebgp-in] do={/routing filter remove $i;}
 :foreach i in [/routing filter find chain=ebgp-out] do={/routing filter remove $i;}
 / routing filter
-add action=discard chain=ebgp-in comment=\"1. Discard insert non 10.x routes from BGP peer\" disabled=no invert-match=no prefix=!10.0.0.0/8 prefix-length=!8-32
-add action=discard chain=ebgp-out comment=\"2. Discard send non 10.x routes to BGP peer\" disabled=no invert-match=no prefix=!10.0.0.0/8 prefix-length=!8-32
-add action=accept chain=ospf-in comment=\"3. Accept insert 10.x routes from OSPF neighbor\" disabled=no invert-match=no prefix=10.0.0.0/8 prefix-length=8-32
-add action=accept chain=ospf-in comment=\"4. Accept insert 172.x routes from OSPF neighbor\" disabled=no invert-match=no prefix=172.16.0.0/12 prefix-length=8-32
-add action=discard chain=ospf-in comment=\"5. Discard insert non 10.x and 172.x from OSPF neighbor\" disabled=no invert-match=no
-add action=accept chain=ospf-out comment=\"6. Allow send 10.x routes to OSPF neighbor\" disabled=no invert-match=no prefix=10.0.0.0/8 prefix-length=8-32
-add action=accept chain=ospf-out comment=\"7. Allow send 172.x routes to OSPF neighbor\" disabled=no invert-match=no prefix=172.16.0.0/12 prefix-length=8-32
-add action=discard chain=ospf-out comment=\"8. Discard send non 10.x and 172.x to OSPF neighbor\" disabled=no invert-match=no
+add chain=ebgp-in comment="0. Set ebgp-in preferred source." set-pref-src="{{ ospf_routerid }}" disabled=no
+add action=discard chain=ebgp-in comment="1. Discard insert non 10.x routes from BGP peer" disabled=no invert-match=no prefix=!10.0.0.0/8 prefix-length=8-32
+add action=discard chain=ebgp-out comment="2. Discard send non 10.x routes to BGP peer" disabled=no invert-match=no prefix=!10.0.0.0/8 prefix-length=8-32
+add action=accept chain=ospf-in comment="3. Accept insert 10.x routes from OSPF neighbor" disabled=no invert-match=no prefix=10.0.0.0/8 prefix-length=8-32 set-pref-src="{{ ospf_routerid }}"
+add action=accept chain=ospf-in comment="4. Accept insert 172.x routes from OSPF neighbor" disabled=no invert-match=no prefix=172.16.0.0/12 prefix-length=8-32
+add action=discard chain=ospf-in comment="5. Discard insert non 10.x and 172.x from OSPF neighbor" disabled=no invert-match=no
+add action=accept chain=ospf-out comment="6. Allow send 10.x routes to OSPF neighbor" disabled=no invert-match=no prefix=10.0.0.0/8 prefix-length=8-32
+add action=accept chain=ospf-out comment="7. Allow send 172.x routes to OSPF neighbor" disabled=no invert-match=no prefix=172.16.0.0/12 prefix-length=8-32
+add action=discard chain=ospf-out comment="8. Discard send non 10.x and 172.x to OSPF neighbor" disabled=no invert-match=no
 #
-# BGP instance
+# Instància BGP
 / routing bgp instance
-set default name=\"default\" as={{ dev.id }} router-id={{ ospf_routerid }} \
+set default name="default" as={{ dev.id }} router-id={{ ospf_routerid }} \
 redistribute-connected=no redistribute-static=no redistribute-rip=no \
 redistribute-ospf=yes redistribute-other-bgp=yes out-filter=ebgp-out \
-client-to-client-reflection=yes comment=\"\" disabled=no
+client-to-client-reflection=yes comment="" disabled=no
 #
-# OSPF Routing
-/routing ospf instance set default name=default router-id={{ ospf_routerid }} comment=\"\" disabled=no distribute-default=never \
+# Enrutament OSPF
+/routing ospf instance set default name=default router-id={{ ospf_routerid }} comment="" disabled=no distribute-default=never \
 redistribute-bgp=as-type-1 redistribute-connected=no redistribute-other-ospf=no redistribute-rip=no redistribute-static=no in-filter=ospf-in out-filter=ospf-out
 #
-:log info \"Unsolclic for {{ dev.id}}-{{ dev.nick }} executed.\"
+:log info "Unsolclic for {{ dev.id}}-{{ dev.nick }} executed."
