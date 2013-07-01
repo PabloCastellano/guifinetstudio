@@ -428,12 +428,39 @@ class GuifiAPI(object):
         return device_id
 
     def updateDevice(self, did, nid=None, nick=None, notification=None,
-                     mac=None, comment=None, status=None, graph_server=None):
+                     mac=None, comment=None, status=None, graph_server=None,
+                     model_id=None, firmware=None, download=None, upload=None,
+                     mrtg_index=None):
 
         if not self.is_authenticated():
             raise GuifiApiError('You have to be authenticated to run this action')
 
         data = {'command': 'guifi.device.update', 'device_id': did}
+
+        # TODO: update nid. Is it safe to change it directly in the database?
+        if nick is not None:
+            data['nick'] = nick
+        if notification is not None:
+            data['notification'] = notification
+        if mac is not None:
+            data['mac'] = mac
+        if comment is not None:
+            data['comment'] = comment
+        if status is not None:
+            data['flag'] = status
+        if graph_server is not None:
+            data['graph_server'] = graph_server
+        if model_id is not None:
+            data['model_id'] = model_id
+        if firmware is not None:
+            data['firmware'] = firmware
+        if download is not None:
+            data['download'] = download
+        if upload is not None:
+            data['upload'] = upload
+        if mrtg_index is not None:
+            data['mrtg_index'] = mrtg_index
+
         params = urllib.urlencode(data)
         (codenum, response) = self.sendRequest(params)
 
@@ -598,12 +625,20 @@ class GuifiAPI(object):
 
         return (lid, ipv4)
 
-    def updateLink(self, lid, ipv4=None, status=None):
+    def updateLink(self, lid, ipv4=None, status=None, routing=None):
 
         if not self.is_authenticated():
             raise GuifiApiError('You have to be authenticated to run this action')
 
-        data = {'command': 'guifi.interface.add', 'link_id': lid}
+        data = {'command': 'guifi.link.update', 'link_id': lid}
+
+        if ipv4 is not None:
+            data['ipv4'] = ipv4
+        if status is not None:
+            data['status'] = status
+        if routing is not None:
+            data['routing'] = routing
+
         params = urllib.urlencode(data)
         (codenum, response) = self.sendRequest(params)
 
