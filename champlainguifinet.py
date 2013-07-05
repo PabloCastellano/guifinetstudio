@@ -210,10 +210,25 @@ class GtkGuifinetMap(GtkChamplain.Embed):
 
 
 if __name__ == '__main__':
+    print 'Guifi.net & OSM map'
+    print 'Usage: %s [filename.cnml]' % sys.argv[0]
+
+    filename = os.path.expanduser('~/.cache/guifinetstudio/detail/26494.cnml')
+    if len(sys.argv) == 2:
+        filename = sys.argv[1]
+
+    print _('Loading nodes from'), filename
+    cnmlp = CNMLParser(filename)
+
+    print _('Building interface')
     w = Gtk.Window()
-    map = GtkGuifinetMap()
-    w.add(map)
+    w.set_title(_('Guifi.net & OSM map'))
+    mymap = GtkGuifinetMap(w)
+    w.add(mymap)
     w.show_all()
     w.connect('destroy', Gtk.main_quit)
 
+    print _('Painting nodes')
+    mymap.paintMap(cnmlp.getNodes())
+    # TODO: Center map view on nodes
     Gtk.main()
