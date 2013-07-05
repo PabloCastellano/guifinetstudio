@@ -198,11 +198,11 @@ class GuifinetStudio:
         if dialog.run() == Gtk.ResponseType.ACCEPT:
             filename = dialog.get_filename()
             print filename
+            print _('Export to KML')
+            CNML2KML(self.cnmlp, filename)
 
         dialog.destroy()
 
-        print _('Export to KML')
-        CNML2KML(self.cnmlp, filename)
 
     def rebuildAllZones(self):
         cnmlGWfile = self.configmanager.pathForCNMLCachedFile(GUIFI_NET_WORLD_ZONE_ID, 'zones')
