@@ -169,21 +169,41 @@ class GtkGuifinetMap(GtkChamplain.Embed):
         except:
             pass
 
-    # nodes = self.cnmlp.getNodes()
     def paintMap(self, nodes):
-        for n in nodes:
-            self.add_node_point(n.latitude, n.longitude, n.status)
-            self.add_node_label(n.latitude, n.longitude, n.title, n.status)
+        """
+        Draw nodes in map
+        nodes = self.cnmlp.getNodes()
+        """
+        for node in nodes:
+            self.add_node_point(node)
+            self.add_node_label(node)
 
     def reset(self):
         self.points_layer.remove_all()
         self.labels_layer.remove_all()
 
+    def _marker_size_from_zoom(self, level):
+        if level == 13:
+            return  9
+        elif level >= 14:
+            return 10
+        else:
+            return 8
+
+    def _readjust_markers_size(self):
+        zoom_level = self.view.get_zoom_level()
+        markers = self.points_layer.get_markers()
+        newsize = self._marker_size_from_zoom(zoom_level)
+        for m in markers:
+            m.set_size(newsize)
+
     def zoom_in(self):
         self.view.zoom_in()
+        self._readjust_markers_size()
 
     def zoom_out(self):
         self.view.zoom_out()
+        self.readjust_markers_size()
 
     def show_points(self, active):
         if active:
