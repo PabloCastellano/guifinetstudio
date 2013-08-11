@@ -20,11 +20,17 @@
 
 from gi.repository import Gdk, Gtk
 
-from pyGuifiAPI.error import GuifiApiError
 
 from utils import *
 
+import sys
+sys.path.append('lib')
+sys.path.append('lib/libcnml')
+sys.path.append('lib/pyGuifiAPI')
+
+from pyGuifiAPI.error import GuifiApiError
 import libcnml
+from libcnml import Status
 
 import locale
 import gettext
@@ -1132,3 +1138,160 @@ def findZoneIdInEntryCompletion(entrycompletion):
 
     zid = model.get_value(it, 0)
     return zid
+
+
+def fill_nodes_treeview(cnmlp, tv, zid=None, sort_column=0, recursive=False):
+    """
+        Fill treeview with the list of nodes
+        The store model must be TreeStore with (gchararray, gint) = (title, nid)
+    """
+    def _add_nodes(zid):
+        nodes = cnmlp.getNodesFromZone(zid)
+        for n in nodes:
+            model.append(None, (n.title, n.id))
+            print n.title
+
+    def _fill_nodes_recursive(parentzid):
+        zones = cnmlp.getSubzonesFromZone(parentzid)
+        for z in zones:
+            _add_nodes(z.id)
+            _fill_nodes_recursive(z.id)
+
+    model = tv.get_model()
+    if isinstance(model, Gtk.TreeModelFilter):
+        model = model.get_model()
+    model.clear()
+    model.set_sort_column_id(sort_column, Gtk.SortType.ASCENDING)
+
+    if zid is None:
+        zid = cnmlp.rootzone
+
+    _add_nodes(zid)
+
+    if recursive:
+        _fill_nodes_recursive(zid)
+
+    tv.expand_all()
+
+
+def fill_nodes_treeview_long(cnmlp, tv, zid=None, sort_column=0):
+    """
+    Fill treeview with the list of nodes and the number of nodes for each status
+    The store model must be TreeStore with
+    (gchararray, gchararray, gchararray, gchararray, gchararray, gchararray, gint) =
+    (zone,       working,    building,   testing,    planned,    node,       id  )
+
+    Note that this function is recursive only, unlike fill_nodes_treeview()
+    """
+
+    def _count_nodes(nodes):
+        """
+        Given a list of node ids, counts how many of them are for each status (working, planned...)
+        """
+        nodescount = dict()
+        for st in Status.get_status_list():
+            nodescount[st] = 0
+        for n in nodes:
+            nodescount[n.status] += 1
+
+        return (nodescount[Status.PLANNED], nodescount[Status.WORKING], nodescount[Status.TESTING], nodescount[Status.BUILDING])
+
+    def _add_zone(zid, parentzone):
+        """
+        Adds a row with the name of the zone and the number of nodes for each
+        status (working, planned...)
+        """
+        zone = cnmlp.getZone(zid)
+        nodes = zone.getNodes()
+
+        col1 = "%s (%d)" % (zone.title, len(nodes))
+        (nplanned, nworking, ntesting, nbuilding) = _count_nodes(nodes)
+
+        # Add the new row for the zone
+        row = (col1, str(nworking), str(nbuilding), str(ntesting), str(nplanned), None, None)
+        tree = model.append(parentzone, row)
+        return tree
+
+    def _add_nodes(zid, parenttree):
+        nodes = cnmlp.getNodesFromZone(zid)
+        for n in nodes:
+            row = (None, None, None, None, None, n.title, n.id)
+            model.append(parenttree, row)
+
+    def _fill_nodes_recursive(parentzid, parenttree):
+        zones = cnmlp.getSubzonesFromZone(parentzid)
+        # For every zone, add it to the treeview and then add its nodes and subzones
+        for z in zones:
+            print z.title
+            tree = _add_zone(z.id, parenttree)
+            _add_nodes(z.id, tree)
+            _fill_nodes_recursive(z.id, tree)
+
+    model = tv.get_model()
+    if isinstance(model, Gtk.TreeModelFilter):
+        model = model.get_model()
+    model.clear()
+    model.set_sort_column_id(sort_column, Gtk.SortType.ASCENDING)
+
+    if zid is None:
+        zid = cnmlp.rootzone
+
+    # Add root zone and its nodes first
+    parenttree = _add_zone(cnmlp.rootzone, None)
+    _add_nodes(zid, parenttree)
+
+    # Iter for every zone (except root, which is already added) and add them and their nodes to the TreeView
+    _fill_nodes_recursive(cnmlp.rootzone, parenttree)
+    tv.expand_all()
+
+
+# Hacky function
+# Services are associated to a device.
+# However, that device may not define an interface and the interface being used by a working service
+# can be defined in other places. Possibilities:
+#  1- the interface is defined in the same device
+#  2- the interface is defined in the first radio of the device
+#  3- the interface is defined in sibling device
+# If there are several devices, how can I know which one defines the correct IP. Or are both correct?
+def fill_services_treeview(cnmlp, tv, zid=None, sort_column=0):
+    """
+        Fill treeview with the list of services in a zone
+        The store model must be TreeStore with
+        (guint, gchararray, gchararray, gchararray, gchararray, gchararray) =
+        (id,    service,    title,      node,       ip,       , status))
+    """
+    model = tv.get_model()
+    model.clear()
+    model.set_sort_column_id(sort_column, Gtk.SortType.ASCENDING)
+
+    if zid is None:
+        zid = cnmlp.rootzone
+
+    services = cnmlp.getServices()
+    for s in services:
+        node = s.parentNode.parentNode
+        if s.status == Status.WORKING:  # FIXME, any other value? testing maybe?
+            ifs = s.parentNode.getInterfaces()
+            if ifs == []:
+                radios = s.parentNode.getRadios()
+                if radios == [] or radios[0].getInterfaces() == []:
+                    # sibling devices
+                    for devi in s.parentNode.parentNode.getDevices():
+                        for radio in devi.getRadios():
+                            ifs = radio.getInterfaces()
+                else:
+                    ifs = s.parentNode.getRadios()[0].getInterfaces()
+
+            if len(ifs) > 1:
+                ip = 'Several IPs'
+            elif len(ifs) == 1:
+                ip = ifs[0].ipv4
+            else:
+                print 'WARNING: no interfaces on service', s.title
+                ip = None
+        else:
+            ip = None
+
+        model.append(None, (s.id, s.type, s.title, node.title, ip, Status.statusToStr(s.status)))
+
+    tv.expand_all()

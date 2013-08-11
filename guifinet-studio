@@ -27,7 +27,7 @@ sys.path.append('lib')
 sys.path.append('lib/libcnml')
 sys.path.append('lib/pyGuifiAPI')
 
-from libcnml import CNMLParser, Status
+from libcnml import CNMLParser
 import pyGuifiAPI
 from pyGuifiAPI.error import GuifiApiError
 
@@ -66,10 +66,10 @@ class GuifinetStudio:
         self.listNodesWindow = self.ui.get_object('listNodesWindow')
 
         self.nodesList = self.ui.get_object("scrolledwindow1")
-        self.treestore = self.ui.get_object("treestore1")
+        self.treestore1 = self.ui.get_object("treestore1")
         self.treestore2 = self.ui.get_object("treestore2")
         self.treestore3 = self.ui.get_object('treestore3')
-        self.treeview = self.ui.get_object("treeview1")
+        self.treeview1 = self.ui.get_object("treeview1")
         self.treeview2 = self.ui.get_object("treeview2")
         self.treeview4 = self.ui.get_object('treeview4')
         self.treemodelfilter2 = self.ui.get_object('treemodelfilter2')
@@ -146,7 +146,7 @@ class GuifinetStudio:
                 self.cnmlp = CNMLParser(cnmlFile)
                 # FIXME: only if necessary (there's a zone loaded already)
                 self.statusbar.push(0, _('Loaded "%s" successfully') % cnmlFile)
-                self.fillTreeViews()
+                self.fill_treeviews()
                 self.guifinetmap.paintMap(self.cnmlp.getNodes())
                 self.cnmlFile = cnmlFile
             except IOError:
@@ -244,126 +244,11 @@ class GuifinetStudio:
         nodesfilter.refilter()
         return False
 
-    def fillTreeViews(self):
-        self.fillNodesTreeView()
-        #self.fillSidePane()
-        self.fillServicesTreeView()
-
-    def fillServicesTreeView(self):
-        self.treestore3.clear()
-        self.treestore3.set_sort_column_id(0, Gtk.SortType.ASCENDING)
-
-        self.__addServicesFromZoneToTree(self.cnmlp.rootzone)
-
-        self.treeview4.expand_all()
-
-    # Clears TreeView and adds a hierarchy of zones and nodes
-    # It uses __addZoneToTree(), __addNodesFromZoneToTree and __fillNodesTreeView_recursive()
-    def fillNodesTreeView(self):
-        # Init - Reset
-        self.treestore.clear()
-        self.treestore2.clear()
-
-        self.treestore.set_sort_column_id(5, Gtk.SortType.ASCENDING)
-        self.treestore2.set_sort_column_id(0, Gtk.SortType.ASCENDING)
-
-        # Add root zone and its nodes first
-        parenttree = self.__addZoneToTree(self.cnmlp.rootzone, None)
-        self.__addNodesFromZoneToTree(self.cnmlp.rootzone, parenttree)
-
-        #### Iter for every zone (except root, which is already added)
-        #### and adds them and their nodes to the TreeView
-        self.__fillNodesTreeView_recursive(self.cnmlp.rootzone, parenttree)
-        ####
-
-        # Finish
-        self.treeview.expand_all()
+    def fill_treeviews(self):
+        fill_nodes_treeview_long(self.cnmlp, self.treeview1, self.cnmlp.rootzone, 5)
+        fill_nodes_treeview(self.cnmlp, self.treeview2, self.cnmlp.rootzone, 0, True)
+        fill_services_treeview(self.cnmlp, self.treeview4, self.cnmlp.rootzone, 0)
         self.statusbar.push(0, _('CNML loaded successfully'))
-
-    # Recursive fillNodesTreeView()
-    def __fillNodesTreeView_recursive(self, parentzid, parenttree):
-        zones = self.cnmlp.getSubzonesFromZone(parentzid)
-
-        # For every zone, add it to the treeview and then add its nodes and subzones
-        for z in zones:
-            tree = self.__addZoneToTree(z.id, parenttree)
-            self.__addNodesFromZoneToTree(z.id, tree)
-            self.__fillNodesTreeView_recursive(z.id, tree)
-
-    # Adds a row with the name of the zone and the number of nodes for each status (working, planned...)
-    def __addZoneToTree(self, zid, parentzone):
-
-        # Given a list of node ids, counts how many of them are for each status (working, planned...)
-        # TODO: Rewrite this part
-        def countNodes(nodes):
-            nodescount = dict()
-            nodescount[Status.RESERVED] = 0
-            nodescount[Status.PLANNED] = 0
-            nodescount[Status.WORKING] = 0
-            nodescount[Status.TESTING] = 0
-            nodescount[Status.BUILDING] = 0
-            nodescount[Status.DROPPED] = 0
-
-            for n in nodes:
-                nodescount[n.status] += 1
-
-            return (nodescount[Status.PLANNED], nodescount[Status.WORKING], nodescount[Status.TESTING], nodescount[Status.BUILDING])
-
-        zone = self.cnmlp.getZone(zid)
-        nodes = zone.getNodes()
-
-        col1 = "%s (%d)" % (zone.title, len(nodes))
-        (nplanned, nworking, ntesting, nbuilding) = countNodes(nodes)
-
-        # Add the new row for the zone
-        row = (col1, str(nworking), str(nbuilding), str(ntesting), str(nplanned), None, None)
-        tree = self.treestore.append(parentzone, row)
-        return tree
-
-    # Hacky function
-    # Services are associated to a device.
-    # However, that device may not define an interface and the interface being used by a working service
-    # can be defined in other places. Possibilities:
-    #  1- the interface is defined in the same device
-    #  2- the interface is defined in the first radio of the device
-    #  3- the interface is defined in sibling device
-    # If there are several devices, how can I know which one defines the correct IP. Or are both correct?
-    def __addServicesFromZoneToTree(self, zid):
-        services = self.cnmlp.getServices()
-
-        for s in services:
-            node = s.parentNode.parentNode
-            if s.status == Status.WORKING:  # FIXME, any other value? testing maybe?
-                ifs = s.parentNode.getInterfaces()
-                if ifs == []:
-                    radios = s.parentNode.getRadios()
-                    if radios == [] or radios[0].getInterfaces() == []:
-                        # sibling device
-                        for devi in s.parentNode.parentNode.getDevices():
-                            for radio in devi.getRadios():
-                                ifs = radio.getInterfaces()
-                    else:
-                        ifs = s.parentNode.getRadios()[0].getInterfaces()
-
-                if len(ifs) > 1:
-                    ip = 'Several IPs'
-                elif len(ifs) == 1:
-                    ip = ifs[0].ipv4
-                else:
-                    print 'WARNING: no interfaces on service', s.title
-                    ip = None
-            else:
-                ip = None
-
-            self.treestore3.append(None, (s.id, s.type, s.title, node.title, ip, Status.statusToStr(s.status)))
-
-    # Adds a row with the name of the node to the list of nodes (first tab) and to the 'nodes treeview' (second tab)
-    def __addNodesFromZoneToTree(self, zid, parentzone):
-        nodes = self.cnmlp.getNodesFromZone(zid)
-        for n in nodes:
-            row = (None, None, None, None, None, n.title, n.id)
-            self.treestore.append(parentzone, row)
-            self.treestore2.append(None, (n.title, n.id))
 
     # Shows the 'Create new node' dialog
     def create_new_node(self, coords):
@@ -375,7 +260,7 @@ class GuifinetStudio:
 
     def on_viewnodeinwebsiteaction_activate(self, action, data=None):
         # get node id
-        sel = self.treeview.get_selection()
+        sel = self.treeview1.get_selection()
         (model, it) = sel.get_selected()
         nid = model.get_value(it, 6)
 
@@ -385,7 +270,7 @@ class GuifinetStudio:
         self.notebook1.set_current_page(0)
 
         # get node id
-        sel = self.treeview.get_selection()
+        sel = self.treeview1.get_selection()
         (model, it) = sel.get_selected()
         nid = model.get_value(it, 6)
 
@@ -396,7 +281,7 @@ class GuifinetStudio:
 
     def on_unsolclicaction_activate(self, action, data=None):
         # get node id
-        sel = self.treeview.get_selection()
+        sel = self.treeview1.get_selection()
         (model, it) = sel.get_selected()
         nid = model.get_value(it, 6)
 
@@ -435,7 +320,7 @@ class GuifinetStudio:
                 self.cnmlp = CNMLParser(filename)
                 # FIXME: only if necessary (there's a zone loaded already)
                 self.reset()
-                self.fillTreeViews()
+                self.fill_treeviews()
                 self.guifinetmap.paintMap(self.cnmlp.getNodes())
                 self.cnmlFile = filename
                 self.closecnmlmenuitem.set_sensitive(True)
@@ -449,7 +334,7 @@ class GuifinetStudio:
         dialog.destroy()
 
     def reset(self):
-        self.treestore.clear()
+        self.treestore1.clear()
         self.treestore2.clear()
         self.guifinetmap.reset()
 
@@ -522,7 +407,7 @@ class GuifinetStudio:
                     self.cnmlp = CNMLParser(filename)
                     # FIXME: only if necessary (there's a zone loaded already)
                     self.reset()
-                    self.fillTreeViews()
+                    self.fill_treeviews()
                     self.guifinetmap.paintMap(self.cnmlp.getNodes())
                     self.cnmlFile = filename
 
@@ -664,7 +549,7 @@ class GuifinetStudio:
 
     def on_treeviewcolumn6_clicked(self, action, data=None):
         #print action.get_sort_column_id()
-        (column_id, sorttype) = self.treestore.get_sort_column_id()
+        (column_id, sorttype) = self.treestore1.get_sort_column_id()
         name = action.get_name()
 
         if sorttype == Gtk.SortType.ASCENDING:
@@ -676,7 +561,7 @@ class GuifinetStudio:
         #FIXME: really hacky
         column_id = int(name[-1]) - 1
 
-        self.treestore.set_sort_column_id(column_id, sorttype)
+        self.treestore1.set_sort_column_id(column_id, sorttype)
 
     def authAPI(self):
         # TO DO
