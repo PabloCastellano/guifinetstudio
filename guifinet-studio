@@ -240,9 +240,6 @@ class GuifinetStudio:
         TracerouteDialog(self.guifinetmap, self.configmanager)
 
     def on_searchentry_changed(self, widget, data=None):
-        print widget, data
-        print widget.get_text()
-
         nodesfilter = self.treeview2.get_model()
         nodesfilter.refilter()
         return False
@@ -609,6 +606,9 @@ class GuifinetStudio:
                 self.nodemenu.popup(None, None, None, None, data.button, data.time)
 
     def on_treeview2_button_release_event(self, widget, data=None):
+        """
+            User has clicked in the label of a node
+        """
         sel = widget.get_selection()
         (model, it) = sel.get_selected()
 
@@ -620,18 +620,19 @@ class GuifinetStudio:
             lat = float(self.cnmlp.getNode(nid).latitude)
             lon = float(self.cnmlp.getNode(nid).longitude)
             self.guifinetmap.getView().center_on(lat, lon)
-            #self.view.go_to(lat, lon)
 
     def on_treeview2_key_press_event(self, widget, data=None):
+        """
+            User has pressed a key in the label of a node
+        """
         sel = widget.get_selection()
         (model, it) = sel.get_selected()
 
-        if data.keyval == Gdk.KEY_space or data.keyval == Gdk.KEY_KP_Space or data.keyval == Gdk.KEY_Return or data.keyval == Gdk.KEY_KP_Enter:
+        if data.keyval in (Gdk.KEY_space, Gdk.KEY_KP_Space, Gdk.KEY_Return, Gdk.KEY_KP_Enter):
             nid = model.get_value(it, 1)
             lat = float(self.cnmlp.getNode(nid).latitude)
             lon = float(self.cnmlp.getNode(nid).longitude)
-            self.view.center_on(lat, lon)
-            #self.view.go_to(lat, lon)
+            self.guifinetmap.getView().center_on(lat, lon)
 
     def on_showPointsButton_toggled(self, widget, data=None):
         self.guifinetmap.show_points(widget.get_active())
