@@ -24,10 +24,17 @@ except ImportError:
     raise
 
 from gi.repository import Gtk
-from utils import APP_NAME, LOCALE_DIR
+from utils import APP_NAME, LOCALE_DIR, GUIFI_NET_WORLD_ZONE_ID
 import logging
 import os
 import re
+import sys
+
+sys.path.append('lib')
+sys.path.append('lib/libcnml')
+from libcnml import CNMLParser
+from configmanager import GuifinetStudioConfig
+from ui import ChangeZoneDialog, fill_nodes_treeview
 
 import gettext
 gettext.bindtextdomain(APP_NAME, LOCALE_DIR)
@@ -42,14 +49,155 @@ logger.addHandler(ch)
 
 class UnsolclicUI:
 
-    def __init__(self):
+    def __init__(self, cnmlp=None):
+        self.cnmlp = cnmlp
+        self.usc = UnSolClic()
+        self.configmanager = GuifinetStudioConfig()
+        self.zonecnmlp = None
 
         self.ui = Gtk.Builder()
         self.ui.add_from_file('ui/unsolclic.ui')
         self.ui.connect_signals(self)
-
+        self.filestreeview = self.ui.get_object("filestreeview")
+        self.nodestreeview = self.ui.get_object("nodestreeview")
+        self.treestore1 = self.ui.get_object("treestore1")
+        self.treestore2 = self.ui.get_object("treestore2")
+        self.statusbar = self.ui.get_object("statusbar")
+        self.closecnmlmenuitem = self.ui.get_object('closecnmlmenuitem')
+        self.filesnotebook = self.ui.get_object('filesnotebook')
+        self.nodesnotebook = self.ui.get_object('nodesnotebook')
+        self.templatesmenuitem = self.ui.get_object('templatesmenuitem')
         self.uscwindow = self.ui.get_object('unsolclicwindow')
         self.uscwindow.show_all()
+
+        self.statusbar.push(0, _('Loaded %s unsolclic templates') % len(self.usc.templates))
+        if cnmlp:
+            zid = self.cnmlp.rootzone
+            self.change_title(zid)
+            self.closecnmlmenuitem.set_sensitive(True)
+            fill_nodes_treeview(cnmlp, self.nodestreeview, zid, recursive=True)
+
+        # TODO: Fill menubar with templates
+        self.menu_fill_templates()
+
+    def menu_fill_templates(self):
+        menu = Gtk.Menu()
+        for template in self.usc.templates:
+            item = Gtk.MenuItem.new_with_label(template.name)
+            menu.add(item)
+#            menu.attach(item, 0, 1, 0, 1)
+        menu.show_all()
+        self.templatesmenuitem.set_submenu(menu)
+
+    def change_title(self, zid):
+        ztitle = self.cnmlp.getZone(zid).title
+        self.uscwindow.set_title(_('Unsolclic GUI') + ' [zone id %d - %s]' % (zid, ztitle))
+
+    def _create_tab(self, usc):
+        w = Gtk.ScrolledWindow()
+        tv = Gtk.TextView()
+        buf = tv.get_buffer()
+        buf.set_text(usc, len(usc))
+        w.add(tv)
+        w.show_all()
+        return w
+
+    def add_tab(self, title, did, usc):
+        w = self._create_tab(usc)
+        label = '%s-%s' % (title, str(did))
+        self.filesnotebook.append_page(w, Gtk.Label(label))
+        self.filesnotebook.next_page()
+
+    def generate(self, nid, template=None):
+        try:
+            node = self.cnmlp.getNode(nid)
+        except KeyError:
+            print 'Node id not found'
+            sys.exit(1)
+        print 'Generating unsolclic for %s (id: %d)' % (node.title, nid)
+        uscdevs = self.usc.generate(node, template)
+
+        self.filesnotebook.remove_page(0)
+        self.nodesnotebook.set_current_page(1)
+        # Add item (node title)
+        parent = self.treestore1.append(None, (node.title, node.title))
+        for did, usc in uscdevs:
+            # Add subitems (generated filenames)
+            self.treestore1.append(parent, (str(did), str(did)))
+            self.add_tab(node.title, str(did), usc)
+
+        self.filestreeview.expand_all()
+        self.nodestreeview.expand_all()
+
+    def on_aboutmenuitem_activate(self, widget, data=None):
+        raise NotImplementedError
+
+    def reset(self):
+        self.treestore2.clear()
+
+    def on_changezoneimagemenuitem_activate(self, widget, data=None):
+        if not self.zonecnmlp:
+            cnmlGWfile = self.configmanager.pathForCNMLCachedFile(GUIFI_NET_WORLD_ZONE_ID, 'zones')
+            try:
+                self.zonecnmlp = CNMLParser(cnmlGWfile)
+            except IOError:
+                print _('Error loading cnml guifiworld zone:'), cnmlGWfile
+                print _('Guifi.net Studio will run normally but note that some features are disabled')
+
+        dialog = ChangeZoneDialog(self.configmanager, self.zonecnmlp)
+        if dialog.run() == Gtk.ResponseType.ACCEPT:
+            zid = dialog.getSelectedZone()
+            if zid:
+                filename = self.configmanager.pathForCNMLCachedFile(zid, 'detail')
+
+                try:
+                    self.cnmlp = CNMLParser(filename)
+                    self.change_title(zid)
+                    self.reset()
+                    fill_nodes_treeview(self.cnmlp, self.nodestreeview, zid, recursive=True)
+
+                except IOError:
+                    self.statusbar.push(0, _('CNML file "%s" couldn\'t be loaded') % filename)
+                    self.cnmlp = None
+
+#                active = self.cnmlp is not None
+#                self.closecnmlmenuitem.set_sensitive(active)
+#                self.enable_api_menuitems(active)
+
+        dialog.destroy()
+
+    def on_opencnmlmenuitem_activate(self, widget, data=None):
+        dialog = Gtk.FileChooserDialog(_('Open CNML file'), self.uscwindow,
+                                       Gtk.FileChooserAction.OPEN,
+                                       (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.ACCEPT))
+
+        if dialog.run() == Gtk.ResponseType.ACCEPT:
+            filename = dialog.get_filename()
+            try:
+                self.cnmlp = CNMLParser(filename)
+                self.closecnmlmenuitem.set_sensitive(True)
+                zid = self.cnmlp.rootzone
+                self.change_title(zid)
+                self.reset()
+                fill_nodes_treeview(cnmlp, self.nodestreeview, zid, recursive=True)
+                self.statusbar.push(0, _('Loaded CNML file'))
+                self.closecnmlmenuitem.set_sensitive(True)
+            except IOError:
+                self.statusbar.push(0, _('CNML file "%s" couldn\'t be loaded') % filename)
+                self.cnmlp = None
+
+        dialog.destroy()
+
+    def on_closecnmlmenuitem_activate(self, widget=None, data=None):
+        self.statusbar.push(0, _('Closed CNML file'))
+        self.uscwindow.set_title(_('Unsolclic GUI'))
+        self.closecnmlmenuitem.set_sensitive(False)
+        self.reset()
+        self.cnmlp = None
+#        self.add_tab()
+
+    def gtk_main_quit(self, widget, data=None):
+        Gtk.main_quit()
 
 
 class UscTemplate:
@@ -100,8 +248,8 @@ class UnSolClic:
         templates_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'unsolclic')
         self.env = jinja2.Environment(loader=jinja2.FileSystemLoader(templates_path), extensions=['jinja2.ext.i18n'])
 
-        valid = self.validate_templates()
-        logger.info(_('Unsolclic loaded %d/%d templates') % (valid, len(self.getSupportedDevices())))
+        self.validate_templates()
+        logger.info(_('Unsolclic loaded %d templates') % len(self.templates))
 
     def validate_templates(self):
         for template_name in self.env.list_templates():
@@ -109,21 +257,16 @@ class UnSolClic:
             logger.debug('Validating %s...' % template_name,)
             try:
                 t = self.env.get_template(template_name)
-            except TemplateSyntaxError, e:
-                logger.debug('FAILED reading template')
-                continue
-
-            try:
                 usct = UscTemplate.fromMetadata(source, template_name, t)
                 self.templates.append(usct)
                 logger.debug('OK')
+            except TemplateSyntaxError, e:
+                logger.debug('FAILED reading template')
             except Exception, e:
                 print e
                 logger.debug('FAILED')
 
-        return len(self.templates)
-
-    def getSupportedDevices(self):
+    def get_supported_devices(self):
         # return self.env.list_templates()
         return [t.name for t in self.templates]
 
@@ -199,41 +342,67 @@ class UnSolClic:
         # print r
         return r
 
+    def guess_template(self, firmware):
+        if firmware in ('AirOsv3.6+', 'AirOsv52'):
+            template_name = 'AirOsv30'
+        else:
+            #if dev.firmware not in self.get_supported_devices():
+            raise NotImplementedError
+        return template_name
+
     # En el cnml
     # en Nanostation clientes <radio ssid="MlagaMLGnvsbltmpRd1CPE0"> no se usa
     # solo se usa el ssid de la antena a la que se conecta.
-    def generate(self, node):
+    def generate(self, node, template_name=None):
+        radiodevs = filter(lambda d: d.type == 'radio', node.getDevices())
 
-        for dev in node.getDevices():
+        if len(radiodevs) < len(node.getDevices()):
+            # server, ...
+            print 'Node %d contains %d devices (but only %d of them are radios)' % (node.id, len(node.getDevices()), len(radiodevs))
+        else:
+            print 'Node %d contains %d devices (and all of them are radios)' % (node.id, len(radiodevs))
 
-            if dev.type != 'radio':  # server, ...
-                continue
+        for device in node.getDevices():
+            mark = '(*)' if device.type == 'radio' else ''
+            print '-- %s %s' % (device.title, mark)
 
-            print 'Firmware:', dev.firmware
-            if dev.firmware in ('AirOsv3.6+', 'AirOsv52'):
-                template_name = 'AirOsv30'
+        uscdevs = []
+
+        for n, dev in enumerate(radiodevs):
+            print 'Firmware: %s' % dev.firmware
+            print 'Template:',
+            if not template_name:
+                template_name = self.guess_template(dev.firmware)
+                print '%s (autoguess)' % template_name
             else:
-                #if dev.firmware not in self.getSupportedDevices():
-                raise NotImplementedError
+                print template_name
+            print
 
             t = self.env.get_template(template_name)
 
-            context = self.generateContext(node, dev.id, template_name)
-        #if device.name = NANOSTATION2...
-        #elif device.name= NANONSTATION_LOCO5...
+            context = self.generate_context(node, dev.id, template_name)
+            uscdevs.append((dev.id, t.render(context)))
 
-        r = t.render(context)
+        return uscdevs
 
-        # print r
-        return r
 
 if __name__ == '__main__':
-    usc = UnSolClic()
-    print _('Supported devices:')
-    print '\n'.join(usc.getSupportedDevices())
+    print _('Unsolclic GUI')
+    print 'Usage: %s [cnml_file]' % sys.argv[0]
+    print '       %s <cnml_file> <node_id>' % sys.argv[0]
 
-    w = UnsolclicUI()
+    if len(sys.argv) in (2, 3):
+        cnmlp = CNMLParser(sys.argv[1])
+    else:
+        cnmlp = None
+
+    w = UnsolclicUI(cnmlp)
     w.uscwindow.connect('destroy', Gtk.main_quit)
+
+    if len(sys.argv) == 3:
+        nid = int(sys.argv[2])
+        w.generate(nid)
+
     Gtk.main()
 
 
