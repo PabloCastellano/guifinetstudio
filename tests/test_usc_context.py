@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import os
 import sys
 import unittest
@@ -131,7 +133,7 @@ class UnsolclicTestCase(unittest.TestCase):
         #print self.result_file
         context = DATA[self.device_id]
         filepath = os.path.join(DATA_PATH, self.result_file)
-        r1 = self.usc.generateFromContext(self.template_file, context)
+        r1 = self.usc.generate_from_context(self.template_file, context)
         with open(filepath) as fp:
             r2 = fp.read()
 

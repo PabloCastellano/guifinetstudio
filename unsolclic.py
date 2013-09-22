@@ -127,9 +127,8 @@ class UnSolClic:
         # return self.env.list_templates()
         return [t.name for t in self.templates]
 
-    def generateContextAirOSv30(self, node, deviceid):
+    def generate_context_airos30(self, node, deviceid):
         device = node.devices[deviceid]
-
         assert len(device.radios) <= 1
 
         for radio in device.getRadios():
@@ -153,7 +152,6 @@ class UnSolClic:
                     remote_radio = remote_if.parentRadio
                     ssid = remote_radio.ssid
 
-        print device.name
         if device.name == 'NanoStation2':
             (net_mode, rate_max, txpower, ack, ext_antenna, mcastrate) = ('b', '11M', '6', '45', 'disabled', '11')
         elif device.name == 'NanoStation5':
@@ -183,19 +181,19 @@ class UnSolClic:
 
         return context
 
-    def generateContext(self, node, deviceid, template_name):
-
-        if template_name in ('AirOsv30',):
-            context = self.generateContextAirOSv30(node, deviceid)
+    # Unify different template variable names
+    def generate_context(self, node, deviceid, template_name):
+        if template_name in ('AirOsv30', 'AirOsv30_sorted'):
+            context = self.generate_context_airos30(node, deviceid)
         else:
             raise NotImplementedError
 
         return context
 
-    def generateFromDev(self, template_name=None):
+    def generate_from_dev(self, template_name=None):
         raise NotImplementedError
 
-    def generateFromContext(self, template_name, context):
+    def generate_from_context(self, template_name, context):
         t = self.env.get_template(template_name)
         r = t.render(context)
         # print r
