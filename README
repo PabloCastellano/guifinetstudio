@@ -84,8 +84,8 @@ If you want to help with internationalization/localization (i18n/l10n) have a lo
 https://www.transifex.com/projects/p/guifinetstudio/
 
 You can also use the following Guifi.net mailing list where we coordinate translations:
-https://lists.guifi.net/listinfo/guifi-gtra
-guifi-gtra@lists.guifi.net
+https://llistes.guifi.net/sympa/info/guifi-i18n
+guifi-i18n@llistes.guifi.net
 
 Generate .pot file:
 xgettext --language=Python --keyword=_ --output=locale/guifinetstudio.pot champlainguifinet.py configmanager.py guifinet_studio.py ui.py unsolclic.py utils.py
