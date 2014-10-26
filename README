@@ -3,8 +3,8 @@ GSoC 2012 project.
 More information is available here: 
 http://en.wiki.guifi.net/wiki/User:Pablog/GSoC2012/Guifi.net%20Studio
 
-You can check out the main development branch from Gitorious at:
-https://gitorious.org/guifi-altres/guifinetstudio
+You can check out the main development branch from GitHub at:
+https://github.com/PabloCastellano/guifinetstudio
 
 == Dependences ==
 In order to run Guifi.net Studio, you need to install the following packages:
@@ -58,11 +58,11 @@ Please, report bugs to http://trac.guifi.net/
 There's a specific component named "Guifi.net Studio"
 
 == Patches ==
-You can clone the repository and submit patches through the Gitorious interface:
+You can clone the repository and submit patches through the GitHub interface:
 
-1) Register into Gitorious
-2) Go to https://gitorious.org/guifi-altres/guifinetstudio and "Clone repository"
-3) Go to your own new Guifi.net Studio repository in Gitorious
+1) Login at GitHub
+2) Go to https://github.com/PabloCastellano/guifinetstudio and "Fork"
+3) Go to your own new Guifi.net Studio repository in GitHub
 4) Clone it -> make your changes -> commit & push
 5) Press "Request merge" in the right column and fill in the fields
 
