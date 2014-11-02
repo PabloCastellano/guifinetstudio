@@ -65,6 +65,7 @@ class GtkGuifinetMap(GtkChamplain.Embed):
         # Building: black
         # Reserved: red
         # Dropped: gray
+        # Inactive: blue
         if status == Status.PLANNED:
             color = Clutter.Color.new(0, 0, 255, 255)
         elif status == Status.WORKING:
@@ -77,6 +78,8 @@ class GtkGuifinetMap(GtkChamplain.Embed):
             color = Clutter.Color.new(255, 0, 0, 255)
         elif status == Status.DROPPED:
             color = Clutter.Color.new(100, 100, 100, 255)
+        elif status == Status.INACTIVE:
+            color = Clutter.Color.new(0, 0, 255, 255)
         else:
             raise ValueError
 
