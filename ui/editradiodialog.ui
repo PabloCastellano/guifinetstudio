@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.16.1 -->
 <interface>
-  <!-- interface-requires gtk+ 3.0 -->
+  <requires lib="gtk+" version="3.0"/>
   <object class="GtkAdjustment" id="adjustment1">
     <property name="lower">5</property>
     <property name="upper">37</property>
@@ -12,6 +13,128 @@
     <property name="upper">360</property>
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
+  </object>
+  <object class="GtkListStore" id="liststore1">
+    <columns>
+      <!-- column-name id -->
+      <column type="guint"/>
+      <!-- column-name title -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
+  <object class="GtkListStore" id="liststore2">
+    <columns>
+      <!-- column-name mode -->
+      <column type="gchararray"/>
+      <!-- column-name description -->
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0">ap</col>
+        <col id="1" translatable="yes">Access Point</col>
+      </row>
+      <row>
+        <col id="0">ad-hoc</col>
+        <col id="1" translatable="yes">Ad-hoc</col>
+      </row>
+    </data>
+  </object>
+  <object class="GtkListStore" id="liststore3">
+    <columns>
+      <!-- column-name angle -->
+      <column type="guint"/>
+      <!-- column-name description -->
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0">0</col>
+        <col id="1" translatable="yes">Original/Internal</col>
+      </row>
+      <row>
+        <col id="0">6</col>
+        <col id="1" translatable="yes">Yagi/Directive</col>
+      </row>
+      <row>
+        <col id="0">60</col>
+        <col id="1" translatable="yes">Patch 60 degrees</col>
+      </row>
+      <row>
+        <col id="0">90</col>
+        <col id="1" translatable="yes">Patch 90 degrees</col>
+      </row>
+      <row>
+        <col id="0">120</col>
+        <col id="1" translatable="yes">Sector 120 degrees</col>
+      </row>
+      <row>
+        <col id="0">360</col>
+        <col id="1" translatable="yes">Omnidirectional</col>
+      </row>
+    </data>
+  </object>
+  <object class="GtkListStore" id="liststore4">
+    <columns>
+      <!-- column-name id -->
+      <column type="guint"/>
+      <!-- column-name title -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
+  <object class="GtkListStore" id="liststore5">
+    <columns>
+      <!-- column-name gain -->
+      <column type="guint"/>
+      <!-- column-name description -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
+  <object class="GtkListStore" id="liststore6">
+    <columns>
+      <!-- column-name mode -->
+      <column type="gchararray"/>
+      <!-- column-name description -->
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0">Main</col>
+        <col id="1" translatable="yes">Main / Right / Internal</col>
+      </row>
+      <row>
+        <col id="0">Aux</col>
+        <col id="1" translatable="yes">Aux / Left / External</col>
+      </row>
+    </data>
+  </object>
+  <object class="GtkListStore" id="liststore7">
+    <columns>
+      <!-- column-name protocol -->
+      <column type="gchararray"/>
+      <!-- column-name description -->
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0">802.11b</col>
+        <col id="1" translatable="yes">802.11b</col>
+      </row>
+    </data>
+  </object>
+  <object class="GtkListStore" id="liststore8">
+    <columns>
+      <!-- column-name channel -->
+      <column type="guint"/>
+      <!-- column-name description -->
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0">0</col>
+        <col id="1" translatable="yes">Auto 2.4GHz</col>
+      </row>
+    </data>
   </object>
   <object class="GtkDialog" id="editradiodialog">
     <property name="can_focus">False</property>
@@ -35,7 +158,6 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="use_action_appearance">False</property>
                 <property name="use_stock">True</property>
               </object>
               <packing>
@@ -51,7 +173,6 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="use_action_appearance">False</property>
                 <property name="use_stock">True</property>
               </object>
               <packing>
@@ -201,7 +322,6 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="invisible_char">●</property>
-                            <property name="invisible_char_set">True</property>
                           </object>
                           <packing>
                             <property name="left_attach">1</property>
@@ -520,7 +640,6 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
-                                <property name="use_action_appearance">False</property>
                                 <property name="xalign">0</property>
                                 <property name="active">True</property>
                                 <property name="draw_indicator">True</property>
@@ -614,127 +733,5 @@
       <action-widget response="-3">button16</action-widget>
       <action-widget response="0">button17</action-widget>
     </action-widgets>
-  </object>
-  <object class="GtkListStore" id="liststore1">
-    <columns>
-      <!-- column-name id -->
-      <column type="guint"/>
-      <!-- column-name title -->
-      <column type="gchararray"/>
-    </columns>
-  </object>
-  <object class="GtkListStore" id="liststore2">
-    <columns>
-      <!-- column-name mode -->
-      <column type="gchararray"/>
-      <!-- column-name description -->
-      <column type="gchararray"/>
-    </columns>
-    <data>
-      <row>
-        <col id="0">ap</col>
-        <col id="1" translatable="yes">Access Point</col>
-      </row>
-      <row>
-        <col id="0">ad-hoc</col>
-        <col id="1" translatable="yes">Ad-hoc</col>
-      </row>
-    </data>
-  </object>
-  <object class="GtkListStore" id="liststore3">
-    <columns>
-      <!-- column-name angle -->
-      <column type="guint"/>
-      <!-- column-name description -->
-      <column type="gchararray"/>
-    </columns>
-    <data>
-      <row>
-        <col id="0">0</col>
-        <col id="1" translatable="yes">Original/Internal</col>
-      </row>
-      <row>
-        <col id="0">6</col>
-        <col id="1" translatable="yes">Yagi/Directive</col>
-      </row>
-      <row>
-        <col id="0">60</col>
-        <col id="1" translatable="yes">Patch 60 degrees</col>
-      </row>
-      <row>
-        <col id="0">90</col>
-        <col id="1" translatable="yes">Patch 90 degrees</col>
-      </row>
-      <row>
-        <col id="0">120</col>
-        <col id="1" translatable="yes">Sector 120 degrees</col>
-      </row>
-      <row>
-        <col id="0">360</col>
-        <col id="1" translatable="yes">Omnidirectional</col>
-      </row>
-    </data>
-  </object>
-  <object class="GtkListStore" id="liststore4">
-    <columns>
-      <!-- column-name id -->
-      <column type="guint"/>
-      <!-- column-name title -->
-      <column type="gchararray"/>
-    </columns>
-  </object>
-  <object class="GtkListStore" id="liststore5">
-    <columns>
-      <!-- column-name gain -->
-      <column type="guint"/>
-      <!-- column-name description -->
-      <column type="gchararray"/>
-    </columns>
-  </object>
-  <object class="GtkListStore" id="liststore6">
-    <columns>
-      <!-- column-name mode -->
-      <column type="gchararray"/>
-      <!-- column-name description -->
-      <column type="gchararray"/>
-    </columns>
-    <data>
-      <row>
-        <col id="0">Main</col>
-        <col id="1" translatable="yes">Main / Right / Internal</col>
-      </row>
-      <row>
-        <col id="0">Aux</col>
-        <col id="1" translatable="yes">Aux / Left / External</col>
-      </row>
-    </data>
-  </object>
-  <object class="GtkListStore" id="liststore7">
-    <columns>
-      <!-- column-name protocol -->
-      <column type="gchararray"/>
-      <!-- column-name description -->
-      <column type="gchararray"/>
-    </columns>
-    <data>
-      <row>
-        <col id="0">802.11b</col>
-        <col id="1" translatable="yes">802.11b</col>
-      </row>
-    </data>
-  </object>
-  <object class="GtkListStore" id="liststore8">
-    <columns>
-      <!-- column-name channel -->
-      <column type="guint"/>
-      <!-- column-name description -->
-      <column type="gchararray"/>
-    </columns>
-    <data>
-      <row>
-        <col id="0">0</col>
-        <col id="1" translatable="yes">Auto 2.4GHz</col>
-      </row>
-    </data>
   </object>
 </interface>

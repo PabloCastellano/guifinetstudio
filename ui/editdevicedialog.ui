@@ -1,6 +1,115 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.16.1 -->
 <interface>
-  <!-- interface-requires gtk+ 3.0 -->
+  <requires lib="gtk+" version="3.0"/>
+  <object class="GtkListStore" id="liststore11">
+    <columns>
+      <!-- column-name keyword -->
+      <column type="gchararray"/>
+      <!-- column-name description -->
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0">radio</col>
+        <col id="1" translatable="yes">Wireless device</col>
+      </row>
+      <row>
+        <col id="0">server</col>
+        <col id="1" translatable="yes">Server</col>
+      </row>
+      <row>
+        <col id="0">nat</col>
+        <col id="1" translatable="yes">Firewall, private network behind NAT</col>
+      </row>
+      <row>
+        <col id="0">generic</col>
+        <col id="1" translatable="yes">Generic device</col>
+      </row>
+      <row>
+        <col id="0">adsl</col>
+        <col id="1" translatable="yes">ADSL router or ISP device</col>
+      </row>
+      <row>
+        <col id="0">cam</col>
+        <col id="1" translatable="yes">Webcam</col>
+      </row>
+      <row>
+        <col id="0">phone</col>
+        <col id="1" translatable="yes">VoIP phone</col>
+      </row>
+    </data>
+  </object>
+  <object class="GtkListStore" id="liststore12">
+    <columns>
+      <!-- column-name keyword -->
+      <column type="gchararray"/>
+      <!-- column-name description -->
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0">Planned</col>
+        <col id="1" translatable="yes">Planned</col>
+      </row>
+      <row>
+        <col id="0">Reserved</col>
+        <col id="1" translatable="yes">Reserved</col>
+      </row>
+      <row>
+        <col id="0">Building</col>
+        <col id="1" translatable="yes">Building</col>
+      </row>
+      <row>
+        <col id="0">Testing</col>
+        <col id="1" translatable="yes">Testing</col>
+      </row>
+      <row>
+        <col id="0">Working</col>
+        <col id="1" translatable="yes">Working</col>
+      </row>
+      <row>
+        <col id="0">Dropped</col>
+        <col id="1" translatable="yes">Dropped</col>
+      </row>
+    </data>
+  </object>
+  <object class="GtkListStore" id="liststore13">
+    <columns>
+      <!-- column-name id -->
+      <column type="guint"/>
+      <!-- column-name title -->
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0">25</col>
+        <col id="1" translatable="yes">Ubiquity, Nanostation 2</col>
+      </row>
+    </data>
+  </object>
+  <object class="GtkListStore" id="liststore14">
+    <columns>
+      <!-- column-name keyword -->
+      <column type="gchararray"/>
+      <!-- column-name description -->
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0">AirOsv30</col>
+        <col id="1" translatable="yes">Ubiquity AirOS v3.0</col>
+      </row>
+    </data>
+  </object>
+  <object class="GtkListStore" id="liststore7">
+    <columns>
+      <!-- column-name id -->
+      <column type="guint"/>
+      <!-- column-name title -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
   <object class="GtkDialog" id="editdevicedialog">
     <property name="can_focus">False</property>
     <property name="border_width">5</property>
@@ -100,7 +209,6 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="invisible_char">●</property>
-                        <property name="invisible_char_set">True</property>
                       </object>
                       <packing>
                         <property name="left_attach">1</property>
@@ -207,7 +315,6 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="invisible_char">●</property>
-                        <property name="invisible_char_set">True</property>
                       </object>
                       <packing>
                         <property name="left_attach">1</property>
@@ -221,7 +328,6 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="invisible_char">●</property>
-                        <property name="invisible_char_set">True</property>
                       </object>
                       <packing>
                         <property name="left_attach">1</property>
@@ -235,7 +341,6 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="invisible_char">●</property>
-                        <property name="invisible_char_set">True</property>
                       </object>
                       <packing>
                         <property name="left_attach">1</property>
@@ -308,7 +413,6 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="use_action_appearance">False</property>
                 <property name="use_stock">True</property>
               </object>
               <packing>
@@ -324,7 +428,6 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="use_action_appearance">False</property>
                 <property name="use_stock">True</property>
               </object>
               <packing>
@@ -639,113 +742,5 @@
       <action-widget response="-3">editdeviceokbutton</action-widget>
       <action-widget response="-6">button13</action-widget>
     </action-widgets>
-  </object>
-  <object class="GtkListStore" id="liststore11">
-    <columns>
-      <!-- column-name keyword -->
-      <column type="gchararray"/>
-      <!-- column-name description -->
-      <column type="gchararray"/>
-    </columns>
-    <data>
-      <row>
-        <col id="0">radio</col>
-        <col id="1" translatable="yes">Wireless device</col>
-      </row>
-      <row>
-        <col id="0">server</col>
-        <col id="1" translatable="yes">Server</col>
-      </row>
-      <row>
-        <col id="0">nat</col>
-        <col id="1" translatable="yes">Firewall, private network behind NAT</col>
-      </row>
-      <row>
-        <col id="0">generic</col>
-        <col id="1" translatable="yes">Generic device</col>
-      </row>
-      <row>
-        <col id="0">adsl</col>
-        <col id="1" translatable="yes">ADSL router or ISP device</col>
-      </row>
-      <row>
-        <col id="0">cam</col>
-        <col id="1" translatable="yes">Webcam</col>
-      </row>
-      <row>
-        <col id="0">phone</col>
-        <col id="1" translatable="yes">VoIP phone</col>
-      </row>
-    </data>
-  </object>
-  <object class="GtkListStore" id="liststore12">
-    <columns>
-      <!-- column-name keyword -->
-      <column type="gchararray"/>
-      <!-- column-name description -->
-      <column type="gchararray"/>
-    </columns>
-    <data>
-      <row>
-        <col id="0">Planned</col>
-        <col id="1" translatable="yes">Planned</col>
-      </row>
-      <row>
-        <col id="0">Reserved</col>
-        <col id="1" translatable="yes">Reserved</col>
-      </row>
-      <row>
-        <col id="0">Building</col>
-        <col id="1" translatable="yes">Building</col>
-      </row>
-      <row>
-        <col id="0">Testing</col>
-        <col id="1" translatable="yes">Testing</col>
-      </row>
-      <row>
-        <col id="0">Working</col>
-        <col id="1" translatable="yes">Working</col>
-      </row>
-      <row>
-        <col id="0">Dropped</col>
-        <col id="1" translatable="yes">Dropped</col>
-      </row>
-    </data>
-  </object>
-  <object class="GtkListStore" id="liststore13">
-    <columns>
-      <!-- column-name id -->
-      <column type="guint"/>
-      <!-- column-name title -->
-      <column type="gchararray"/>
-    </columns>
-    <data>
-      <row>
-        <col id="0">25</col>
-        <col id="1" translatable="yes">Ubiquity, Nanostation 2</col>
-      </row>
-    </data>
-  </object>
-  <object class="GtkListStore" id="liststore14">
-    <columns>
-      <!-- column-name keyword -->
-      <column type="gchararray"/>
-      <!-- column-name description -->
-      <column type="gchararray"/>
-    </columns>
-    <data>
-      <row>
-        <col id="0">AirOsv30</col>
-        <col id="1" translatable="yes">Ubiquity AirOS v3.0</col>
-      </row>
-    </data>
-  </object>
-  <object class="GtkListStore" id="liststore7">
-    <columns>
-      <!-- column-name id -->
-      <column type="guint"/>
-      <!-- column-name title -->
-      <column type="gchararray"/>
-    </columns>
   </object>
 </interface>

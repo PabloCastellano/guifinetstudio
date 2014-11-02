@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.16.1 -->
 <interface>
-  <!-- interface-requires gtk+ 3.0 -->
+  <requires lib="gtk+" version="3.2"/>
   <object class="GtkListStore" id="liststore1">
     <columns>
       <!-- column-name id -->
@@ -14,6 +15,18 @@
       <!-- column-name detail -->
       <column type="gboolean"/>
     </columns>
+  </object>
+  <object class="GtkListStore" id="liststore2">
+    <columns>
+      <!-- column-name id -->
+      <column type="guint"/>
+      <!-- column-name title -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
+  <object class="GtkEntryCompletion" id="entrycompletion1">
+    <property name="model">liststore2</property>
+    <property name="text_column">1</property>
   </object>
   <object class="GtkDialog" id="cnmldialog">
     <property name="width_request">350</property>
@@ -145,7 +158,6 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="use_action_appearance">False</property>
                 <signal name="clicked" handler="on_downloadbutton_clicked" swapped="no"/>
               </object>
               <packing>
@@ -172,7 +184,6 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="use_action_appearance">False</property>
                 <property name="use_stock">True</property>
               </object>
               <packing>
@@ -194,17 +205,5 @@
     <action-widgets>
       <action-widget response="0">button21</action-widget>
     </action-widgets>
-  </object>
-  <object class="GtkListStore" id="liststore2">
-    <columns>
-      <!-- column-name id -->
-      <column type="guint"/>
-      <!-- column-name title -->
-      <column type="gchararray"/>
-    </columns>
-  </object>
-  <object class="GtkEntryCompletion" id="entrycompletion1">
-    <property name="model">liststore2</property>
-    <property name="text_column">1</property>
   </object>
 </interface>
