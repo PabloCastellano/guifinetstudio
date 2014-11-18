@@ -88,11 +88,11 @@ class Calculator:
 
     def on_dbmmwentry_changed(self, widget, data=None):
         def mw2dbm(mw):
-            dbm = pow(10, mw / 10)
+            dbm = 10 * math.log10(mw)
             return dbm
 
         def dbm2mw(dbm):
-            mw = 10 * math.log10(dbm)
+            mw = pow(10, dbm / 10)
             return mw
 
         text = widget.get_text()
