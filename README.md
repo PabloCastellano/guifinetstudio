@@ -15,9 +15,10 @@ In order to run Guifi.net Studio, you need to install the following packages:
 * Gtk Champlain (and GObject Introspection)
 * Git (necessary only if you want to deal with the repository)
 
-Under Ubuntu 12 (and surely most of the Ubuntu derivates) you can simply run:
+Under Ubuntu 12-14 (and surely most of the Ubuntu derivates) you can simply run:
 
     sudo apt-get install python2.7 gir1.2-gtkchamplain-0.12 gir1.2-gtkclutter-1.0
+    sudo pip install libcnml
 
 Optional:
 
@@ -27,38 +28,6 @@ Optional:
 * python-lxml: it's faster than the default XML API. It's recommended and used if available
 * python-kml: Only necessary if you want to export CNML to KML format
 * python-geopy: Enables calculating distances between nodes
-
-### lxml
-
-Note: python-lxml does a better memory management and is faster than minidom (default XML library in Python).
-If you want to manage big sets of nodes like Guifi.net World zone this definitely makes the difference.
-
-For example, these are the results opening a Guifi.net World zone with more than 17.000 nodes:
-Minidom took ~23 seconds and 1,4GB RAM. Guifinetstudio window didn't even appear. I had to reboot my laptop.
-Lxml took ~4s and 284MB RAM. Guifinetstudio worked, moving through the map is difficult but possible.
-
-You can test it by your own:
-
-    $ cat cnml1.py
-    from libcnml import *
-    c = CNMLParser('tests/detail')
-
-    $ time python cnml1.py
-    Using lxml which is more efficient
-    Loaded OK
-
-    real	0m3.974s
-    user	0m3.728s
-    sys	0m0.188s
-
-    $ time python cnml1.py
-    lxml module not found. Falling back to minidom
-    Loaded OK
-
-    real	0m22.984s
-    user	0m21.997s
-    sys	0m0.868s
-
 
 # Arch Linux
 
