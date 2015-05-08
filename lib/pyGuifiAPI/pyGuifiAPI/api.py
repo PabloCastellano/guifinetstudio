@@ -49,6 +49,7 @@ class GuifiAPI(object):
 
         self.base_api_url = self.base_url + '/api?'
         self.base_cnml_url = self.base_url + '/%s/guifi/cnml/%d/%s'
+        self.base_gml_url = self.base_url + '/%s/guifi/gml/%d/%s'
         self.base_device_url = self.base_url + '/%s/guifi/device/%d/view'
 
         user_agent = 'pyGuifiAPI/0.7'
@@ -735,6 +736,18 @@ class GuifiAPI(object):
         response = urlopen(req)
         return response
 
+    # http://guifi.net/es/guifi/gml/21629/links
+    def downloadGML(self, zid, ctype='nodes'):
+        if ctype not in ['nodes', 'links']:
+            raise ValueError
+
+        lang = 'es'
+        url = self.base_gml_url % (lang, zid, ctype)
+        print 'Downloading GML:', url
+
+        req = Request(url, headers=self.headers)
+        response = urlopen(req)
+        return response
 
 """
 guifi.zone.nearest
