@@ -810,6 +810,110 @@ class NodeDialog:
         self.nodedialog.destroy()
 
 
+# TODO: Botón para enlace a mapa distancias / perfil:
+# https://guifi.net/node/35941/view/distancesmap?lat2=36.740940&lon2=-4.486626
+class DistancesDialog:
+    def __init__(self, cnmlp, nid):
+        self.cnmlp = cnmlp
+        self.nid = nid
+
+        self.ui = Gtk.Builder()
+        self.ui.set_translation_domain(APP_NAME)
+        self.ui.add_from_file('ui/distancesdialog.ui')
+        self.ui.connect_signals(self)
+
+        self.distancesdialog = self.ui.get_object("distancesdialog")
+        self.distancesdialog.set_title(_('Distances to other nodes'))
+        self.distancesdialog.show_all()
+        self.treestore = self.ui.get_object("treestore1")
+
+        self.calculate_distances()
+
+    def on_distancesdialog_response(self, widget, response):
+        self.distancesdialog.destroy()
+
+    def on_treeviewcolumn1_clicked(self, widget, data=None):
+        print 'clicked'
+        print widget
+        print data
+
+    def calculate_distances(self, limit=50):
+        try:
+            from geopy import distance
+        except ImportError:
+            print _('WARNING: python geopy dependency was not found')
+            print _('You need to install it in order to enable distances features')
+            self.distancesdialog.destroy()
+
+        from_node = self.cnmlp.getNode(self.nid)
+        from_coord = (from_node.latitude, from_node.longitude)
+        nodes = self.cnmlp.getNodes()
+        distances = []
+        nodes.remove(from_node)
+
+        # Calculate distance to every node in the same zone
+        for to_node in nodes:
+            to_coord = (to_node.latitude, to_node.longitude)
+            dist = distance.VincentyDistance(from_coord, to_coord)
+            bearing = self.calculate_bearing(from_node.latitude, from_node.longitude, to_node.latitude, to_node.longitude)
+            distances.append((dist.km, from_node.title, to_node.title, bearing[0], bearing[1]))
+            # TODO: add pixbuf
+
+        distances.sort()
+
+        # Sort by distance
+        #for d in distances[:limit]:
+        for d in distances:
+            if d[0] >= 1:
+                dist_metric = '%.3f Km' % d[0]
+            else:
+                dist_metric = '%d m' % (d[0] * 1000)
+            self.treestore.append(None, (1, d[2], dist_metric, d[3], d[4]))
+
+    #Horizontal Bearing
+    # http://code.activestate.com/recipes/577594-gps-distance-and-bearing-between-two-gps-points/
+    def calculate_bearing(self, lat1, lon1, lat2, lon2):
+
+        def get_orientacion(deg):
+            if deg < 23:
+                sdeg = 'N'
+            elif deg < 68:
+                sdeg = 'NE'
+            elif deg < 113:
+                sdeg = 'E'
+            elif deg < 158:
+                sdeg = 'SE'
+            elif deg < 203:
+                sdeg = 'S'
+            elif deg < 248:
+                sdeg = 'SO'
+            elif deg < 293:
+                sdeg = 'O'
+            elif deg < 338:
+                sdeg = 'NO'
+            else:
+                sdeg = 'N'
+            return sdeg
+
+        from math import radians, degrees, atan2, cos, sin
+
+        lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
+
+        dLon = lon2 - lon1
+        y = sin(dLon) * cos(lat2)
+        x = cos(lat1) * sin(lat2) \
+            - sin(lat1) * cos(lat2) * cos(dLon)
+        deg = int(degrees(atan2(y, x)))
+
+        deg = (deg + 360) % 360
+        azimuth_to = "%d %s" % (deg, get_orientacion(deg))
+
+        deg = (deg + 180) % 360
+        azimuth_from = "%d %s" % (deg, get_orientacion(deg))
+
+        return (azimuth_to, azimuth_from)
+
+
 class ChangeZoneDialog:
     def __init__(self, configmanager, zonecnmlp):
         self.ui = Gtk.Builder()

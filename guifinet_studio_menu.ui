@@ -1,6 +1,7 @@
 <ui>
 	<popup name="KeyPopup1">
 		<menuitem action="nodepropertiesaction"/>
+		<menuitem action="nodedistancesaction"/>
 		<separator/>
 		<menuitem action="viewnodeinwebsiteaction"/>
 		<menuitem action="viewnodeinmapaction"/>

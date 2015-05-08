@@ -26,8 +26,22 @@ sys.path.append('lib/libcnml')
 
 from libcnml import CNMLParser
 
+from math import *
+
+
+#Horizontal Bearing
+def calcBearing(lat1, lon1, lat2, lon2):
+    lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
+
+    dLon = lon2 - lon1
+    y = sin(dLon) * cos(lat2)
+    x = cos(lat1) * sin(lat2) \
+        - sin(lat1) * cos(lat2) * cos(dLon)
+    return degrees(atan2(y, x))
+
+
 if __name__ == '__main__':
-    print 'Calculate distances from one node to the rest of nodes in the same zone'
+    print 'Calculate distances and azimuth from one node to the rest of nodes in the same zone'
     print 'Usage: %s [nid] [filename.cnml]' % sys.argv[0]
     print
 
@@ -48,7 +62,8 @@ if __name__ == '__main__':
     for to_node in nodes:
         to_coord = (to_node.latitude, to_node.longitude)
         dist = distance.VincentyDistance(from_coord, to_coord)
-        distances.append((dist.km, from_node.title, to_node.title))
+        bearing = calcBearing(from_node.latitude, from_node.longitude, to_node.latitude, to_node.longitude)
+        distances.append((dist.km, from_node.title, to_node.title, bearing))
 
     # Sort by distance
     for d in sorted(distances):
@@ -56,4 +71,4 @@ if __name__ == '__main__':
             dist_metric = '%.3f Km' % d[0]
         else:
             dist_metric = '%d m' % (d[0] * 1000)
-        print '%s -> %s: %s' % (d[1], d[2], dist_metric)
+        print '%s -> %s: %s (Az: %.2f)' % (d[1], d[2], dist_metric, d[3])

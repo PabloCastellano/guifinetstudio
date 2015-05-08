@@ -102,6 +102,12 @@
         <signal name="activate" handler="on_unsolclicaction_activate" swapped="no"/>
       </object>
     </child>
+    <child>
+      <object class="GtkAction" id="nodedistancesaction">
+        <property name="label" translatable="yes">Distances</property>
+        <signal name="activate" handler="on_nodedistancesaction_activate" swapped="no"/>
+      </object>
+    </child>
   </object>
   <object class="GtkTreeStore" id="treestore1">
     <columns>
