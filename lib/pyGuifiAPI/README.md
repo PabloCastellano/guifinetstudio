@@ -11,6 +11,13 @@ https://github.com/PabloCastellano/guifinetstudio
 
 [Shagi](https://github.com/shagi) gave a talk about it at Hackaleda (Hackmeeting event in Marinaleda, Spain, 2014) which can be found at [archive.org](https://archive.org/download/Hackaleda-Hackmeeting2014/20141012_pyGuifiAPI.ogg).
 
+Install
+=======
+
+pyGuifiAPI is also available in [PyPI](https://pypi.python.org/pypi/pyGuifiAPI/0.7):
+
+pip install pyGuifiAPI
+
 License
 =======
 
