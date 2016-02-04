@@ -42,9 +42,9 @@ class UnSolClic:
         self.env = jinja2.Environment(loader=jinja2.FileSystemLoader('unsolclic'), extensions=['jinja2.ext.i18n'])
         self.test1()
 
-        print _('Supported devices:')
-        print '\n'.join(self.getSupportedDevices())
-        print
+        print(_('Supported devices:'))
+        print('\n'.join(self.getSupportedDevices()))
+        print()
 
     def getSupportedDevices(self):
         return self.env.list_templates()
@@ -69,7 +69,7 @@ class UnSolClic:
                    }
         t = self.env.get_template('AirOsv30')
         r = t.render(context)
-        #print r
+        #print(r)
         return r
 
     def generateContextAirOSv30(self, node, deviceid):
@@ -98,7 +98,7 @@ class UnSolClic:
                     remote_radio = remote_if.parentRadio
                     ssid = remote_radio.ssid
 
-        print device.name
+        print(device.name)
         if device.name == 'NanoStation2':
             (net_mode, rate_max, txpower, ack, ext_antenna, mcastrate) = ('b', '11M', '6', '45', 'disabled', '11')
         elif device.name == 'NanoStation5':
@@ -147,7 +147,7 @@ class UnSolClic:
             if dev.type != 'radio':  # server, ...
                 continue
 
-            print 'Firmware:', dev.firmware
+            print('Firmware: {}'.format(dev.firmware))
             if dev.firmware in ('AirOsv3.6+', 'AirOsv52'):
                 template_name = 'AirOsv30'
             else:
@@ -162,7 +162,7 @@ class UnSolClic:
 
         r = t.render(context)
 
-        # print r
+        # print(r)
         return r
 
 # --- DD-guifi ---

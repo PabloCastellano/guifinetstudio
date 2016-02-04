@@ -42,24 +42,24 @@ try:
     import txtraceroute
     TRACEROUTE_ENABLED = True
 except ImportError:
-    print _('WARNING: python-twisted-core dependency was not found')
-    print _('You need to install it in order to enable traceroute features')
-    print
+    print(_('WARNING: python-twisted-core dependency was not found'))
+    print(_('You need to install it in order to enable traceroute features'))
+    print()
 
 try:
     from unsolclic import *
     UNSOLCLIC_ENABLED = True
 except ImportError:
-    print _('WARNING: python jinja2 dependency was not found')
-    print _('You need to install it in order to enable unsolclic features')
-    print
+    print(_('WARNING: python jinja2 dependency was not found'))
+    print(_('You need to install it in order to enable unsolclic features'))
+    print()
 
 
 class UnsolclicDialog:
     def __init__(self, node):
 
         if not UNSOLCLIC_ENABLED:
-            print _('Unsolclic features not available. python-jinja2 module not found')
+            print(_('Unsolclic features not available. python-jinja2 module not found'))
             return
 
         self.ui = Gtk.Builder()
@@ -83,10 +83,10 @@ class UnsolclicDialog:
 
     def on_uscdialog_response(self, widget, response):
         if response == -12:  # Auto-load to device
-            print _('Autoload configuration')
+            print(_('Autoload configuration'))
             raise NotImplementedError
         elif response == -13:  # Copy to clipboard
-            print _('Copy usc to clipboard')
+            print(_('Copy usc to clipboard'))
             #cb = Gtk.Clipboard()
             #cb.set_text(self.usctextbuffer.get_text(), -1)
             self.usctextbuffer.copy_clipboard(Gtk.Clipboard.get(Gdk.Atom.intern('0', True)))
@@ -196,7 +196,7 @@ class EditNodeDialog:
             nodeinfotext = self.nodeinfotextview.get_buffer().get_text(start, end, True)
 
             if not self.editnodevalidation():
-                print _("There's some invalid data")
+                print(_("There's some invalid data"))
                 return
 
             lat, lon = self.nodecoordinatesentry.get_text().split(',')
@@ -220,7 +220,7 @@ class EditNodeDialog:
                                                 nick=self.nodenickentry.get_text(), zone_desc=self.nodezonedescentry.get_text(),
                                                 notification=self.nodecontactentry.get_text(), elevation=self.nodeelevationentry.get_text(),
                                                 stable=stable, graph_server=graphs, status='Planned')
-            except GuifiApiError, e:
+            except GuifiApiError as e:
                 ErrorResponseFromServerMessageDialog(e)
                 return
 
@@ -289,7 +289,7 @@ class EditZoneDialog:
             zoneinfotext = self.zoneinfotextview.get_buffer().get_text(start, end, True)
 
             if not self.editzonevalidation():
-                print _("There's some invalid data")
+                print(_("There's some invalid data"))
                 return
 
             it = self.parentzonecombobox.get_active_iter()
@@ -310,7 +310,7 @@ class EditZoneDialog:
                                                 ntp_servers=None, ospf_zone=self.ospfidentry.get_text(), homepage=self.zonewebentry.get_text(),
                                                 notification=self.zonecontactentry.get_text())
 
-            except GuifiApiError, e:
+            except GuifiApiError as e:
                 ErrorResponseFromServerMessageDialog(e)
                 return
 
@@ -381,7 +381,7 @@ class EditDeviceDialog:
             """
 
             if not self.editdevicevalidation():
-                print _("There's some invalid data")
+                print(_("There's some invalid data"))
                 return
 
             it = self.editdevicenodecombobox.get_active_iter()
@@ -444,7 +444,7 @@ class EditDeviceDialog:
                                                     comment=self.devcommententry.get_text(), status=rstatus, graph_server=None,
                                                     model_id=model, firmware=firmware, download=download, upload=upload, mrtg_index=mrtg)
 
-            except GuifiApiError, e:
+            except GuifiApiError as e:
                 ErrorResponseFromServerMessageDialog(e)
                 return
 
@@ -495,7 +495,7 @@ class EditRadioDialog:
         if response == Gtk.ResponseType.ACCEPT:
 
             if not self.editradiovalidation():
-                print _("There's some invalid data")
+                print(_("There's some invalid data"))
                 return
 
             it = self.radiomodecombobox.get_active_iter()
@@ -535,7 +535,7 @@ class EditRadioDialog:
 
                 clients = None
             else:
-                print rmode
+                print(rmode)
                 raise NotImplementedError
 
             res = CreateLocalOrRemoteMessageDialog(self.guifiAPI.getHost(), 'radio')
@@ -547,7 +547,7 @@ class EditRadioDialog:
                 (radiodev_counter, interfaces) = self.guifiAPI.addRadio(rmode, did, self.radiomacentry.get_text(), angle=rangle, gain=rgain, azimuth=razimuth,
                                                                         amode=None, ssid=ssid, protocol=protocol, channel=channel, clients=clients)
                 #amode=antenna_mode when the bug is fixed
-            except GuifiApiError, e:
+            except GuifiApiError as e:
                 ErrorResponseFromServerMessageDialog(e)
                 return
 
@@ -593,7 +593,7 @@ class EditInterfaceDialog:
 
             """
             if not self.editinterfacevalidation():
-                print "There's some invalid data"
+                print("There's some invalid data")
                 return
             """
 
@@ -611,7 +611,7 @@ class EditInterfaceDialog:
             try:
                 (iid, ipv4) = self.guifiAPI.addInterface(did, rid)
 
-            except GuifiApiError, e:
+            except GuifiApiError as e:
                 ErrorResponseFromServerMessageDialog(e)
                 return
 
@@ -642,7 +642,7 @@ class EditLinkDialog:
 
             """
             if not self.editlinkvalidation():
-                print "There's some invalid data"
+                print("There's some invalid data")
                 return
             """
 
@@ -677,7 +677,7 @@ class EditLinkDialog:
             try:
                 (lid, ipv4) = self.guifiAPI.addLink(dev1, radio1, dev2, radio2, ipv4=ipv4, status=status)
 
-            except GuifiApiError, e:
+            except GuifiApiError as e:
                 ErrorResponseFromServerMessageDialog(e)
                 return
 
@@ -707,7 +707,7 @@ class CNMLDialog:
             fillZonesEntryCompletion(self.entrycompletion1, allZones)
         else:
             # allZones == []
-            print _("Error: there's no guifi.net world zones cnml")
+            print(_("Error: there's no guifi.net world zones cnml"))
             message = _("Guifi.net World zones CNML file couldn't be found\n\nYou have to download it first by going to Tools -> Update zones")
             g = Gtk.MessageDialog(None, Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, message)
             g.set_title(_('File not found'))
@@ -721,14 +721,14 @@ class CNMLDialog:
         if zid is None:
             return False
 
-        print _('Downloading zone:'), zid
+        print(_('Downloading zone: {zoneid}').format(zoneid=zid))
 
         ctype = 'detail'
         fp = self.guifiAPI.downloadCNML(zid, ctype)
         filename = self.configmanager.pathForCNMLCachedFile(zid, ctype)
         with open(filename, 'w') as zonefile:
             zonefile.write(fp.read())
-        print _('CNML (%s) saved successfully to') % ctype, filename
+        print(_('CNML ({type}) saved successfully to {filename}').format(type=ctype, filename=filename))
 
         #Reload
         fillAvailableCNMLModel(self.configmanager, self.treeview4.get_model(), self.zonecnmlp)
@@ -774,7 +774,7 @@ class PreferencesDialog:
             defaultZoneTitle = zonecnmlp.getZone(self.configmanager.getDefaultZone()).title
             self.entrycompletion2.get_entry().set_text(defaultZoneTitle)
         else:
-            print _("Error: there's no Guifi.net world zones CNML")
+            print(_("Error: there's no Guifi.net world zones CNML"))
 
     def on_preferencesdialog_response(self, widget, response):
         if response == Gtk.ResponseType.ACCEPT:
@@ -833,16 +833,16 @@ class DistancesDialog:
         self.distancesdialog.destroy()
 
     def on_treeviewcolumn1_clicked(self, widget, data=None):
-        print 'clicked'
-        print widget
-        print data
+        print('clicked')
+        print(widget)
+        print(data)
 
     def calculate_distances(self, limit=50):
         try:
             from geopy import distance
         except ImportError:
-            print _('WARNING: python geopy dependency was not found')
-            print _('You need to install it in order to enable distances features')
+            print(_('WARNING: python geopy dependency was not found'))
+            print(_('You need to install it in order to enable distances features'))
             self.distancesdialog.destroy()
 
         from_node = self.cnmlp.getNode(self.nid)
@@ -1027,7 +1027,7 @@ class TracerouteDialog:
             # A wrong argument like '1' or 'asd' passed to txtraceroute will freeze it
             # TODO: Add support for hostnames
             if not valid_ipv4_address(hostname):
-                print 'Error: %s is not a valid IP address' % hostname
+                print(_('Error: {hostname} is not a valid IP address').format(hostname=hostname))
                 return
 
             ret = txtraceroute.main(hostname)
@@ -1043,16 +1043,16 @@ class TracerouteDialog:
 
                 for r in ret:
                     if r == '??':
-                        print "%d: UNKNOWN" % i
+                        print(_('{}: UNKNOWN').format(i))
                     elif r.startswith('192.168'):
-                        print "%d: %s (local network)" % (i, r)
+                        print(_('{}: {} (local network)').format(i, r))
                     else:
                         node = cnmlp.findNodefromIPv4(r)
                         if node:
-                            print "%d: %s (%s) (%f, %f)" % (i, r, node.title, node.latitude, node.longitude)
+                            print("{}: {} ({}) ({}, {})".format(i, r, node.title, node.latitude, node.longitude))
                             self.guifinetmap.add_traceroute_path(node.latitude, node.longitude)
                         else:
-                            print "%d: %s (NOT FOUND)" % (i, r)
+                            print(_('{}: {} (NOT FOUND)').format(i, r))
 
                     i += 1
 
@@ -1096,7 +1096,7 @@ def fillDevicesComboBox(combobox, devices):
     model.set_sort_column_id(1, Gtk.SortType.ASCENDING)
 
     for dev in devices:
-        print dev.title, dev.type
+        print('{} {}'.format(dev.title, dev.type))
         if dev.type == 'radio':
             model.append((dev.id, dev.title))
 
@@ -1179,7 +1179,7 @@ def CreatedSuccessfullyOpenUrlMessageDialog(what, url, id, extra=None):
 
         for settings in extra[0].items():
             message += '  %s: %s\n' % settings
-            print '%s - %s' % settings
+            print('{} - {}'.format(*settings))
 
         message += _('\nYou can view it in the following url:\n%s') % url
 
@@ -1193,10 +1193,10 @@ def CreatedSuccessfullyOpenUrlMessageDialog(what, url, id, extra=None):
                     for ips in ifaceitems[1]:
                         for ipv4 in ips.items():
                             message += '    %s: %s\n' % ipv4
-                            print '  %s - %s' % ipv4
+                            print('  {} - {}'.format(*ipv4))
                 else:
                     message += '  %s: %s\n' % ifaceitems
-                    print '%s - %s' % ifaceitems
+                    print('{} - {}'.format(*ifaceitems))
 
         message += _('\nYou can view it in the following url:\n%s') % url
 
@@ -1227,7 +1227,7 @@ def findZoneIdInEntryCompletion(entrycompletion):
         it = model.iter_next(it)
 
     if it is None:
-        print _('ERROR: Zone title not found!')
+        print(_('ERROR: Zone title not found!'))
         return None
     else:
         pass

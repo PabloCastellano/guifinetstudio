@@ -134,7 +134,7 @@ class GuifinetStudio:
                 # no default zone
                 self.cnmlp = None
                 msg = _('No default zone. Please choose one')
-                print msg
+                print(msg)
                 self.statusbar.push(0, msg)
                 self.cnmlp = None
                 self.cnmlFile = None
@@ -149,7 +149,7 @@ class GuifinetStudio:
                 self.guifinetmap.paintMap(self.cnmlp.getNodes())
                 self.cnmlFile = cnmlFile
             except IOError:
-                print _('Error loading CNML')
+                print(_('Error loading CNML'))
                 self.statusbar.push(0, _('CNML file "%s" couldn\'t be loaded') % cnmlFile)
                 self.cnmlp = None
                 self.cnmlFile = None
@@ -161,8 +161,8 @@ class GuifinetStudio:
 
         # Guifi.net API
         if self.configmanager.getUsername() is None or self.configmanager.getPassword() is None or self.configmanager.getHost() is None:
-            print _('Some required data to initialize Guifi.net API is not available.')
-            print _('Please check username, password and host in preferences')
+            print(_('Some required data to initialize Guifi.net API is not available.'))
+            print(_('Please check username, password and host in preferences'))
         self.guifiAPI = pyGuifiAPI.GuifiAPI(self.configmanager.getUsername(), self.configmanager.getPassword(), self.configmanager.getHost(), secure=False)
         self.authAPI()
 
@@ -187,7 +187,7 @@ class GuifinetStudio:
             self.mainWindow.unfullscreen()
 
     def on_exportgmlimagemenuitem_activate(self, widget, data=None):
-        print _('Export to GML')
+        print(_('Export to GML'))
         raise NotImplementedError
 
     def on_exportkmlimagemenuitem_activate(self, widget, data=None):
@@ -197,11 +197,11 @@ class GuifinetStudio:
 
         if dialog.run() == Gtk.ResponseType.ACCEPT:
             filename = dialog.get_filename()
-            print filename
+            print(filename)
 
         dialog.destroy()
 
-        print _('Export to KML')
+        print(_('Export to KML'))
         CNML2KML(self.cnmlp, filename)
 
     def rebuildAllZones(self):
@@ -211,9 +211,9 @@ class GuifinetStudio:
             for z in self.zonecnmlp.getZones():
                 self.allZones.append((z.id, z.title))
         except IOError:
-            print _('Error loading cnml guifiworld zone:'), cnmlGWfile
-            print _('Guifi.net Studio will run normally but note that some features are disabled')
-            print _('To solve it, just download the Guifi.net World zones CNML going to Tools -> Update zones')
+            print(_('Error loading cnml guifiworld zone: {filename}').format(filename=cnmlGWfile))
+            print(_('Guifi.net Studio will run normally but note that some features are disabled'))
+            print(_('To solve it, just download the Guifi.net World zones CNML going to Tools -> Update zones'))
 
             message = _('Error loading Guifi.net World zone\n\n')
             message += _('Guifi.net Studio will run normally but note that some features are disabled\n')
@@ -236,8 +236,8 @@ class GuifinetStudio:
         TracerouteDialog(self.guifinetmap, self.configmanager)
 
     def on_searchentry_changed(self, widget, data=None):
-        print widget, data
-        print widget.get_text()
+        print(widget, data)
+        print(widget.get_text())
 
         nodesfilter = self.treeview2.get_model()
         nodesfilter.refilter()
@@ -346,11 +346,11 @@ class GuifinetStudio:
                         ifs = s.parentNode.getRadios()[0].getInterfaces()
 
                 if len(ifs) > 1:
-                    ip = 'Several IPs'
+                    ip = _('Several IPs')
                 elif len(ifs) == 1:
                     ip = ifs[0].ipv4
                 else:
-                    print 'WARNING: no interfaces on service', s.title
+                    print(_('WARNING: no interfaces on service {title}').format(title=s.title))
                     ip = None
             else:
                 ip = None
@@ -556,10 +556,10 @@ class GuifinetStudio:
             filename = self.configmanager.pathForCNMLCachedFile(GUIFI_NET_WORLD_ZONE_ID, 'zones')
             with open(filename, 'w') as zonefile:
                 zonefile.write(fp.read())
-            print _('Zone saved successfully to'), filename
+            print(_('Zone saved successfully to {filename}').format(filename=filename))
             self.rebuildAllZones()
-        except URLError, e:
-            print _('Error accessing to the Internets:'), str(e.reason)
+        except URLError as e:
+            print(_('Error accessing to the Internets: {reason}').format(reason=str(e.reason)))
             g = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE,
                                   _('Error accessing to the Internets:\n') + str(e.reason))
             g.set_title(_('Error downloading CNML'))
@@ -653,7 +653,7 @@ class GuifinetStudio:
         raise NotImplementedError
 
     def on_treeviewcolumn11_clicked(self, action, data=None):
-        #print action.get_sort_column_id()
+        #print(action.get_sort_column_id())
         (column_id, sorttype) = self.treestore3.get_sort_column_id()
         name = action.get_name()
 
@@ -669,7 +669,7 @@ class GuifinetStudio:
         self.treestore3.set_sort_column_id(column_id, sorttype)
 
     def on_treeviewcolumn6_clicked(self, action, data=None):
-        #print action.get_sort_column_id()
+        #print(action.get_sort_column_id())
         (column_id, sorttype) = self.treestore.get_sort_column_id()
         name = action.get_name()
 
@@ -698,10 +698,10 @@ class GuifinetStudio:
             authToken = None
 
         if authToken:
-            print _('Reusing valid auth token:'), authToken
+            print(_('Reusing valid auth token: {token}').format(token=authToken))
             self.guifiAPI.setAuthToken(authToken)
         else:
-            print _('not valid token -> authenticating...')
+            print(_('not valid token -> authenticating...'))
 
             try:
                 self.guifiAPI.auth()
@@ -709,9 +709,9 @@ class GuifinetStudio:
                 self.configmanager.setAuthTokenDate()  # update with now()
                 self.configmanager.save()
                 self.statusbar.push(0, _('Logged into Guifi.net'))
-            except URLError, e:  # Not connected to the Internets
+            except URLError as e:  # Not connected to the Internets
                 self.statusbar.push(0, _("Couldn't login into Guifi.net: check your Internet connection"))
-            except GuifiApiError, e:
+            except GuifiApiError as e:
                 g = Gtk.MessageDialog(None, Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE,
                                       _("Couldn't login into Guifi.net:\n") + e.reason)
                 g.run()

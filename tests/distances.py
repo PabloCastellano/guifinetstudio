@@ -41,9 +41,9 @@ def calcBearing(lat1, lon1, lat2, lon2):
 
 
 if __name__ == '__main__':
-    print 'Calculate distances and azimuth from one node to the rest of nodes in the same zone'
-    print 'Usage: %s [nid] [filename.cnml]' % sys.argv[0]
-    print
+    print('Calculate distances and azimuth from one node to the rest of nodes in the same zone')
+    print('Usage: {} [nid] [filename.cnml]'.format(sys.argv[0]))
+    print()
 
     filename = os.path.expanduser('~/.cache/guifinetstudio/detail/26494.cnml')
     nid = 33968  # MLGInvisible
@@ -71,4 +71,4 @@ if __name__ == '__main__':
             dist_metric = '%.3f Km' % d[0]
         else:
             dist_metric = '%d m' % (d[0] * 1000)
-        print '%s -> %s: %s (Az: %.2f)' % (d[1], d[2], dist_metric, d[3])
+        print('{} -> {}: {} (Az: {:.2f})'.format(d[1], d[2], dist_metric, d[3]))

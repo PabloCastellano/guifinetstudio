@@ -285,7 +285,7 @@ def start_trace(target, **settings):
     hops = yield traceroute(target, **settings)
     last_hop = hops[-1]
     if settings["hop_callback"] is None:
-        print last_hop
+        print(last_hop)
 
     reactor.stop()
 
@@ -306,8 +306,8 @@ def main(target):
         return []
     try:
         target = socket.gethostbyname(target)
-    except Exception, e:
-        print("could not resolve '%s': %s" % (target, str(e)))
+    except Exception as e:
+        print("could not resolve '{target}': {msg}".format(target, str(e)))
         return []
 
     reactor.callWhenRunning(start_trace, target, **settings)

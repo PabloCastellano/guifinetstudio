@@ -35,8 +35,8 @@ try:
     import kmldom
     KMLDOM_ENABLED = True
 except ImportError:
-    print _('WARNING: python kmldom dependency was not found')
-    print _('You need to install it in order to enable KML features')
+    print(_('WARNING: python kmldom dependency was not found'))
+    print(_('You need to install it in order to enable KML features'))
 
 ########
 re_email = re.compile("^.+@.+\..{2,4}$")
@@ -67,14 +67,14 @@ def valid_ipv4_address(ip):
 
 
 def openUrl(url):
-    print _('Opening in web browser:'), url
+    print(_('Opening in web browser: {url}').format(url=url))
     systemstr = 'xdg-open %s' % url
     os.system(systemstr)
 
 
 def CNML2KML(cnmlp, filename='mycnml.kml'):
     if not KMLDOM_ENABLED:
-        print _('CNML2KML: function not available. kmldom module not found')
+        print(_('CNML2KML: function not available. kmldom module not found'))
         return
 
     factory = kmldom.KmlFactory.GetFactory()
