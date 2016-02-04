@@ -87,8 +87,8 @@ class GuifiAPI(object):
     def sendRequest(self, data):
         """ Sends API request and returns json result"""
         url = self.base_api_url + data
-        #print '<<<sendRequest>>>', url, len(url)
-        #print 'Headers:', self.headers
+        #print('<<<sendRequest>>> {} {}'.format(url, len(url)))
+        #print('Headers: {}'.format(self.headers))
 
         req = Request(url, headers=self.headers)
         try:
@@ -96,13 +96,13 @@ class GuifiAPI(object):
             #j = json.load(response)
             r = response.read()
             j = json.loads(r)
-            print r
-        except URLError, e:
+            print(r)
+        except URLError as e:
             #caza tambien HTTPError
-            print e.reason
+            print(e.reason)
             raise
-        except ValueError, e:
-            print e.reason
+        except ValueError as e:
+            print(e.reason)
             raise
 
         return self._parseResponse(j)
@@ -111,35 +111,35 @@ class GuifiAPI(object):
         """ Parses json response.
             Returns a tuple with the code and the result of the request (it can be an errorenous response)
             Raises exception if any error code is unknown """
-        print '<<<parseResponse>>>'
+        print('<<<parseResponse>>>')
         codenum = jsondata.get('code')['code']
         codestr = jsondata.get('code')['str']
 
-        print 'Got code %d: %s' % (codenum, codestr)
+        print('Got code {num}: {msg}'.format(num=codenum, msg=codestr))
 
         if codenum == ANSWER_GOOD:
             responses = jsondata.get('responses')
             if isinstance(responses, list):
                 if len(responses) == 1:
                     responses = responses[0]
-                    print 'Just one response'
+                    print('Just one response')
                 else:
-                    print 'There are several responses'
+                    print('There are several responses')
             return (codenum, responses)
         elif codenum == ANSWER_BAD:
             errors = jsondata.get('errors')
             if len(errors) == 1:
                 errors = errors[0]
-                print 'Just one response (error)'
-                print 'Error', errors['code'], ':', errors['str']
+                print('Just one response (error)')
+                print('Error {code}: {msg}'.format(code=errors['code'], msg=errors['str']))
                 if 'extra' in errors:
-                    print 'Extra information:', errors['extra']
+                    print('Extra information: {msg}'.format(msg=errors['extra']))
             else:
-                print 'There are several responses (errors)'
+                print('There are several responses (errors)')
                 for e in errors:
-                    print 'Error', e['code'], ':', e['str']
+                    print('Error {code}: {msg}'.format(code=e['code'], msg=e['str']))
                     if 'extra' in e:
-                        print 'Extra information:', e['extra']
+                        print('Extra information: {msg}'.format(msg=e['extra']))
             return (codenum, errors)
         else:
             raise GuifiApiError('Unexpected return code: ' + codenum)
@@ -167,8 +167,8 @@ class GuifiAPI(object):
         try:
             (codenum, response) = self.sendRequest(data)
 
-            print 'auth:', codenum
-            print response
+            print('auth: {code}'.format(code=codenum))
+            print(response)
 
             if codenum == ANSWER_GOOD:
                 self.authToken = response.get('authToken')
@@ -215,8 +215,8 @@ class GuifiAPI(object):
 
         if codenum == ANSWER_GOOD:
             node_id = int(response.get('node_id'))
-            print 'Node succesfully created', node_id
-            print self.urlForNode(node_id)
+            print('Node {id} succesfully created'.format(id=node_id))
+            print(self.urlForNode(node_id))
         else:
             # Everybody can create nodes
             extra = response['extra'] if 'extra' in response else None
@@ -273,8 +273,8 @@ class GuifiAPI(object):
 
         if codenum == ANSWER_GOOD:
             node_id = response['node']['node_id']
-            print 'Node succesfully updated', node_id
-            print '%s/node/%s' % (self.base_url, node_id)
+            print('Node {id} succesfully updated'.format(id=node_id))
+            print('{base_url}/node/{id}'.format(base_url=self.base_url, id=node_id))
         else:
             # [{"code":500,"str":"Request could not be completed. The object was not found","extra":"zone_id =  is not a guifi node"}]}
             extra = response['extra'] if 'extra' in response else None
@@ -291,7 +291,7 @@ class GuifiAPI(object):
         (codenum, response) = self.sendRequest(params)
 
         if codenum == ANSWER_GOOD:
-            print 'Node %s succesfully removed' % nid
+            print('Node {id} succesfully removed'.format(id=nid))
         else:
             # [{"code":500,"str":"Request could not be completed. The object was not found","extra":"node_id = 49836"}]}
             extra = response['extra'] if 'extra' in response else None
@@ -337,8 +337,8 @@ class GuifiAPI(object):
 
         if codenum == ANSWER_GOOD:
             zone_id = int(response.get('zone_id'))
-            print 'Zone succesfully created', zone_id
-            print self.urlForZone(zone_id)
+            print('Zone {id} succesfully created'.format(id=zone_id))
+            print(self.urlForZone(zone_id))
         else:
             extra = response['extra'] if 'extra' in response else None
             raise GuifiApiError(response['str'], response['code'], extra)
@@ -420,8 +420,8 @@ class GuifiAPI(object):
 
         if codenum == ANSWER_GOOD:
             device_id = int(response.get('device_id'))
-            print 'Device succesfully created', device_id
-            print self.urlForDevice(device_id)
+            print('Device {id} succesfully created'.format(id=device_id))
+            print(self.urlForDevice(device_id))
         else:
             extra = response['extra'] if 'extra' in response else None
             raise GuifiApiError(response['str'], response['code'], extra)
@@ -481,7 +481,7 @@ class GuifiAPI(object):
         (codenum, response) = self.sendRequest(params)
 
         if codenum == ANSWER_GOOD:
-            print 'Device %s succesfully removed' % did
+            print('Device {id} successfully removed'.format(id=did))
         else:
             extra = response['extra'] if 'extra' in response else None
             raise GuifiApiError(response['str'], response['code'], extra)
@@ -517,7 +517,7 @@ class GuifiAPI(object):
             data['protocol'] = protocol
             data['channel'] = channel
         else:
-            print mode
+            print(mode)
             raise NotImplementedError
 
         params = urllib.urlencode(data)
@@ -527,8 +527,8 @@ class GuifiAPI(object):
             # TODO: qué devolver? array tb?
             radiodev_counter = int(response.get('radiodev_counter'))
             interfaces = response.get('interfaces')
-            print 'Radio succesfully created', radiodev_counter
-            print self.urlForDevice(int(did))
+            print('Radio {counter} successfully created'.format(counter=radiodev_counter))
+            print(self.urlForDevice(int(did)))
         else:
             extra = response['extra'] if 'extra' in response else None
             raise GuifiApiError(response['str'], response['code'], extra)
@@ -561,7 +561,7 @@ class GuifiAPI(object):
         (codenum, response) = self.sendRequest(params)
 
         if codenum == ANSWER_GOOD:
-            print 'Radio %s from device %s succesfully removed' % (radiodev, did)
+            print('Radio {radio} from device {id} successfully removed'.format(radio=radiodev, id=did))
         else:
             extra = response['extra'] if 'extra' in response else None
             raise GuifiApiError(response['str'], response['code'], extra)
@@ -579,8 +579,8 @@ class GuifiAPI(object):
         if codenum == ANSWER_GOOD:
             iid = int(response.get('interface_id'))
             ipv4 = response.get('ipv4')
-            print 'Interface succesfully created', iid
-            print self.urlForDevice(int(did))
+            print('Interface {id} succesfully created'.format(id=iid))
+            print(self.urlForDevice(int(did)))
         else:
             extra = response['extra'] if 'extra' in response else None
             raise GuifiApiError(response['str'], response['code'], extra)
@@ -597,7 +597,7 @@ class GuifiAPI(object):
         (codenum, response) = self.sendRequest(params)
 
         if codenum == ANSWER_GOOD:
-            print 'Interface %s succesfully removed' % iid
+            print('Interface {id} succesfully removed'.format(id=iid))
         else:
             extra = response['extra'] if 'extra' in response else None
             raise GuifiApiError(response['str'], response['code'], extra)
@@ -617,8 +617,8 @@ class GuifiAPI(object):
         if codenum == ANSWER_GOOD:
             lid = int(response.get('link_id'))
             ipv4 = response.get('ipv4')
-            print 'Link succesfully created', lid
-            print self.urlForDevice(int(fromdid))
+            print('Link {id} successfully created'.format(id=lid))
+            print(self.urlForDevice(int(fromdid)))
         else:
             # FIXME: Crashes when there are several errors and extra is a list (no has_key())
             extra = response['extra'] if 'extra' in response else None
@@ -659,7 +659,7 @@ class GuifiAPI(object):
         (codenum, response) = self.sendRequest(params)
 
         if codenum == ANSWER_GOOD:
-            print 'Link %s succesfully removed' % lid
+            print('Link {id} succesfully removed'.format(id=lid))
         else:
             extra = response['extra'] if 'extra' in response else None
             raise GuifiApiError(response['str'], response['code'], extra)
@@ -730,7 +730,7 @@ class GuifiAPI(object):
 
         lang = 'es'
         url = self.base_cnml_url % (lang, zid, ctype)
-        print 'Downloading CNML:', url
+        print('Downloading CNML: {url}'.format(url=url))
 
         req = Request(url, headers=self.headers)
         response = urlopen(req)
@@ -743,7 +743,7 @@ class GuifiAPI(object):
 
         lang = 'es'
         url = self.base_gml_url % (lang, zid, ctype)
-        print 'Downloading GML:', url
+        print('Downloading GML: {url}'.format(url=url))
 
         req = Request(url, headers=self.headers)
         response = urlopen(req)

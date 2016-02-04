@@ -8,7 +8,7 @@ from api import *
 g = GuifiAPI()
 firmwares = g.getFirmwares(secure=SECURE)
 
-print 'Total firmwares:', len(firmwares)
-print 'Title\t\t\tDescription'
+print('Total firmwares: {}'.format(len(firmwares)))
+print('Title\t\t\tDescription')
 for firmware in firmwares:
-    print '%s\t\t\t%s' % (firmware['title'], firmware['description'])
+    print('{}\t\t\t{}'.format(firmware['title'], firmware['description']))

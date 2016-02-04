@@ -6,8 +6,8 @@ from guifiConfig import *
 from api import *
 
 if len(sys.argv) != 2:
-    print 'Create a new device'
-    print 'Usage: %s <nick>' % sys.argv[0]
+    print('Create a new device')
+    print('Usage: {} <nick>'.format(sys.argv[0]))
     sys.exit(1)
 
 g = GuifiAPI(USERNAME, PASSWORD, secure=SECURE)

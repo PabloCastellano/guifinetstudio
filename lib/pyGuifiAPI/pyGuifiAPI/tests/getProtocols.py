@@ -9,7 +9,7 @@ g = GuifiAPI(secure=SECURE)
 
 protocols = g.getProtocols()
 
-print 'Total protocols:', len(protocols)
-print 'Title\tDescription'
+print('Total protocols: {}'.format(len(protocols)))
+print('Title\tDescription')
 for protocol in protocols:
-    print '%s\t%s' % (protocol['title'], protocol['description'])
+    print('{}\t{}'.format(protocol['title'], protocol['description']))

@@ -8,8 +8,8 @@ from guifiConfig import *
 from api import *
 
 if len(sys.argv) != 2:
-    print 'Remove an existing device'
-    print 'Usage: %s <interface_id>' % sys.argv[0]
+    print('Remove an existing device')
+    print('Usage: {} <interface_id>'.format(sys.argv[0]))
     sys.exit(1)
 
 g = GuifiAPI(USERNAME, PASSWORD, secure=SECURE)
@@ -25,5 +25,5 @@ Queda per implementar el suport de les connexions per cable.
 
 try:
     g.removeInterface(sys.argv[1])
-except GuifiApiError, e:
-    print e.reason
+except GuifiApiError as e:
+    print(e.reason)
