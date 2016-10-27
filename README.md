@@ -86,3 +86,12 @@ Run the following commands from the root directory:
     dpkg-buildpackage -rfakeroot -k463F919C
 
 Don't forget to replace -k with your own PGP key ID or remove the parameter to leave the package unsigned.
+
+# Install from source
+
+    git clone https://github.com/PabloCastellano/guifinetstudio.git
+    cd guifinetstudio
+    mkvirtualenv --system-site-packages guifinetstudio
+    pip install -r requirements.txt
+    python setup.py develop
+    ./guifinet-studio
